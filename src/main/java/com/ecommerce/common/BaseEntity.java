@@ -20,4 +20,13 @@ public abstract class BaseEntity {
 
 	@LastModifiedDate
 	private LocalDateTime modifiedAt;
+
+	private boolean deleted;
+	private LocalDateTime deletedAt;
+
+	/* 소프트 삭제 전략 공통 메서드 */
+	public void softDelete() {
+		this.deleted = true;
+		this.deletedAt = LocalDateTime.now();
+	}
 }

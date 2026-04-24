@@ -1,5 +1,7 @@
 package com.ecommerce.users.entity;
 
+import org.hibernate.annotations.SQLRestriction;
+
 import com.ecommerce.common.BaseEntity;
 
 import jakarta.persistence.Entity;
@@ -15,6 +17,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "users")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLRestriction("deleted = false")
 public class User extends BaseEntity {
 
 	@Id
