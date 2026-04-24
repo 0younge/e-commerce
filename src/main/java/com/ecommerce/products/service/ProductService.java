@@ -3,9 +3,7 @@ package com.ecommerce.products.service;
 import org.springframework.stereotype.Service;
 
 import com.ecommerce.admins.entity.Admin;
-import com.ecommerce.admins.entity.AdminRole;
 import com.ecommerce.admins.repository.AdminRepository;
-import com.ecommerce.common.exception.AccessDeniedException;
 import com.ecommerce.common.exception.InvalidRequestException;
 import com.ecommerce.common.exception.ProductNotFoundException;
 import com.ecommerce.orders.service.OrderService;
@@ -15,7 +13,7 @@ import com.ecommerce.products.dto.ProductResponse;
 import com.ecommerce.products.entity.Product;
 import com.ecommerce.products.repository.ProductRepository;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -66,7 +64,7 @@ public class ProductService {
 	 * @throws InvalidRequestException 관리자 정보를 찾을 수 없는 경우
 	 */
 	@Transactional(readOnly = true)
-	public ProductDetailResponse getProductDatall(Long productId){
+	public ProductDetailResponse getProductDatall(Long productId) {
 
 		Product product = productRepository.findById(productId)
 			.orElseThrow(ProductNotFoundException::new);
