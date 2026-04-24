@@ -82,6 +82,6 @@ public class UserService {
 	@Transactional
 	public void deleteById(Long userId) {
 		User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException());
-		userRepository.delete(user);
+		user.softDelete();
 	}
 }
