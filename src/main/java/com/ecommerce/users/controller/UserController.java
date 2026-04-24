@@ -23,6 +23,7 @@ import com.ecommerce.users.dto.PatchUserResponse;
 import com.ecommerce.users.dto.PatchUserStatusRequest;
 import com.ecommerce.users.service.UserService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -51,7 +52,7 @@ public class UserController {
 
 	@PatchMapping("/users/{userId}")
 	public ResponseEntity<PatchUserResponse> patchUserDetails(@PathVariable Long userId,
-		@RequestBody PatchUserRequest patchUserRequest) {
+		@Valid @RequestBody PatchUserRequest patchUserRequest) {
 		return ResponseEntity.status(HttpStatus.OK).body(userService.patchUserDetails(userId, patchUserRequest));
 	}
 
@@ -60,7 +61,6 @@ public class UserController {
 		@RequestBody PatchUserStatusRequest patchUserStatusRequest) {
 		return ResponseEntity.status(HttpStatus.OK).body(userService.patchUserStatus(userId, patchUserStatusRequest));
 	}
-
 
 	@DeleteMapping("/users/{userId}")
 	public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
