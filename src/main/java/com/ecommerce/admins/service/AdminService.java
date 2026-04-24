@@ -38,7 +38,7 @@ public class AdminService {
 	}
 
 	@Transactional
-	public AdminInfo login(@Valid LoginAdminRequest request) {
+	public AdminInfo login(@Valid LoginAdminRequest request, HttpSession session) {
 		Admin admin = adminRepository.findByEmail(request.getEmail())
 			.orElseThrow(() -> new IllegalArgumentException("없는 유저입니다"));
 		if (!passwordEncoder.matches(admin.getPassword(), request.getPassword())) {
@@ -56,7 +56,8 @@ public class AdminService {
 
 	public Page<GetAdminResponse> getAdminList(String keyword, AdminRole role, AdminStatus status, Pageable pageable,
 		HttpSession session) {
-		Admin admin = adminRepository.findById((Long)session.getAttribute(AdminConst.ADMIN_ID))
+		AdminInfo adminInfo = (AdminInfo)session.getAttribute(AdminConst.ADMIN_INFO);
+		Admin admin = adminRepository.findById(adminInfo.getAdminId())
 			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다"));
 		if (!admin.getRole().equals(AdminRole.SUPER_ADMIN)) {
 			throw new IllegalArgumentException("권한이 없습니다");
