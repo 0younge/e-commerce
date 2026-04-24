@@ -9,6 +9,7 @@ import com.ecommerce.users.dto.GetOneUserResponse;
 import com.ecommerce.users.dto.GetUserResponse;
 import com.ecommerce.users.dto.PatchUserRequest;
 import com.ecommerce.users.dto.PatchUserResponse;
+import com.ecommerce.users.dto.PatchUserStatusRequest;
 import com.ecommerce.users.entity.User;
 import com.ecommerce.users.repository.UserRepository;
 
@@ -50,7 +51,7 @@ public class UserService {
 	public PatchUserResponse patchUserDetails(Long userId, PatchUserRequest patchUserRequest) {
 		User user = userRepository.findById(userId).orElseThrow(() -> new IllegalStateException("해당 유저를 찾을 수 없습니다."));
 
-		user.updateDetails(user.getName(), user.getEmail(), user.getEmail());
+		user.updateDetails(patchUserRequest.getName(), patchUserRequest.getEmail(), patchUserRequest.getEmail());
 		return new PatchUserResponse(user.getUserId(),
 			user.getName(),
 			user.getEmail(),
@@ -60,4 +61,20 @@ public class UserService {
 			user.getModifiedAt()
 		);
 	}
+
+	@Transactional
+	public PatchUserResponse patchUserStatus(Long userId, PatchUserStatusRequest patchUserStatusRequest) {
+		User user = userRepository.findById(userId).orElseThrow(() -> new IllegalStateException("해당 유저를 찾을 수 없습니다."));
+
+		user.updateStatus(patchUserStatusRequest.getUserStatus());
+		return new PatchUserResponse(user.getUserId(),
+			user.getName(),
+			user.getEmail(),
+			user.getPhoneNumber(),
+			user.getStatus().name(),
+			user.getCreatedAt(),
+			user.getModifiedAt()
+		);
+	}
+
 }
