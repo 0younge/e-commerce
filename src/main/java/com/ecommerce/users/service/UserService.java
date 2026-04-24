@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ecommerce.common.enums.UserStatus;
 import com.ecommerce.common.exception.UserNotFoundException;
 import com.ecommerce.users.dto.GetOneUserResponse;
 import com.ecommerce.users.dto.GetUserResponse;
@@ -23,8 +24,8 @@ public class UserService {
 	private final UserRepository userRepository;
 
 	@Transactional(readOnly = true)
-	public Page<GetUserResponse> findUserByKeyword(String keyword, Pageable pageable) {
-		return userRepository.findByKeyword(keyword, pageable)
+	public Page<GetUserResponse> findByKeywordAndStatus(String keyword, UserStatus status, Pageable pageable) {
+		return userRepository.findByKeywordAndStatus(keyword, status, pageable)
 			.map(user -> new GetUserResponse(
 				user.getUserId(),
 				user.getName(),
@@ -81,6 +82,6 @@ public class UserService {
 	@Transactional
 	public void deleteById(Long userId) {
 		User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException());
-		userRepository.delete(user);
+		user.softDelete();
 	}
 }
