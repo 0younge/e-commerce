@@ -2,11 +2,14 @@ package com.ecommerce.products.service;
 
 import org.springframework.stereotype.Service;
 
+import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.admins.entity.AdminRole;
 import com.ecommerce.admins.repository.AdminRepository;
 import com.ecommerce.common.exception.AccessDeniedException;
 import com.ecommerce.common.exception.InvalidRequestException;
+import com.ecommerce.common.exception.ProductNotFoundException;
 import com.ecommerce.orders.service.OrderService;
+import com.ecommerce.products.dto.ProductDetailResponse;
 import com.ecommerce.products.dto.ProductRequest;
 import com.ecommerce.products.dto.ProductResponse;
 import com.ecommerce.products.entity.Product;
@@ -33,11 +36,11 @@ public class ProductService {
 	@Transactional
 	public ProductResponse save(ProductRequest request) {
 
-		if (!adminRepository.existsById(request.getAdminId())) {
-			throw new InvalidRequestException(
-				"존재하지 않는 관리자입니다."
-			);
-		}
+		// if (!adminRepository.existsById(request.getAdminId())) {
+		// 	throw new InvalidRequestException(
+		// 		"존재하지 않는 관리자입니다."
+		// 	);
+		// }
 
 		Product newProduct = new Product(
 			request.getAdminId(),
@@ -49,5 +52,35 @@ public class ProductService {
 
 		return ProductResponse.from(productRepository.save(newProduct));
 	}
+
+	//상품목록 죄회(검색 + 필터 + 페이징)
+
+
+	/**
+	 * 상품 상세 조회
+	 * Product 정보 + Admin 정보 포함
+	 *
+	 * @param productId 상품 ID
+	 * @return ProductDetailResponse 상품 상세 정보 (관리자 정보 포함)
+	 * @throws ProductNotFoundException 상품을 찾을 수 없는 경우
+	 * @throws InvalidRequestException 관리자 정보를 찾을 수 없는 경우
+	 */
+	@Transactional(readOnly = true)
+	public ProductDetailResponse getProductDatall(Long productId){
+
+		Product product = productRepository.findById(productId)
+			.orElseThrow(ProductNotFoundException::new);
+
+		Admin admin = adminRepository.findById(product.getAdminId())
+			.orElseThrow(() -> new InvalidRequestException("관리자을 찿을수 없습니다"));
+
+		return ProductDetailResponse.from(product, admin);
+	}
+
+	//재고 변경 로직구현
+
+	//상품 주문재고 처리
+
+	//상품삭자
 
 }
