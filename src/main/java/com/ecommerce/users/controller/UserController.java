@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ecommerce.users.dto.GetPageResponse;
 import com.ecommerce.users.dto.GetUserResponse;
 import com.ecommerce.users.service.UserService;
 
@@ -21,16 +22,17 @@ public class UserController {
 	private final UserService userService;
 
 	@GetMapping("/users")
-	public ResponseEntity<Page<GetUserResponse>> getUser(
+	public ResponseEntity<GetPageResponse<GetUserResponse>> getUser(
 		@RequestParam String keyword,
 		@RequestParam(defaultValue = "1") int page,
 		@RequestParam(defaultValue = "10") int size,
-		@RequestParam(required = false) String sortBy,
-		@RequestParam(required = false) String sortOrder,
+		@RequestParam(required = false, defaultValue = "name") String sortBy,
+		@RequestParam(required = false, defaultValue = "ASC") String sortOrder,
 		@RequestParam String status
 		) {
-		Pageable pageable = PageRequest.of(page, size, Sort.Direction.valueOf(sortOrder), sortBy);
-		return ResponseEntity.status(HttpStatus.OK).body(userService.findUserByKeyword(keyword, status, pageable));
+		Pageable pageable = PageRequest.of(page - 1, size, Sort.Direction.valueOf(sortOrder), sortBy);
+		Page<GetUserResponse> result = userService.findUserByKeyword(keyword, pageable);
+		return ResponseEntity.status(HttpStatus.OK).body(GetPageResponse.of(result));
 	}
 
 }
