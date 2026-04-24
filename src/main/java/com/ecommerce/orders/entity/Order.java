@@ -5,6 +5,7 @@ import com.ecommerce.common.BaseEntity;
 import com.ecommerce.products.entity.Product;
 import com.ecommerce.users.entity.User;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -27,19 +28,38 @@ public class Order extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long orderId;
 
-	// 위아래 사이 이 주석 밑에 필드값 추가하시면 됩니다!
+	@Column(nullable = false)
+	private String number;
+	@Column(nullable = false)
+	private String status;
+	@Column(nullable = false)
+	private Long quantity;
+	@Column(nullable = false)
+	private Long totalPrice;
 
+	private String cancelReason;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "userId")
+	@JoinColumn(name = "userId", nullable = false)
 	private User user;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "productId")
+	@JoinColumn(name = "productId", nullable = false)
 	private Product product;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "adminId")
+	@JoinColumn(name = "adminId", nullable = false)
 	private Admin admin;
+
+	public Order(String number, String status, Long quantity, Long totalPrice, User user, Product product,
+		Admin admin) {
+		this.number = number;
+		this.status = status;
+		this.quantity = quantity;
+		this.totalPrice = totalPrice;
+		this.user = user;
+		this.product = product;
+		this.admin = admin;
+	}
 
 }
