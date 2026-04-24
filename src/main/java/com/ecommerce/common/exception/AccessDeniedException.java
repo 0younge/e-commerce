@@ -4,7 +4,7 @@ import org.springframework.http.HttpStatus;
 
 public class AccessDeniedException extends BusinessException {
 
-	public AccessDeniedException() {
-		super(HttpStatus.FORBIDDEN, "접근 권한이 없습니다.");
+	public AccessDeniedException(String message) {
+		super(HttpStatus.FORBIDDEN, message);
 	}
 }
