@@ -2,6 +2,9 @@ package com.ecommerce.admins.entity;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+
 import com.ecommerce.common.BaseEntity;
 import com.ecommerce.common.enums.AdminStatus;
 
@@ -21,6 +24,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "admins")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLDelete(sql = "UPDATE admins SET deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE admin_id = ?")
+@SQLRestriction("deleted = false")
 public class Admin extends BaseEntity {
 
 	@Id
@@ -35,6 +40,8 @@ public class Admin extends BaseEntity {
 	private String password;
 	@Column(nullable = false)
 	private String phoneNumber;
+
+	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private AdminRole role;
 
