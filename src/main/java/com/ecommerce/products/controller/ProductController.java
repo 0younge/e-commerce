@@ -1,7 +1,5 @@
 package com.ecommerce.products.controller;
 
-
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -14,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ecommerce.common.enums.ProductStatus;
 import com.ecommerce.products.dto.ProductDetailResponse;
 import com.ecommerce.products.dto.ProductRequest;
 import com.ecommerce.products.dto.ProductResponse;
@@ -44,7 +41,8 @@ public class ProductController {
 	 * @return 201 Created, 등록된 상품 정보
 	 */
 	@PostMapping
-	public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRequest request) {
+	public ResponseEntity<ProductResponse> createProduct(
+		@Valid @RequestBody ProductRequest request) {
 
 		ProductResponse response = productService.save(request);
 
@@ -66,7 +64,7 @@ public class ProductController {
 		Pageable pageable,
 		@RequestParam(required = false) String name,
 		@RequestParam(required = false) String category,
-		@RequestParam(required = false) ProductStatus status) {
+		@RequestParam(required = false) String status) {  // ← ProductStatus → String
 
 		Page<ProductResponse> response = productService.findAllPaged(
 			pageable,
@@ -85,11 +83,10 @@ public class ProductController {
 	 * @param productId 상품 ID
 	 * @return 200 OK, 상품 상세 정보 (관리자 정보 포함)
 	 */
-	@GetMapping("/{Id}")
-	public ResponseEntity<ProductDetailResponse> getProductDatall(
+	@GetMapping("/{productId}")  // ← Id → productId
+	public ResponseEntity<ProductDetailResponse> getProductDetail(  // ← getProductDatall → getProductDetail
+		@PathVariable Long productId) {  // ← Id → productId, @Valid 삭제
 
-		@Valid @PathVariable Long Id) {
-
-		return ResponseEntity.ok(productService.getProductDatall(Id));
+		return ResponseEntity.ok(productService.getProductDetail(productId));  // ← getProductDatall → getProductDetail
 	}
 }

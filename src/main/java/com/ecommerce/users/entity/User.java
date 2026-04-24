@@ -3,8 +3,12 @@ package com.ecommerce.users.entity;
 import org.hibernate.annotations.SQLRestriction;
 
 import com.ecommerce.common.BaseEntity;
+import com.ecommerce.common.enums.UserStatus;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -24,4 +28,33 @@ public class User extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long userId;
 
+	@Column(nullable = false)
+	private String name;
+
+	@Column(nullable = false)
+	private String email;
+
+	@Column(nullable = false)
+	private String phoneNumber;
+
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private UserStatus status = UserStatus.ACTIVE;
+
+	public User(String name, String email, String phoneNumber, UserStatus status) {
+		this.name = name;
+		this.email = email;
+		this.phoneNumber = phoneNumber;
+		this.status = status;
+	}
+
+	public void updateDetails(String name, String email, String phoneNumber) {
+		this.name = name;
+		this.email = email;
+		this.phoneNumber = phoneNumber;
+	}
+
+	public void updateStatus(UserStatus status) {
+		this.status = status;
+	}
 }

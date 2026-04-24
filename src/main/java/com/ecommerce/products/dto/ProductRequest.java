@@ -1,61 +1,37 @@
 package com.ecommerce.products.dto;
 
-import java.math.BigDecimal;
-
-import com.ecommerce.products.entity.Product;
-
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 
-/**
- * 상품 등록 요청 DTO
- */
 @Getter
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 public class ProductRequest {
 
-	/**
-	 * 등록하는 관리자 ID
-	 */
 	@NotNull(message = "관리자 ID는 필수입니다.")
 	private Long adminId;
 
-	/**
-	 * 상품명 (최대 255자)
-	 */
 	@NotBlank(message = "상품명은 필수입니다.")
-	@Size(max = 255)
+	@Size(max = 100, message = "상품명은 100자 이하여야 합니다.")
 	private String name;
 
-	/**
-	 * 카테고리 (최대 50자)
-	 */
 	@NotBlank(message = "카테고리는 필수입니다.")
-	@Size(max = 50)
+	@Size(max = 50, message = "카테고리는 50자 이하여야 합니다.")
 	private String category;
 
-	/**
-	 * 가격 (0 이상, 소수점 2자리)
-	 */
 	@NotNull(message = "가격은 필수입니다.")
-	@DecimalMin(value = "0.0")
-	@Digits(integer = 8, fraction = 2)
-	private BigDecimal price;
+	@Min(value = 0, message = "가격은 0 이상이어야 합니다.")
+	private Long price;  // ← BigDecimal → Long
 
-	/**
-	 * 재고 수량 (0 이상)
-	 */
 	@NotNull(message = "수량은 필수입니다.")
-	@Min(value = 0)
-	private Integer quantity;  // ← 이거 있어야 함!
+	@Min(value = 0, message = "수량은 0 이상이어야 합니다.")
+	private Long quantity;  // ← Integer → Long
 
-
-
+	@NotBlank(message = "상태는 필수입니다.")
+	private String status;  // ← ProductStatus → String
 }
-
