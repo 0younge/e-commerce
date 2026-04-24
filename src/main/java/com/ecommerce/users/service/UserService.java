@@ -5,7 +5,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ecommerce.users.dto.GetOneUserResponse;
 import com.ecommerce.users.dto.GetUserResponse;
+import com.ecommerce.users.dto.PatchUserRequest;
+import com.ecommerce.users.dto.PatchUserResponse;
 import com.ecommerce.users.entity.User;
 import com.ecommerce.users.repository.UserRepository;
 
@@ -31,16 +34,30 @@ public class UserService {
 	}
 
 	@Transactional(readOnly = true)
-	public GetUserResponse findUserDetails(Long userId) {
+	public GetOneUserResponse findUserDetails(Long userId) {
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new IllegalStateException("해당 유저를 찾을 수 없습니다."));
 
-		return new GetUserResponse(
-			user.getUserId(),
+		return new GetOneUserResponse(
 			user.getName(),
 			user.getEmail(),
 			user.getPhoneNumber(),
 			user.getStatus().name(),
 			user.getCreatedAt());
+	}
+
+	@Transactional
+	public PatchUserResponse patchUserDetails(Long userId, PatchUserRequest patchUserRequest) {
+		User user = userRepository.findById(userId).orElseThrow(() -> new IllegalStateException("해당 유저를 찾을 수 없습니다."));
+
+		user.updateDetails(user.getName(), user.getEmail(), user.getEmail());
+		return new PatchUserResponse(user.getUserId(),
+			user.getName(),
+			user.getEmail(),
+			user.getPhoneNumber(),
+			user.getStatus().name(),
+			user.getCreatedAt(),
+			user.getModifiedAt()
+		);
 	}
 }
