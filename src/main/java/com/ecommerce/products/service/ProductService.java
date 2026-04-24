@@ -2,7 +2,10 @@ package com.ecommerce.products.service;
 
 import org.springframework.stereotype.Service;
 
+import com.ecommerce.admins.entity.AdminRole;
 import com.ecommerce.admins.repository.AdminRepository;
+import com.ecommerce.common.exception.AccessDeniedException;
+import com.ecommerce.common.exception.InvalidRequestException;
 import com.ecommerce.orders.service.OrderService;
 import com.ecommerce.products.dto.ProductRequest;
 import com.ecommerce.products.dto.ProductResponse;
@@ -31,8 +34,8 @@ public class ProductService {
 	public ProductResponse save(ProductRequest request) {
 
 		if (!adminRepository.existsById(request.getAdminId())) {
-			throw new IllegalArgumentException(
-				"존재하지 않는 관리자입니다. ID: " + request.getAdminId()
+			throw new InvalidRequestException(
+				"존재하지 않는 관리자입니다."
 			);
 		}
 
