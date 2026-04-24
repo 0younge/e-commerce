@@ -45,6 +45,12 @@ public class User extends BaseEntity {
 		this.status = status;
 	}
 
+	public void updateDetails(String name, String email, String phoneNumber) {
+		this.name = name;
+		this.email = email;
+		this.phoneNumber = phoneNumber;
+	}
+
 	public void updateStatus(UserStatus status) {
 		this.status = status;
 	}
