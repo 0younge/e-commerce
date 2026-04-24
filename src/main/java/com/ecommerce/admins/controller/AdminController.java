@@ -30,6 +30,16 @@ public class AdminController {
 		return ResponseEntity.status(HttpStatus.CREATED).build();
 	}
 
+	@PostMapping("/login")
+	public ResponseEntity<Void> loginAdmin(@RequestBody @Valid LoginAdminRequest request, HttpSession session) {
+		AdminInfo adminInfo = adminService.login(request);
 
+		session.setMaxInactiveInterval(86400); // 세션만료: 24시간
+		session.setAttribute("adminId", adminInfo.getAdminId());
+		session.setAttribute("email", adminInfo.getEmail());
+		session.setAttribute("role", adminInfo.getRole());
+
+		return ResponseEntity.ok().build();
+	}
 
 }
