@@ -31,7 +31,7 @@ public class UserService {
 				user.getName(),
 				user.getEmail(),
 				user.getPhoneNumber(),
-				user.getStatus().name(),
+				user.getStatus(),
 				user.getCreatedAt()
 			));
 	}
@@ -45,7 +45,7 @@ public class UserService {
 			user.getName(),
 			user.getEmail(),
 			user.getPhoneNumber(),
-			user.getStatus().name(),
+			user.getStatus(),
 			user.getCreatedAt());
 	}
 
@@ -58,7 +58,7 @@ public class UserService {
 			user.getName(),
 			user.getEmail(),
 			user.getPhoneNumber(),
-			user.getStatus().name(),
+			user.getStatus(),
 			user.getCreatedAt(),
 			user.getModifiedAt()
 		);
@@ -73,7 +73,7 @@ public class UserService {
 			user.getName(),
 			user.getEmail(),
 			user.getPhoneNumber(),
-			user.getStatus().name(),
+			user.getStatus(),
 			user.getCreatedAt(),
 			user.getModifiedAt()
 		);
