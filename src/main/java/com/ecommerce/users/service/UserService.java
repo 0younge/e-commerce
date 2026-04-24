@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ecommerce.common.exception.UserNotFoundException;
 import com.ecommerce.users.dto.GetOneUserResponse;
 import com.ecommerce.users.dto.GetUserResponse;
 import com.ecommerce.users.dto.PatchUserRequest;
@@ -37,7 +38,7 @@ public class UserService {
 	@Transactional(readOnly = true)
 	public GetOneUserResponse findUserDetails(Long userId) {
 		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new IllegalStateException("해당 유저를 찾을 수 없습니다."));
+			.orElseThrow(() -> new UserNotFoundException());
 
 		return new GetOneUserResponse(
 			user.getName(),
@@ -49,7 +50,7 @@ public class UserService {
 
 	@Transactional
 	public PatchUserResponse patchUserDetails(Long userId, PatchUserRequest patchUserRequest) {
-		User user = userRepository.findById(userId).orElseThrow(() -> new IllegalStateException("해당 유저를 찾을 수 없습니다."));
+		User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException());
 
 		user.updateDetails(patchUserRequest.getName(), patchUserRequest.getEmail(), patchUserRequest.getEmail());
 		return new PatchUserResponse(user.getUserId(),
@@ -64,7 +65,7 @@ public class UserService {
 
 	@Transactional
 	public PatchUserResponse patchUserStatus(Long userId, PatchUserStatusRequest patchUserStatusRequest) {
-		User user = userRepository.findById(userId).orElseThrow(() -> new IllegalStateException("해당 유저를 찾을 수 없습니다."));
+		User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException());
 
 		user.updateStatus(patchUserStatusRequest.getUserStatus());
 		return new PatchUserResponse(user.getUserId(),
