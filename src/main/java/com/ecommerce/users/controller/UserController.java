@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ecommerce.common.enums.UserStatus;
 import com.ecommerce.users.dto.GetOneUserResponse;
 import com.ecommerce.users.dto.GetPageResponse;
 import com.ecommerce.users.dto.GetUserResponse;
@@ -31,15 +32,15 @@ public class UserController {
 
 	@GetMapping("/users")
 	public ResponseEntity<GetPageResponse<GetUserResponse>> getUserList(
-		@RequestParam String keyword,
+		@RequestParam(required = false) String keyword,
 		@RequestParam(defaultValue = "1") int page,
 		@RequestParam(defaultValue = "10") int size,
 		@RequestParam(required = false, defaultValue = "name") String sortBy,
 		@RequestParam(required = false, defaultValue = "ASC") String sortOrder,
-		@RequestParam String status
+		@RequestParam(required = false) UserStatus status
 	) {
 		Pageable pageable = PageRequest.of(page - 1, size, Sort.Direction.valueOf(sortOrder), sortBy);
-		Page<GetUserResponse> result = userService.findUserByKeyword(keyword, pageable);
+		Page<GetUserResponse> result = userService.findByKeywordAndStatus(keyword, status, pageable);
 		return ResponseEntity.status(HttpStatus.OK).body(GetPageResponse.of(result));
 	}
 
@@ -60,11 +61,10 @@ public class UserController {
 		return ResponseEntity.status(HttpStatus.OK).body(userService.patchUserStatus(userId, patchUserStatusRequest));
 	}
 
-	
+
 	@DeleteMapping("/users/{userId}")
 	public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
 		userService.deleteById(userId);
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
-
 }
