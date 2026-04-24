@@ -22,7 +22,7 @@ public class UserController {
 	private final UserService userService;
 
 	@GetMapping("/users")
-	public ResponseEntity<GetPageResponse<GetUserResponse>> getUser(
+	public ResponseEntity<GetPageResponse<GetUserResponse>> getUserList(
 		@RequestParam String keyword,
 		@RequestParam(defaultValue = "1") int page,
 		@RequestParam(defaultValue = "10") int size,
