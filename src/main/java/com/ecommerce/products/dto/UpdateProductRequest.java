@@ -9,10 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UpdateProductRequest {
 
-	private  String name;
-
-	private  String category;
-
+	private String name;
+	private String category;
 	private BigDecimal price;
 
 }
