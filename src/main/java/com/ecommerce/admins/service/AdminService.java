@@ -1,15 +1,22 @@
 package com.ecommerce.admins.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ecommerce.admins.dto.CreateAdminRequest;
+import com.ecommerce.admins.dto.GetAdminResponse;
 import com.ecommerce.admins.dto.LoginAdminRequest;
 import com.ecommerce.admins.entity.Admin;
+import com.ecommerce.admins.entity.AdminConst;
 import com.ecommerce.admins.entity.AdminInfo;
+import com.ecommerce.admins.entity.AdminRole;
 import com.ecommerce.admins.repository.AdminRepository;
 import com.ecommerce.common.PasswordEncoder;
+import com.ecommerce.common.enums.AdminStatus;
 
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -47,4 +54,14 @@ public class AdminService {
 		return new AdminInfo(admin.getAdminId(), admin.getEmail(), admin.getRole());
 	}
 
+	public Page<GetAdminResponse> getAdminList(String keyword, AdminRole role, AdminStatus status, Pageable pageable,
+		HttpSession session) {
+		Admin admin = adminRepository.findById((Long)session.getAttribute(AdminConst.ADMIN_ID))
+			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다"));
+		if (!admin.getRole().equals(AdminRole.SUPER_ADMIN)) {
+			throw new IllegalArgumentException("권한이 없습니다");
+		}
+
+		return adminRepository.findAllByCondition(keyword, role, status, pageable).map(GetAdminResponse::from);
+	}
 }
