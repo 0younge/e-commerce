@@ -13,26 +13,44 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * 상품 등록 요청 DTO
+ */
 @Getter
 @RequiredArgsConstructor
 public class ProductRequest {
 
+	/**
+	 * 등록하는 관리자 ID
+	 */
 	@NotNull(message = "관리자 ID는 필수입니다.")
 	private Long adminId;
 
+	/**
+	 * 상품명 (최대 255자)
+	 */
 	@NotBlank(message = "상품명은 필수입니다.")
 	@Size(max = 255)
 	private String name;
 
+	/**
+	 * 카테고리 (최대 50자)
+	 */
 	@NotBlank(message = "카테고리는 필수입니다.")
 	@Size(max = 50)
 	private String category;
 
+	/**
+	 * 가격 (0 이상, 소수점 2자리)
+	 */
 	@NotNull(message = "가격은 필수입니다.")
 	@DecimalMin(value = "0.0")
 	@Digits(integer = 8, fraction = 2)
 	private BigDecimal price;
 
+	/**
+	 * 재고 수량 (0 이상)
+	 */
 	@NotNull(message = "수량은 필수입니다.")
 	@Min(value = 0)
 	private Integer quantity;  // ← 이거 있어야 함!
