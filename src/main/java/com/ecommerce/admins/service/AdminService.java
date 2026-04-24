@@ -59,10 +59,14 @@ public class AdminService {
 		AdminInfo adminInfo = (AdminInfo)session.getAttribute(AdminConst.ADMIN_INFO);
 		Admin admin = adminRepository.findById(adminInfo.getAdminId())
 			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다"));
+		checkRole(admin);
+
+		return adminRepository.findAllByCondition(keyword, role, status, pageable).map(GetAdminResponse::from);
+	}
+
+	public void checkRole(Admin admin) {
 		if (!admin.getRole().equals(AdminRole.SUPER_ADMIN)) {
 			throw new IllegalArgumentException("권한이 없습니다");
 		}
-
-		return adminRepository.findAllByCondition(keyword, role, status, pageable).map(GetAdminResponse::from);
 	}
 }
