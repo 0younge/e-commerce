@@ -1,9 +1,13 @@
 package com.ecommerce.products.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.admins.repository.AdminRepository;
+import com.ecommerce.common.enums.ProductStatus;
 import com.ecommerce.common.exception.InvalidRequestException;
 import com.ecommerce.common.exception.ProductNotFoundException;
 import com.ecommerce.orders.service.OrderService;
@@ -13,7 +17,6 @@ import com.ecommerce.products.dto.ProductResponse;
 import com.ecommerce.products.entity.Product;
 import com.ecommerce.products.repository.ProductRepository;
 
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -51,8 +54,32 @@ public class ProductService {
 		return ProductResponse.from(productRepository.save(newProduct));
 	}
 
-	//상품목록 죄회(검색 + 필터 + 페이징)
+	/**
+	 * 상품 목록 조회 (검색 + 필터 + 페이징)
+	 *
+	 * @param pageable 페이징 정보
+	 * @param name 상품명 검색 (선택)
+	 * @param category 카테고리 필터 (선택)
+	 * @param status 상태 필터 (선택)
+	 * @return Page<ProductResponse> 페이징된 상품 목록
+	 */
+	@Transactional(readOnly = true)
+	public Page<ProductResponse> findAllPaged(
 
+		Pageable pageable,
+		String name,
+		String category,
+		ProductStatus status) {
+
+		Page<Product> productPage = productRepository.searchProducts(
+			name,
+			category,
+			status,
+			pageable
+		);
+
+		return productPage.map(ProductResponse::from);
+	}
 
 	/**
 	 * 상품 상세 조회
