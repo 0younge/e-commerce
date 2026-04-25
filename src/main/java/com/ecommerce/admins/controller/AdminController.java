@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -146,6 +147,19 @@ public class AdminController {
 		adminService.updateStatus(adminId, request, checkSessionOrThrow(session));
 
 		return ResponseEntity.ok().build();
+	}
+
+	/**
+	 * 관리자 삭제
+	 * @param adminId 삭제할 관리자 아이디
+	 * @param session 검증을 위한 세션
+	 * @return 상태코드
+	 */
+	@DeleteMapping("/{adminId}")
+	public ResponseEntity<Void> deleteAdmin(@PathVariable Long adminId, HttpSession session) {
+		adminService.delete(adminId, checkSessionOrThrow(session));
+
+		return ResponseEntity.noContent().build();
 	}
 
 	/**

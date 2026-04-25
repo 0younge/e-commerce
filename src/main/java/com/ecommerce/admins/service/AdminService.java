@@ -138,6 +138,20 @@ public class AdminService {
 	}
 
 	/**
+	 * 관리자 삭제
+	 * @param adminId 삭제할 관리자 아이디
+	 * @param adminInfo 검증을 위한 세션값
+	 */
+	@Transactional
+	public void delete(Long adminId, AdminInfo adminInfo) {
+		checkSuperAdminAndActive(adminInfo);
+
+		Admin admin = findByIdOrThrow(adminId);
+
+		admin.softDelete();
+	}
+
+	/**
 	 * 아이디를 찾아 없을시 예외를 던지는 메서드
 	 * @param adminId 찾을 아이디
 	 * @return 예외처리를 마친 어드민 값
