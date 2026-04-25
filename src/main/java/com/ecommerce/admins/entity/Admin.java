@@ -6,6 +6,7 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
 import com.ecommerce.admins.dto.RejectAdminRequest;
+import com.ecommerce.admins.dto.UpdateMyPasswordRequest;
 import com.ecommerce.common.BaseEntity;
 import com.ecommerce.common.enums.AdminStatus;
 
@@ -84,5 +85,10 @@ public class Admin extends BaseEntity {
 	public void reject(RejectAdminRequest request) {
 		this.status = AdminStatus.REJECTED;
 		this.rejectionReason = request.getRejectionReason();
+		this.rejectedAt = LocalDateTime.now();
+	}
+
+	public void updatePassword(UpdateMyPasswordRequest request) {
+		this.password = request.getPassword();
 	}
 }

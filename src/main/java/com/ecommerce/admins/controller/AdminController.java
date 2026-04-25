@@ -25,6 +25,7 @@ import com.ecommerce.admins.dto.RejectAdminRequest;
 import com.ecommerce.admins.dto.RejectAdminResponse;
 import com.ecommerce.admins.dto.UpdateAdminRequest;
 import com.ecommerce.admins.dto.UpdateMyAdminRequest;
+import com.ecommerce.admins.dto.UpdateMyPasswordRequest;
 import com.ecommerce.admins.dto.UpdateRoleAdminRequest;
 import com.ecommerce.admins.dto.UpdateStatusAdminRequest;
 import com.ecommerce.admins.entity.AdminConst;
@@ -212,6 +213,20 @@ public class AdminController {
 	@PatchMapping("/my")
 	public ResponseEntity<Void> updateMy(@RequestBody @Valid UpdateMyAdminRequest request, HttpSession session) {
 		adminService.updateMy(request, checkSessionOrThrow(session));
+
+		return ResponseEntity.ok().build();
+	}
+
+	/**
+	 * 내 비밀번호 수정
+	 * @param request 변경할 비밀번호
+	 * @param session 검증을 위한 세션
+	 * @return 상태코드
+	 */
+	@PatchMapping("/my/password")
+	public ResponseEntity<Void> updateMyPassword(@RequestBody @Valid UpdateMyPasswordRequest request,
+		HttpSession session) {
+		adminService.updateMyPassword(request, checkSessionOrThrow(session));
 
 		return ResponseEntity.ok().build();
 	}
