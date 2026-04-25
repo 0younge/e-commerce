@@ -21,6 +21,7 @@ import com.ecommerce.admins.dto.GetAdminResponse;
 import com.ecommerce.admins.dto.GetOneAdminResponse;
 import com.ecommerce.admins.dto.LoginAdminRequest;
 import com.ecommerce.admins.dto.UpdateAdminRequest;
+import com.ecommerce.admins.dto.UpdateRoleAdminRequest;
 import com.ecommerce.admins.entity.AdminConst;
 import com.ecommerce.admins.entity.AdminInfo;
 import com.ecommerce.admins.entity.AdminRole;
@@ -109,7 +110,7 @@ public class AdminController {
 	 * @return 상태코드
 	 */
 	@PatchMapping("/{adminId}")
-	public ResponseEntity<Void> updateAdmin(@RequestBody UpdateAdminRequest request, @PathVariable Long adminId,
+	public ResponseEntity<Void> updateAdmin(@RequestBody @Valid UpdateAdminRequest request, @PathVariable Long adminId,
 		HttpSession session) {
 		adminService.update(adminId, request, checkSessionOrThrow(session));
 
@@ -117,9 +118,24 @@ public class AdminController {
 	}
 
 	/**
-	 * 로그인 확인 메서드
+	 * 관리자 역할 변경
+	 * @param request 변경할 역할
+	 * @param adminId 변경할 관리자 아이디
 	 * @param session 검증을 위한 세션
-	 * @return 검증을 마친 세션의 세션값
+	 * @return 상태코드
+	 */
+	@PatchMapping("/{adminId}/role")
+	public ResponseEntity<Void> updateRoleAdmin(@RequestBody @Valid UpdateRoleAdminRequest request,
+		@PathVariable Long adminId, HttpSession session) {
+		adminService.updateRole(adminId, request, checkSessionOrThrow(session));
+
+		return ResponseEntity.ok().build();
+	}
+
+	/**
+	 * 로그인 확인 메서드
+	 * 	 * @param session 검증을 위한 세션
+	 * 	 * @return 검증을 마친 세션의 세션값
 	 */
 	public AdminInfo checkSessionOrThrow(HttpSession session) {
 		AdminInfo adminInfo = (AdminInfo)session.getAttribute(AdminConst.ADMIN_INFO);
