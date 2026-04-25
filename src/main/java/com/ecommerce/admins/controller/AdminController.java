@@ -183,7 +183,7 @@ public class AdminController {
 	 * @param session 검증을 위한 세션
 	 * @return 상태코드
 	 */
-	@PatchMapping("/{adminId/reject}")
+	@PatchMapping("/{adminId}/reject")
 	public ResponseEntity<RejectAdminResponse> rejectAdmin(@PathVariable Long adminId,
 		@RequestBody @Valid RejectAdminRequest request, HttpSession session) {
 		adminService.reject(adminId, request, checkSessionOrThrow(session));
