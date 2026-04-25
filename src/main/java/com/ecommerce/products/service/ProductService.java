@@ -1,8 +1,5 @@
 package com.ecommerce.products.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -10,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.admins.repository.AdminRepository;
-import com.ecommerce.common.exception.BusinessException;
 import com.ecommerce.common.exception.InvalidRequestException;
 import com.ecommerce.common.exception.ProductNotFoundException;
 import com.ecommerce.products.dto.ProductDetailResponse;
@@ -19,7 +15,6 @@ import com.ecommerce.products.dto.ProductResponse;
 import com.ecommerce.products.entity.Product;
 import com.ecommerce.products.repository.ProductRepository;
 
-import at.favre.lib.crypto.bcrypt.IllegalBCryptFormatException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -126,7 +121,7 @@ public class ProductService {
 		Product product = productRepository.findById(id)
 			.orElseThrow(() -> new ProductNotFoundException());
 
-		product.Update(
+		product.update(
 			request.getName(),
 			request.getCategory(),
 			request.getPrice(),

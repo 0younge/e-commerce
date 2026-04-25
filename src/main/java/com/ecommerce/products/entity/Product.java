@@ -3,6 +3,7 @@ package com.ecommerce.products.entity;
 import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.common.BaseEntity;
 import com.ecommerce.common.exception.InvalidRequestException;
+import com.ecommerce.products.dto.ProductRequest;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -51,11 +52,26 @@ public class Product extends BaseEntity {
 		this.admin = admin;
 	}
 
-	public void Update(String name, String category, Long price, Admin admin) {
+	/**
+	 * 상품 정보 수정 (ProductService에서 사용)
+	 * Admin 포함 수정
+	 */
+	public void update(String name, String category, Long price, Admin admin) {
 		this.name = name;
 		this.category = category;
 		this.price = price;
 		this.admin = admin;
+	}
+	/**
+	 * 재고 정보 수정 (Order에서 사용)
+	 * Request 객체로 전체 업데이트
+	 */
+	public void updateQuantity(ProductRequest request) {
+		this.name = request.getName();
+		this.category = request.getCategory();
+		this.price = request.getPrice();
+		this.quantity = request.getQuantity();
+		this.status = request.getStatus();
 	}
 
 	/**
