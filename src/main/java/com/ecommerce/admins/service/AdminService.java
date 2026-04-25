@@ -52,6 +52,7 @@ public class AdminService {
 	public AdminInfo login(@Valid LoginAdminRequest request) {
 		Admin admin = adminRepository.findByEmail(request.getEmail())
 			.orElseThrow(() -> new IllegalArgumentException("존재하는 이메일을 찾을 수 없습니다,"));
+		// TODO: 마지막에 비밀번호 암호화 할 것
 		if (!request.getPassword().equals(admin.getPassword())) {
 			throw new IllegalArgumentException("메일과 비밀번호가 일치하지 않습니다.");
 		}
@@ -152,6 +153,20 @@ public class AdminService {
 	}
 
 	/**
+	 * 관지라 승인
+	 * @param adminId 승인할 관리자 아이디
+	 * @param adminInfo 검증을 위한 세션값
+	 */
+	@Transactional
+	public void approve(Long adminId, AdminInfo adminInfo) {
+		checkSuperAdminAndActive(adminInfo);
+
+		Admin admin = checkStatusPending(adminId);
+
+		admin.approve(admin);
+	}
+
+	/**
 	 * 아이디를 찾아 없을시 예외를 던지는 메서드
 	 * @param adminId 찾을 아이디
 	 * @return 예외처리를 마친 어드민 값
@@ -183,6 +198,17 @@ public class AdminService {
 		}
 		Admin requester = findByIdOrThrow(adminInfo.getAdminId());
 		checkStatusOrThrow(requester);
+	}
+
+	public Admin checkStatusPending(Long adminId) {
+		Admin admin = findByIdOrThrow(adminId);
+		switch (admin.getStatus()) {
+			case INACTIVE -> throw new IllegalArgumentException("계정 비활성화됨");
+			case SUSPENDED -> throw new IllegalArgumentException("계정 정지됨");
+			case ACTIVE -> throw new IllegalArgumentException("이미 계정이 활성상태입니다.");
+			case REJECTED -> throw new IllegalArgumentException("계정 신청 거부됨");
+		}
+		return admin;
 	}
 
 }

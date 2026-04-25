@@ -162,10 +162,17 @@ public class AdminController {
 		return ResponseEntity.noContent().build();
 	}
 
+	@PatchMapping("/{adminId}/approve")
+	public ResponseEntity<Void> approveAdmin(@PathVariable Long adminId, HttpSession session) {
+		adminService.approve(adminId, checkSessionOrThrow(session));
+
+		return ResponseEntity.ok().build();
+	}
+
 	/**
 	 * 로그인 확인 메서드
-	 * 	 * @param session 검증을 위한 세션
-	 * 	 * @return 검증을 마친 세션의 세션값
+	 * @param session 검증을 위한 세션
+	 * @return 검증을 마친 세션의 세션값
 	 */
 	public AdminInfo checkSessionOrThrow(HttpSession session) {
 		AdminInfo adminInfo = (AdminInfo)session.getAttribute(AdminConst.ADMIN_INFO);

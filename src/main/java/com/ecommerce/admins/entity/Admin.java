@@ -75,4 +75,8 @@ public class Admin extends BaseEntity {
 		this.status = status;
 	}
 
+	public void approve(Admin admin) {
+		this.status = AdminStatus.ACTIVE;
+		this.approvedAt = LocalDateTime.now();
+	}
 }
