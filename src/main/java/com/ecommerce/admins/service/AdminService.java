@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ecommerce.admins.dto.CreateAdminRequest;
 import com.ecommerce.admins.dto.GetAdminResponse;
+import com.ecommerce.admins.dto.GetOneAdminResponse;
 import com.ecommerce.admins.dto.LoginAdminRequest;
 import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.admins.entity.AdminConst;
@@ -37,11 +38,11 @@ public class AdminService {
 			request.getAdminRole()));
 	}
 
-	@Transactional
+	@Transactional(readOnly = true)
 	public AdminInfo login(@Valid LoginAdminRequest request, HttpSession session) {
 		Admin admin = adminRepository.findByEmail(request.getEmail())
 			.orElseThrow(() -> new IllegalArgumentException("없는 유저입니다"));
-		if (!passwordEncoder.matches(admin.getPassword(), request.getPassword())) {
+		if (!passwordEncoder.matches(request.getPassword(), admin.getPassword())) {
 			throw new IllegalArgumentException("메일과 비밀번호가 일치하지 않습니다.");
 		}
 		switch (admin.getStatus()) {
@@ -54,19 +55,38 @@ public class AdminService {
 		return new AdminInfo(admin.getAdminId(), admin.getEmail(), admin.getRole());
 	}
 
+	@Transactional(readOnly = true)
 	public Page<GetAdminResponse> getAdminList(String keyword, AdminRole role, AdminStatus status, Pageable pageable,
 		HttpSession session) {
-		AdminInfo adminInfo = (AdminInfo)session.getAttribute(AdminConst.ADMIN_INFO);
-		Admin admin = adminRepository.findById(adminInfo.getAdminId())
-			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다"));
-		checkRole(admin);
+		checkRoleOrThrow(session);
 
 		return adminRepository.findAllByCondition(keyword, role, status, pageable).map(GetAdminResponse::from);
 	}
 
-	public void checkRole(Admin admin) {
+	@Transactional(readOnly = true)
+	public GetOneAdminResponse getOne(Long adminId, HttpSession session) {
+		checkRoleOrThrow(session);
+		Admin admin = findByIdOrThrow(adminId);
+
+		return GetOneAdminResponse.from(admin);
+	}
+
+	@Transactional
+	public Void update(Long adminId, HttpSession session) {
+		checkRoleOrThrow(session);
+
+	}
+
+	public void checkRoleOrThrow(HttpSession session) {
+		AdminInfo adminInfo = (AdminInfo)session.getAttribute(AdminConst.ADMIN_INFO);
+		Admin admin = findByIdOrThrow(adminInfo.getAdminId());
 		if (!admin.getRole().equals(AdminRole.SUPER_ADMIN)) {
 			throw new IllegalArgumentException("권한이 없습니다");
 		}
 	}
+
+	public Admin findByIdOrThrow(Long adminId) {
+		return adminRepository.findById(adminId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+	}
+
 }
