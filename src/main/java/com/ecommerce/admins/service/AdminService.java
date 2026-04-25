@@ -9,15 +9,14 @@ import com.ecommerce.admins.dto.CreateAdminRequest;
 import com.ecommerce.admins.dto.GetAdminResponse;
 import com.ecommerce.admins.dto.GetOneAdminResponse;
 import com.ecommerce.admins.dto.LoginAdminRequest;
+import com.ecommerce.admins.dto.UpdateAdminRequest;
 import com.ecommerce.admins.entity.Admin;
-import com.ecommerce.admins.entity.AdminConst;
 import com.ecommerce.admins.entity.AdminInfo;
 import com.ecommerce.admins.entity.AdminRole;
 import com.ecommerce.admins.repository.AdminRepository;
 import com.ecommerce.common.PasswordEncoder;
 import com.ecommerce.common.enums.AdminStatus;
 
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -39,9 +38,8 @@ public class AdminService {
 	}
 
 	@Transactional(readOnly = true)
-	public AdminInfo login(@Valid LoginAdminRequest request, HttpSession session) {
-		Admin admin = adminRepository.findByEmail(request.getEmail())
-			.orElseThrow(() -> new IllegalArgumentException("없는 유저입니다"));
+	public AdminInfo login(@Valid LoginAdminRequest request, AdminInfo adminInfo) {
+		Admin admin = findByIdOrThrow(adminInfo.getAdminId());
 		if (!passwordEncoder.matches(request.getPassword(), admin.getPassword())) {
 			throw new IllegalArgumentException("메일과 비밀번호가 일치하지 않습니다.");
 		}
@@ -57,30 +55,30 @@ public class AdminService {
 
 	@Transactional(readOnly = true)
 	public Page<GetAdminResponse> getAdminList(String keyword, AdminRole role, AdminStatus status, Pageable pageable,
-		HttpSession session) {
-		checkRoleOrThrow(session);
+		AdminInfo adminInfo) {
+		checkRoleOrThrow(adminInfo);
 
 		return adminRepository.findAllByCondition(keyword, role, status, pageable).map(GetAdminResponse::from);
 	}
 
 	@Transactional(readOnly = true)
-	public GetOneAdminResponse getOne(Long adminId, HttpSession session) {
-		checkRoleOrThrow(session);
+	public GetOneAdminResponse getOne(Long adminId, AdminInfo adminInfo) {
+		checkRoleOrThrow(adminInfo);
 		Admin admin = findByIdOrThrow(adminId);
 
 		return GetOneAdminResponse.from(admin);
 	}
 
 	@Transactional
-	public Void update(Long adminId, HttpSession session) {
-		checkRoleOrThrow(session);
+	public void update(Long adminId, UpdateAdminRequest request, AdminInfo adminInfo) {
+		checkRoleOrThrow(adminInfo);
+		Admin admin = findByIdOrThrow(adminId);
 
+		admin.updateAdmin(request.getName(), request.getEmail(), request.getPhoneNumber());
 	}
 
-	public void checkRoleOrThrow(HttpSession session) {
-		AdminInfo adminInfo = (AdminInfo)session.getAttribute(AdminConst.ADMIN_INFO);
-		Admin admin = findByIdOrThrow(adminInfo.getAdminId());
-		if (!admin.getRole().equals(AdminRole.SUPER_ADMIN)) {
+	public void checkRoleOrThrow(AdminInfo adminInfo) {
+		if (!adminInfo.getRole().equals(AdminRole.SUPER_ADMIN)) {
 			throw new IllegalArgumentException("권한이 없습니다");
 		}
 	}

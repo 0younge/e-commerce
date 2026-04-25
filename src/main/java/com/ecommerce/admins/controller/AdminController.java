@@ -20,6 +20,7 @@ import com.ecommerce.admins.dto.CreateAdminRequest;
 import com.ecommerce.admins.dto.GetAdminResponse;
 import com.ecommerce.admins.dto.GetOneAdminResponse;
 import com.ecommerce.admins.dto.LoginAdminRequest;
+import com.ecommerce.admins.dto.UpdateAdminRequest;
 import com.ecommerce.admins.entity.AdminConst;
 import com.ecommerce.admins.entity.AdminInfo;
 import com.ecommerce.admins.entity.AdminRole;
@@ -46,7 +47,7 @@ public class AdminController {
 
 	@PostMapping("/login")
 	public ResponseEntity<Void> loginAdmin(@RequestBody @Valid LoginAdminRequest request, HttpSession session) {
-		AdminInfo adminInfo = adminService.login(request, session);
+		AdminInfo adminInfo = adminService.login(request, checkSessionOrThrow(session));
 		session.setMaxInactiveInterval(86400); // 세션만료: 24시간
 		session.setAttribute(AdminConst.ADMIN_INFO, adminInfo);
 
@@ -62,18 +63,29 @@ public class AdminController {
 		Pageable pageable = PageRequest.of(page - 1, size,
 			sortOrder.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending());
 
-		return ResponseEntity.ok(adminService.getAdminList(keyword, role, status, pageable, session));
+		return ResponseEntity.ok(
+			adminService.getAdminList(keyword, role, status, pageable, checkSessionOrThrow(session)));
 	}
 
 	@GetMapping("/{adminId}")
 	public ResponseEntity<GetOneAdminResponse> getOneAdmin(@PathVariable Long adminId, HttpSession session) {
-		return ResponseEntity.ok(adminService.getOne(adminId, session));
+		return ResponseEntity.ok(adminService.getOne(adminId, checkSessionOrThrow(session)));
 	}
 
 	@PatchMapping("/{adminId}")
-	public ResponseEntity<Void> updateAdmin(@PathVariable Long adminId, HttpSession session) {
-		AdminInfo adminInfo = (AdminInfo) session.getAttribute(AdminConst.ADMIN_INFO);
-		return ResponseEntity.ok(adminService.update(adminId, session));
+	public ResponseEntity<Void> updateAdmin(@RequestBody UpdateAdminRequest request, @PathVariable Long adminId,
+		HttpSession session) {
+		adminService.update(adminId, request, checkSessionOrThrow(session));
+
+		return ResponseEntity.ok().build();
+	}
+
+	public AdminInfo checkSessionOrThrow(HttpSession session) {
+		AdminInfo adminInfo = (AdminInfo)session.getAttribute(AdminConst.ADMIN_INFO);
+		if (adminInfo == null) {
+			throw new IllegalStateException("로그인이 필요한 작업입니다.");
+		}
+		return adminInfo;
 	}
 
 }
