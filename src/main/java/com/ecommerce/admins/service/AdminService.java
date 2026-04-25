@@ -9,6 +9,7 @@ import com.ecommerce.admins.dto.CreateAdminRequest;
 import com.ecommerce.admins.dto.GetAdminResponse;
 import com.ecommerce.admins.dto.GetOneAdminResponse;
 import com.ecommerce.admins.dto.LoginAdminRequest;
+import com.ecommerce.admins.dto.RejectAdminRequest;
 import com.ecommerce.admins.dto.UpdateAdminRequest;
 import com.ecommerce.admins.dto.UpdateRoleAdminRequest;
 import com.ecommerce.admins.dto.UpdateStatusAdminRequest;
@@ -153,7 +154,7 @@ public class AdminService {
 	}
 
 	/**
-	 * 관지라 승인
+	 * 관리자 승인
 	 * @param adminId 승인할 관리자 아이디
 	 * @param adminInfo 검증을 위한 세션값
 	 */
@@ -163,7 +164,22 @@ public class AdminService {
 
 		Admin admin = checkStatusPending(adminId);
 
-		admin.approve(admin);
+		admin.approve();
+	}
+
+	/**
+	 * 관리자 거부
+	 * @param adminId 거부할 관리자 아이디
+	 * @param request 거부사유
+	 * @param adminInfo 검증을 위한 세션값
+	 */
+	@Transactional
+	public void reject(Long adminId, @Valid RejectAdminRequest request, AdminInfo adminInfo) {
+		checkSuperAdminAndActive(adminInfo);
+
+		Admin admin = checkStatusPending(adminId);
+
+		admin.reject(request);
 	}
 
 	/**

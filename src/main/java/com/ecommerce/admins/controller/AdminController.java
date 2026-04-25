@@ -1,6 +1,5 @@
 package com.ecommerce.admins.controller;
 
-import org.hibernate.Session;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +20,8 @@ import com.ecommerce.admins.dto.CreateAdminRequest;
 import com.ecommerce.admins.dto.GetAdminResponse;
 import com.ecommerce.admins.dto.GetOneAdminResponse;
 import com.ecommerce.admins.dto.LoginAdminRequest;
+import com.ecommerce.admins.dto.RejectAdminRequest;
+import com.ecommerce.admins.dto.RejectAdminResponse;
 import com.ecommerce.admins.dto.UpdateAdminRequest;
 import com.ecommerce.admins.dto.UpdateRoleAdminRequest;
 import com.ecommerce.admins.dto.UpdateStatusAdminRequest;
@@ -162,9 +163,30 @@ public class AdminController {
 		return ResponseEntity.noContent().build();
 	}
 
+	/**
+	 * 관리자 승인
+	 * @param adminId 승인할 관리자 아이디
+	 * @param session 검증을 위한 세션
+	 * @return 상태코드
+	 */
 	@PatchMapping("/{adminId}/approve")
 	public ResponseEntity<Void> approveAdmin(@PathVariable Long adminId, HttpSession session) {
 		adminService.approve(adminId, checkSessionOrThrow(session));
+
+		return ResponseEntity.ok().build();
+	}
+
+	/**
+	 * 관리자 거부
+	 * @param adminId 거부할 관리자 아이디
+	 * @param request 거부사유
+	 * @param session 검증을 위한 세션
+	 * @return 상태코드
+	 */
+	@PatchMapping("/{adminId/reject}")
+	public ResponseEntity<RejectAdminResponse> rejectAdmin(@PathVariable Long adminId,
+		@RequestBody @Valid RejectAdminRequest request, HttpSession session) {
+		adminService.reject(adminId, request, checkSessionOrThrow(session));
 
 		return ResponseEntity.ok().build();
 	}

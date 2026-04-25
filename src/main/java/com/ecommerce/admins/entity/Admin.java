@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
+import com.ecommerce.admins.dto.RejectAdminRequest;
 import com.ecommerce.common.BaseEntity;
 import com.ecommerce.common.enums.AdminStatus;
 
@@ -75,8 +76,13 @@ public class Admin extends BaseEntity {
 		this.status = status;
 	}
 
-	public void approve(Admin admin) {
+	public void approve() {
 		this.status = AdminStatus.ACTIVE;
 		this.approvedAt = LocalDateTime.now();
+	}
+
+	public void reject(RejectAdminRequest request) {
+		this.status = AdminStatus.REJECTED;
+		this.rejectionReason = request.getRejectionReason();
 	}
 }
