@@ -12,6 +12,7 @@ import com.ecommerce.admins.dto.GetOneAdminResponse;
 import com.ecommerce.admins.dto.LoginAdminRequest;
 import com.ecommerce.admins.dto.RejectAdminRequest;
 import com.ecommerce.admins.dto.UpdateAdminRequest;
+import com.ecommerce.admins.dto.UpdateMyAdminRequest;
 import com.ecommerce.admins.dto.UpdateRoleAdminRequest;
 import com.ecommerce.admins.dto.UpdateStatusAdminRequest;
 import com.ecommerce.admins.entity.Admin;
@@ -195,6 +196,20 @@ public class AdminService {
 		Admin admin = findByIdOrThrow(adminInfo.getAdminId());
 
 		return GetMyAdminResponse.from(admin);
+	}
+
+	/**
+	 * 내 프로필 수정
+	 * @param request 수정할 이름, 이메일, 전화번호
+	 * @param adminInfo 검증을 위한 세션
+	 */
+	@Transactional
+	public void updateMy(@Valid UpdateMyAdminRequest request, AdminInfo adminInfo) {
+		checkSuperAdminAndActive(adminInfo);
+
+		Admin admin = findByIdOrThrow(adminInfo.getAdminId());
+
+		admin.updateAdmin(request.getName(), request.getEmail(), request.getPhoneNumber());
 	}
 
 	/**

@@ -24,6 +24,7 @@ import com.ecommerce.admins.dto.LoginAdminRequest;
 import com.ecommerce.admins.dto.RejectAdminRequest;
 import com.ecommerce.admins.dto.RejectAdminResponse;
 import com.ecommerce.admins.dto.UpdateAdminRequest;
+import com.ecommerce.admins.dto.UpdateMyAdminRequest;
 import com.ecommerce.admins.dto.UpdateRoleAdminRequest;
 import com.ecommerce.admins.dto.UpdateStatusAdminRequest;
 import com.ecommerce.admins.entity.AdminConst;
@@ -200,6 +201,19 @@ public class AdminController {
 	@GetMapping("/my")
 	public ResponseEntity<GetMyAdminResponse> getMy(HttpSession session) {
 		return ResponseEntity.ok(adminService.getMy(checkSessionOrThrow(session)));
+	}
+
+	/**
+	 * 내 프로필 수정
+	 * @param request 수정할 이름, 메일, 전화번호
+	 * @param session 검증을 위한 세션
+	 * @return 상태코드
+	 */
+	@PatchMapping("/my")
+	public ResponseEntity<Void> updateMy(@RequestBody @Valid UpdateMyAdminRequest request, HttpSession session) {
+		adminService.updateMy(request, checkSessionOrThrow(session));
+
+		return ResponseEntity.ok().build();
 	}
 
 	/**
