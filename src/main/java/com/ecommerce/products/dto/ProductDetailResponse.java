@@ -9,8 +9,8 @@ public record ProductDetailResponse(
 	Long productId,
 	String name,
 	String category,
-	Long price,  // ← BigDecimal → Long
-	Long quantity,  // ← Integer → Long
+	Long price,
+	Long quantity,
 	String status,
 
 	Long adminId,
