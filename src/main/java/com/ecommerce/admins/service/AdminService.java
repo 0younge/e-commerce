@@ -52,7 +52,7 @@ public class AdminService {
 	public AdminInfo login(@Valid LoginAdminRequest request) {
 		Admin admin = adminRepository.findByEmail(request.getEmail())
 			.orElseThrow(() -> new IllegalArgumentException("존재하는 이메일을 찾을 수 없습니다,"));
-		if (!passwordEncoder.matches(request.getPassword(), admin.getPassword())) {
+		if (!request.getPassword().equals(admin.getPassword())) {
 			throw new IllegalArgumentException("메일과 비밀번호가 일치하지 않습니다.");
 		}
 		checkStatusOrThrow(admin);
