@@ -232,6 +232,19 @@ public class AdminController {
 	}
 
 	/**
+	 * 로그아웃
+	 * @param session 검증을 위한 세션
+	 * @return 상태코드
+	 */
+	@PostMapping("/logout")
+	public ResponseEntity<Void> logoutAdmin(HttpSession session) {
+		checkSessionOrThrow(session);
+		session.invalidate();
+
+		return ResponseEntity.ok().build();
+	}
+
+	/**
 	 * 로그인 확인 메서드
 	 * @param session 검증을 위한 세션
 	 * @return 검증을 마친 세션의 세션값
