@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ecommerce.admins.dto.CreateAdminRequest;
 import com.ecommerce.admins.dto.GetAdminResponse;
+import com.ecommerce.admins.dto.GetMyAdminResponse;
 import com.ecommerce.admins.dto.GetOneAdminResponse;
 import com.ecommerce.admins.dto.LoginAdminRequest;
 import com.ecommerce.admins.dto.RejectAdminRequest;
@@ -183,6 +184,20 @@ public class AdminService {
 	}
 
 	/**
+	 * 내 프로필 조회
+	 * @param adminInfo 검증을 위한 세션 값
+	 * @return 로그인한 본인 슈퍼관리자 이름, 메일, 전화번호 반환
+	 */
+	@Transactional
+	public GetMyAdminResponse getMy(AdminInfo adminInfo) {
+		checkSuperAdminAndActive(adminInfo);
+
+		Admin admin = findByIdOrThrow(adminInfo.getAdminId());
+
+		return GetMyAdminResponse.from(admin);
+	}
+
+	/**
 	 * 아이디를 찾아 없을시 예외를 던지는 메서드
 	 * @param adminId 찾을 아이디
 	 * @return 예외처리를 마친 어드민 값
@@ -216,6 +231,11 @@ public class AdminService {
 		checkStatusOrThrow(requester);
 	}
 
+	/**
+	 * 승인대기외 상태를 검증
+	 * @param adminId 검증할 아이디
+	 * @return 검증을 마친 어드민 값
+	 */
 	public Admin checkStatusPending(Long adminId) {
 		Admin admin = findByIdOrThrow(adminId);
 		switch (admin.getStatus()) {

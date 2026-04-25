@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ecommerce.admins.dto.CreateAdminRequest;
 import com.ecommerce.admins.dto.GetAdminResponse;
+import com.ecommerce.admins.dto.GetMyAdminResponse;
 import com.ecommerce.admins.dto.GetOneAdminResponse;
 import com.ecommerce.admins.dto.LoginAdminRequest;
 import com.ecommerce.admins.dto.RejectAdminRequest;
@@ -189,6 +190,16 @@ public class AdminController {
 		adminService.reject(adminId, request, checkSessionOrThrow(session));
 
 		return ResponseEntity.ok().build();
+	}
+
+	/**
+	 * 내 프로필 조회
+	 * @param session 검증을 위한 세션
+	 * @return 내 이름, 메일, 전화번호 반환
+	 */
+	@GetMapping("/my")
+	public ResponseEntity<GetMyAdminResponse> getMy(HttpSession session) {
+		return ResponseEntity.ok(adminService.getMy(checkSessionOrThrow(session)));
 	}
 
 	/**
