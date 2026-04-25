@@ -64,7 +64,8 @@ public class ProductController {
 		Pageable pageable,
 		@RequestParam(required = false) String name,
 		@RequestParam(required = false) String category,
-		@RequestParam(required = false) String status) {  // ← ProductStatus → String
+		@RequestParam(required = false) String status) {
+
 
 		Page<ProductResponse> response = productService.findAllPaged(
 			pageable,
