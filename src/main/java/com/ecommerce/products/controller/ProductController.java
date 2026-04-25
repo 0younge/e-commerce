@@ -1,12 +1,16 @@
 package com.ecommerce.products.controller;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,6 +22,7 @@ import com.ecommerce.products.dto.ProductResponse;
 import com.ecommerce.products.service.ProductService;
 
 import jakarta.validation.Valid;
+import jakarta.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -66,7 +71,6 @@ public class ProductController {
 		@RequestParam(required = false) String category,
 		@RequestParam(required = false) String status) {
 
-
 		Page<ProductResponse> response = productService.findAllPaged(
 			pageable,
 			name,
@@ -84,10 +88,43 @@ public class ProductController {
 	 * @param productId 상품 ID
 	 * @return 200 OK, 상품 상세 정보 (관리자 정보 포함)
 	 */
-	@GetMapping("/{productId}")  // ← Id → productId
-	public ResponseEntity<ProductDetailResponse> getProductDetail(  // ← getProductDatall → getProductDetail
-		@PathVariable Long productId) {  // ← Id → productId, @Valid 삭제
+	@GetMapping("/{productId}")
+	public ResponseEntity<ProductDetailResponse> getProductDetail(
+		@PathVariable Long productId) {
 
-		return ResponseEntity.ok(productService.getProductDetail(productId));  // ← getProductDatall → getProductDetail
+		return ResponseEntity.ok(productService.getProductDetail(productId));
+	}
+
+
+	/**
+	 * 상품 수정
+	 * PUT /products/{id}
+	 *
+	 * @param id 수정할 상품 ID
+	 * @param request 수정할 상품 정보
+	 * @return 수정된 상품 정보
+	 */
+	@PutMapping("/{id}")
+	public ProductResponse update(@Valid
+		@PathVariable Long id,
+		@RequestBody ProductRequest request) {
+
+		return productService.update(id,request);
+	}
+
+	/**
+	 * 상품 삭제
+	 * DELETE /products/{productId}?adminId={adminId}
+	 *
+	 * @param productId 삭제할 상품 ID
+	 * @param adminId 요청한 관리자 ID
+	 * @return 204 No Content
+	 */
+	@DeleteMapping("/{productId}")
+	public  ResponseEntity<Void> delete(@PathVariable Long productId, @RequestParam Long adminId){
+
+		productService.delete(productId, adminId);
+
+		return ResponseEntity.noContent().build();
 	}
 }
