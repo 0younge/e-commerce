@@ -11,6 +11,7 @@ import com.ecommerce.admins.dto.GetOneAdminResponse;
 import com.ecommerce.admins.dto.LoginAdminRequest;
 import com.ecommerce.admins.dto.UpdateAdminRequest;
 import com.ecommerce.admins.dto.UpdateRoleAdminRequest;
+import com.ecommerce.admins.dto.UpdateStatusAdminRequest;
 import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.admins.entity.AdminInfo;
 import com.ecommerce.admins.entity.AdminRole;
@@ -116,9 +117,24 @@ public class AdminService {
 	public void updateRole(Long adminId, @Valid UpdateRoleAdminRequest request, AdminInfo adminInfo) {
 		checkSuperAdminAndActive(adminInfo);
 
-		Admin target = findByIdOrThrow(adminId);
+		Admin admin = findByIdOrThrow(adminId);
 
-		target.updateRole(request.getRole());
+		admin.updateRole(request.getRole());
+	}
+
+	/**
+	 * 관리자 상태 변경
+	 * @param adminId 변경할 관리자 아이디
+	 * @param request 변경할 상태
+	 * @param adminInfo 검증을 위한 세션값
+	 */
+	@Transactional
+	public void updateStatus(Long adminId, @Valid UpdateStatusAdminRequest request, AdminInfo adminInfo) {
+		checkSuperAdminAndActive(adminInfo);
+
+		Admin admin = findByIdOrThrow(adminId);
+
+		admin.updateStatus(request.getStatus());
 	}
 
 	/**

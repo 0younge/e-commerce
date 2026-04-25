@@ -22,6 +22,7 @@ import com.ecommerce.admins.dto.GetOneAdminResponse;
 import com.ecommerce.admins.dto.LoginAdminRequest;
 import com.ecommerce.admins.dto.UpdateAdminRequest;
 import com.ecommerce.admins.dto.UpdateRoleAdminRequest;
+import com.ecommerce.admins.dto.UpdateStatusAdminRequest;
 import com.ecommerce.admins.entity.AdminConst;
 import com.ecommerce.admins.entity.AdminInfo;
 import com.ecommerce.admins.entity.AdminRole;
@@ -128,6 +129,21 @@ public class AdminController {
 	public ResponseEntity<Void> updateRoleAdmin(@RequestBody @Valid UpdateRoleAdminRequest request,
 		@PathVariable Long adminId, HttpSession session) {
 		adminService.updateRole(adminId, request, checkSessionOrThrow(session));
+
+		return ResponseEntity.ok().build();
+	}
+
+	/**
+	 * 관리자 상태 변경
+	 * @param request 변경할 상태
+	 * @param adminId 변경할 관리자 아이디
+	 * @param session 검증을 위한 세션
+	 * @return 상태코드
+	 */
+	@PatchMapping("/{adminId}/status")
+	public ResponseEntity<Void> updateStatusAdmin(@RequestBody @Valid UpdateStatusAdminRequest request,
+		@PathVariable Long adminId, HttpSession session) {
+		adminService.updateStatus(adminId, request, checkSessionOrThrow(session));
 
 		return ResponseEntity.ok().build();
 	}
