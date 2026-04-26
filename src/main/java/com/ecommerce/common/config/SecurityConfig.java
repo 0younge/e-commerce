@@ -34,22 +34,22 @@ public class SecurityConfig {
 			.authorizeHttpRequests(auth -> auth
 				// 공개 API
 				.requestMatchers(
-					"/api/admins/signup",
-					"/api/admins/login",
-					"/api/health"
+					"/admins/signup",
+					"/admins/login",
+					"/health"
 				).permitAll()
 
 				// 관리자 도메인: 일단 로그인한 관리자만
-				.requestMatchers("/api/admins/**").authenticated()
+				.requestMatchers("/admins/**").authenticated()
 
 				// 상품 도메인: 일단 로그인한 관리자만
-				.requestMatchers("/api/products/**").authenticated()
+				.requestMatchers("/products/**").authenticated()
 
 				// 주문 도메인: 일단 로그인한 관리자만
-				.requestMatchers("/api/orders/**").authenticated()
+				.requestMatchers("/orders/**").authenticated()
 
 				// 고객 도메인: 일단 로그인한 관리자만
-				.requestMatchers("/api/customers/**").authenticated()
+				.requestMatchers("/customers/**").authenticated()
 
 				// 나머지 요청은 전부 인증 필요
 				.anyRequest().authenticated()
