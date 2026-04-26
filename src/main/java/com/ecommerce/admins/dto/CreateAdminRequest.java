@@ -24,14 +24,14 @@ public class CreateAdminRequest {
 	private final String phoneNumber;
 	@NotBlank(message = "역할은 필수로 작성해야합니다.")
 	@Pattern(regexp = "^(SUPER_ADMIN|OPERATION_ADMIN|CS_ADMIN)$", message = "SUPER_ADMIN|OPERATION_ADMIN|CS_ADMIN중에서 선택해야 합니다.")
-	private final AdminRole role;
+	private final AdminRole adminRole;
 
-	public CreateAdminRequest(String name, String email, String password, String phoneNumber, AdminRole role) {
+	public CreateAdminRequest(String name, String email, String password, String phoneNumber, AdminRole adminRole) {
 		this.name = name;
 		this.email = email;
 		this.password = password;
 		this.phoneNumber = phoneNumber;
-		this.role = role;
+		this.adminRole = adminRole;
 	}
 
 }
