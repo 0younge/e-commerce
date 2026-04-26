@@ -192,7 +192,7 @@ public class AdminController {
 	public ResponseEntity<RejectAdminResponse> rejectAdmin(@PathVariable Long adminId,
 		@RequestBody @Valid RejectAdminRequest request, HttpSession session) {
 
-		return ResponseEntity.ok(adminService.reject(adminId, request, checkSessionOrThrow(session)););
+		return ResponseEntity.ok(adminService.reject(adminId, request, checkSessionOrThrow(session)));
 	}
 
 	/**
