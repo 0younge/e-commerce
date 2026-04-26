@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ecommerce.common.enums.UserStatus;
+import com.ecommerce.common.exception.InvalidRequestException;
 import com.ecommerce.users.dto.GetOneUserResponse;
 import com.ecommerce.users.dto.GetPageResponse;
 import com.ecommerce.users.dto.GetUserResponse;
@@ -50,6 +51,9 @@ public class UserController {
 		@RequestParam(required = false, defaultValue = "ASC") String sortOrder,
 		@RequestParam(required = false) UserStatus status
 	) {
+		if (page < 1) {
+			throw new InvalidRequestException("페이지는 1 이상이어야 합니다.");
+		}
 		Pageable pageable = PageRequest.of(page - 1, size, Sort.Direction.valueOf(sortOrder), sortBy);
 		Page<GetUserResponse> result = userService.findByKeywordAndStatus(keyword, status, pageable);
 		return ResponseEntity.status(HttpStatus.OK).body(GetPageResponse.of(result));
