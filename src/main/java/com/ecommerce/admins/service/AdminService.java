@@ -16,7 +16,7 @@ import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.admins.entity.AdminInfo;
 import com.ecommerce.admins.entity.AdminRole;
 import com.ecommerce.admins.repository.AdminRepository;
-import com.ecommerce.common.PasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import com.ecommerce.common.enums.AdminStatus;
 
 import jakarta.validation.Valid;
