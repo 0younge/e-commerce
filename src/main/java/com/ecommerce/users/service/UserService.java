@@ -53,7 +53,7 @@ public class UserService {
 	public PatchUserResponse patchUserDetails(Long userId, PatchUserRequest patchUserRequest) {
 		User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException());
 
-		user.updateDetails(patchUserRequest.getName(), patchUserRequest.getEmail(), patchUserRequest.getEmail());
+		user.updateDetails(patchUserRequest.getName(), patchUserRequest.getEmail(), patchUserRequest.getPhoneNumber());
 		return new PatchUserResponse(user.getUserId(),
 			user.getName(),
 			user.getEmail(),
