@@ -11,6 +11,7 @@ import com.ecommerce.admins.dto.GetMyAdminResponse;
 import com.ecommerce.admins.dto.GetOneAdminResponse;
 import com.ecommerce.admins.dto.LoginAdminRequest;
 import com.ecommerce.admins.dto.RejectAdminRequest;
+import com.ecommerce.admins.dto.RejectAdminResponse;
 import com.ecommerce.admins.dto.UpdateAdminRequest;
 import com.ecommerce.admins.dto.UpdateMyAdminRequest;
 import com.ecommerce.admins.dto.UpdateMyPasswordRequest;
@@ -179,11 +180,12 @@ public class AdminService {
 	 * @param adminInfo 검증을 위한 세션값
 	 */
 	@Transactional
-	public void reject(Long adminId, @Valid RejectAdminRequest request, AdminInfo adminInfo) {
+	public RejectAdminResponse reject(Long adminId, @Valid RejectAdminRequest request, AdminInfo adminInfo) {
 		checkSuperAdminAndActive(adminInfo);
 		Admin admin = checkStatusPending(adminId);
 
 		admin.reject(request);
+		return RejectAdminResponse.from(admin);
 	}
 
 	/**
