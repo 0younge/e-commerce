@@ -28,6 +28,7 @@ import com.ecommerce.admins.dto.UpdateMyAdminRequest;
 import com.ecommerce.admins.dto.UpdateMyPasswordRequest;
 import com.ecommerce.admins.dto.UpdateRoleAdminRequest;
 import com.ecommerce.admins.dto.UpdateStatusAdminRequest;
+import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.admins.entity.AdminConst;
 import com.ecommerce.admins.entity.AdminInfo;
 import com.ecommerce.admins.entity.AdminRole;
@@ -212,7 +213,8 @@ public class AdminController {
 	 */
 	@PatchMapping("/my")
 	public ResponseEntity<Void> updateMy(@RequestBody @Valid UpdateMyAdminRequest request, HttpSession session) {
-		adminService.updateMy(request, checkSessionOrThrow(session));
+		AdminInfo adminInfo = adminService.updateMy(request, checkSessionOrThrow(session));
+		session.setAttribute(AdminConst.ADMIN_INFO, adminInfo);
 
 		return ResponseEntity.ok().build();
 	}

@@ -22,6 +22,9 @@ import com.ecommerce.admins.entity.AdminRole;
 import com.ecommerce.admins.repository.AdminRepository;
 import com.ecommerce.common.PasswordEncoder;
 import com.ecommerce.common.enums.AdminStatus;
+import com.ecommerce.common.exception.AccessDeniedException;
+import com.ecommerce.common.exception.DuplicateResourceException;
+import com.ecommerce.common.exception.LoginFailedException;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -40,11 +43,14 @@ public class AdminService {
 	@Transactional
 	public void save(@Valid CreateAdminRequest request) {
 		if (adminRepository.existsByEmail(request.getEmail())) {
-			throw new IllegalArgumentException("이미 사용중인 메일입니다.");
+			throw new DuplicateResourceException("이미 사용중인 메일입니다.");
 		}
+		// TODO: request.getPassword를 encodedPassword로 바꾸기
 		String encodedPassword = passwordEncoder.encode(request.getPassword());
-		adminRepository.save(new Admin(request.getName(), request.getEmail(), encodedPassword, request.getPhoneNumber(),
-			request.getRole()));
+		AdminRole requestRole = AdminRole.valueOf(request.getRole());
+		adminRepository.save(
+			new Admin(request.getName(), request.getEmail(), request.getPassword(), request.getPhoneNumber(),
+				requestRole));
 	}
 
 	/**
@@ -58,7 +64,7 @@ public class AdminService {
 			.orElseThrow(() -> new IllegalArgumentException("존재하는 이메일을 찾을 수 없습니다,"));
 		// TODO: 마지막에 비밀번호 암호화 할 것
 		if (!request.getPassword().equals(admin.getPassword())) {
-			throw new IllegalArgumentException("메일과 비밀번호가 일치하지 않습니다.");
+			throw new LoginFailedException();
 		}
 		checkStatusOrThrow(admin);
 
@@ -91,7 +97,6 @@ public class AdminService {
 	@Transactional(readOnly = true)
 	public GetOneAdminResponse getOne(Long adminId, AdminInfo adminInfo) {
 		checkSuperAdminAndActive(adminInfo);
-
 		Admin admin = findByIdOrThrow(adminId);
 
 		return GetOneAdminResponse.from(admin);
@@ -106,7 +111,6 @@ public class AdminService {
 	@Transactional
 	public void update(Long adminId, UpdateAdminRequest request, AdminInfo adminInfo) {
 		checkSuperAdminAndActive(adminInfo);
-
 		Admin admin = findByIdOrThrow(adminId);
 
 		admin.updateAdmin(request.getName(), request.getEmail(), request.getPhoneNumber());
@@ -121,10 +125,10 @@ public class AdminService {
 	@Transactional
 	public void updateRole(Long adminId, @Valid UpdateRoleAdminRequest request, AdminInfo adminInfo) {
 		checkSuperAdminAndActive(adminInfo);
-
 		Admin admin = findByIdOrThrow(adminId);
+		AdminRole requestRole = AdminRole.valueOf(request.getRole());
 
-		admin.updateRole(request.getRole());
+		admin.updateRole(requestRole);
 	}
 
 	/**
@@ -136,10 +140,10 @@ public class AdminService {
 	@Transactional
 	public void updateStatus(Long adminId, @Valid UpdateStatusAdminRequest request, AdminInfo adminInfo) {
 		checkSuperAdminAndActive(adminInfo);
-
 		Admin admin = findByIdOrThrow(adminId);
+		AdminStatus requestStatus = AdminStatus.valueOf(request.getStatus());
 
-		admin.updateStatus(request.getStatus());
+		admin.updateStatus(requestStatus);
 	}
 
 	/**
@@ -150,7 +154,6 @@ public class AdminService {
 	@Transactional
 	public void delete(Long adminId, AdminInfo adminInfo) {
 		checkSuperAdminAndActive(adminInfo);
-
 		Admin admin = findByIdOrThrow(adminId);
 
 		admin.softDelete();
@@ -164,7 +167,6 @@ public class AdminService {
 	@Transactional
 	public void approve(Long adminId, AdminInfo adminInfo) {
 		checkSuperAdminAndActive(adminInfo);
-
 		Admin admin = checkStatusPending(adminId);
 
 		admin.approve();
@@ -179,7 +181,6 @@ public class AdminService {
 	@Transactional
 	public void reject(Long adminId, @Valid RejectAdminRequest request, AdminInfo adminInfo) {
 		checkSuperAdminAndActive(adminInfo);
-
 		Admin admin = checkStatusPending(adminId);
 
 		admin.reject(request);
@@ -193,7 +194,6 @@ public class AdminService {
 	@Transactional
 	public GetMyAdminResponse getMy(AdminInfo adminInfo) {
 		checkSuperAdminAndActive(adminInfo);
-
 		Admin admin = findByIdOrThrow(adminInfo.getAdminId());
 
 		return GetMyAdminResponse.from(admin);
@@ -205,12 +205,12 @@ public class AdminService {
 	 * @param adminInfo 검증을 위한 세션
 	 */
 	@Transactional
-	public void updateMy(@Valid UpdateMyAdminRequest request, AdminInfo adminInfo) {
+	public AdminInfo updateMy(@Valid UpdateMyAdminRequest request, AdminInfo adminInfo) {
 		checkSuperAdminAndActive(adminInfo);
-
 		Admin admin = findByIdOrThrow(adminInfo.getAdminId());
-
 		admin.updateAdmin(request.getName(), request.getEmail(), request.getPhoneNumber());
+
+		return new AdminInfo(admin.getAdminId(), admin.getEmail(), admin.getRole());
 	}
 
 	/**
@@ -221,10 +221,12 @@ public class AdminService {
 	@Transactional
 	public void updateMyPassword(@Valid UpdateMyPasswordRequest request, AdminInfo adminInfo) {
 		checkSuperAdminAndActive(adminInfo);
-
 		Admin admin = findByIdOrThrow(adminInfo.getAdminId());
+		if (!admin.getPassword().equals(request.getPassword())) {
+			throw new AccessDeniedException("비밀번호가 일치하지 않습니다.");
+		}
 
-		admin.updatePassword(request);
+		admin.updatePassword(request.getNewPassword());
 	}
 
 	/**
@@ -255,7 +257,7 @@ public class AdminService {
 	 */
 	public void checkSuperAdminAndActive(AdminInfo adminInfo) {
 		if (!adminInfo.getRole().equals(AdminRole.SUPER_ADMIN)) {
-			throw new IllegalArgumentException("권한이 없습니다");
+			throw new AccessDeniedException("권한이 없습니다");
 		}
 		Admin requester = findByIdOrThrow(adminInfo.getAdminId());
 		checkStatusOrThrow(requester);

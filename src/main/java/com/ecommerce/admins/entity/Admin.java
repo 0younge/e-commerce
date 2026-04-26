@@ -88,7 +88,7 @@ public class Admin extends BaseEntity {
 		this.rejectedAt = LocalDateTime.now();
 	}
 
-	public void updatePassword(UpdateMyPasswordRequest request) {
-		this.password = request.getPassword();
+	public void updatePassword(String newPassword) {
+		this.password = newPassword;
 	}
 }
