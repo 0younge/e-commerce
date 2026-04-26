@@ -7,13 +7,13 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class GetOrderListResponse {
-	private final Long id;
-	private final String Number;
-	private final Long userId;
-	private final Long productId;
+public class GetOrderAllResponse {
+	private final Long orderId;
+	private final String number;
+	private final String userName;
+	private final String productName;
 	private final Long quantity;
 	private final Long totalPrice;
 	private final OrderStatus status;
-	private final Long adminId;
+	private final String adminName;
 }

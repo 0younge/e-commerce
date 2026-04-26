@@ -16,7 +16,7 @@ public class CreateOrderResponse {
 	private final Long productId;
 	private final Long adminId;
 	private final Long quantity;
-	private final OrderStatus status;
 	private final Long totalPrice;
+	private final OrderStatus status;
 	private final LocalDateTime createdAt;
 }
