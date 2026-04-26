@@ -8,7 +8,9 @@ import org.hibernate.annotations.SQLRestriction;
 
 import com.ecommerce.common.BaseEntity;
 import com.ecommerce.common.enums.UserStatus;
+import com.ecommerce.orders.entity.Order;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -16,6 +18,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -45,6 +48,9 @@ public class User extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private UserStatus status = UserStatus.ACTIVE;
+
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+	private List<Order> orders = new ArrayList<>();
 
 	public User(String name, String email, String phoneNumber, UserStatus status) {
 		this.name = name;
