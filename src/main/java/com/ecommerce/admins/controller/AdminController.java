@@ -21,6 +21,7 @@ import com.ecommerce.admins.dto.CreateAdminRequest;
 import com.ecommerce.admins.dto.GetAdminResponse;
 import com.ecommerce.admins.dto.GetOneAdminResponse;
 import com.ecommerce.admins.dto.LoginAdminRequest;
+import com.ecommerce.admins.dto.LoginAdminResponse;
 import com.ecommerce.admins.dto.UpdateAdminRequest;
 import com.ecommerce.admins.dto.UpdateRoleAdminRequest;
 import com.ecommerce.admins.dto.UpdateStatusAdminRequest;
@@ -54,18 +55,15 @@ public class AdminController {
 	}
 
 	/**
-	 * 로그인
-	 * @param request 로그인에 필요한 정보
-	 * @param session 검증을 위한 세션
-	 * @return 상태코드
+	 *
+	 * @param request
+	 * @return 서비스 로직에서 생성된 JWT 반환
 	 */
 	@PostMapping("/login")
-	public ResponseEntity<Void> loginAdmin(@RequestBody @Valid LoginAdminRequest request, HttpSession session) {
-		AdminInfo adminInfo = adminService.login(request);
-		session.setMaxInactiveInterval(86400); // 세션만료: 24시간
-		session.setAttribute(AdminConst.ADMIN_INFO, adminInfo);
+	public ResponseEntity<LoginAdminResponse> loginAdmin(@RequestBody @Valid LoginAdminRequest request) {
+		LoginAdminResponse response = adminService.login(request);
 
-		return ResponseEntity.ok().build();
+		return ResponseEntity.ok(response);
 	}
 
 	/**
