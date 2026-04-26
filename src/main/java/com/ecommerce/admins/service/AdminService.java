@@ -72,14 +72,9 @@ public class AdminService {
 
 		return new LoginAdminResponse(
 			admin.getAdminId(),
-			admin.getName(),
 			admin.getEmail(),
-			admin.getPhoneNumber(),
 			admin.getRole().name(),
-			admin.getStatus(),
-			accessToken,
-			admin.getCreatedAt(),
-			admin.getApprovedAt()
+			accessToken
 		);
 	}
 
