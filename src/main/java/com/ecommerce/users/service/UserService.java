@@ -58,7 +58,7 @@ public class UserService {
 	 */
 	@Transactional(readOnly = true)
 	public GetOneUserResponse findUserDetails(Long userId) {
-		User user = userRepository.findById(userId)
+		User user = userRepository.findByIdWithOrders(userId)
 			.orElseThrow(() -> new UserNotFoundException());
 
 		return GetOneUserResponse.from(user);
