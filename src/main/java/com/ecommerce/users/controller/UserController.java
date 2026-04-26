@@ -85,7 +85,7 @@ public class UserController {
 	 */
 	@PatchMapping("/users/{userId}/status")
 	public ResponseEntity<PatchUserResponse> patchUserStatus(@PathVariable Long userId,
-		@RequestBody PatchUserStatusRequest patchUserStatusRequest) {
+		@Valid @RequestBody PatchUserStatusRequest patchUserStatusRequest) {
 		return ResponseEntity.status(HttpStatus.OK).body(userService.patchUserStatus(userId, patchUserStatusRequest));
 	}
 
