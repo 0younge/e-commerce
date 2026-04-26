@@ -3,7 +3,6 @@ package com.ecommerce.products.entity;
 import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.common.BaseEntity;
 import com.ecommerce.common.exception.InvalidRequestException;
-import com.ecommerce.products.dto.ProductRequest;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -73,15 +72,20 @@ public class Product extends BaseEntity {
 	 * @param quantity 변경할 재고 수량
 	 */
 	public void updateQuantity(Long quantity) {
+
+		if (quantity < 0) {
+			throw new InvalidRequestException("재고는 0 이상이어야 합니다.");
+		}
 		this.quantity = quantity;
 
-		// 상태 자동 변경
-		if (this.quantity == 0) {
-			this.status = "SOLD_OUT";
-		} else if (this.quantity > 0) {
-			this.status = "FOR_SALE";
+		// DISCONTINUED 상태가 아닐 때만 자동 변경
+		if (!this.status.equals("DISCONTINUED")) {
+			if (this.quantity == 0) {
+				this.status = "SOLD_OUT";
+			} else if (this.quantity > 0) {
+				this.status = "FOR_SALE";
+			}
 		}
-		// DISCONTINUED는 수동으로만 변경
 	}
 
 	/**
