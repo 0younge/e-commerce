@@ -8,11 +8,19 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.ecommerce.common.security.jwt.JwtAuthenticationFilter;
+
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 
 public class SecurityConfig {
+	private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
@@ -32,7 +40,6 @@ public class SecurityConfig {
 
 			// 5. API별 접근 정책
 			.authorizeHttpRequests(auth -> auth
-				// 공개 API
 				.requestMatchers(
 					"/admins/signup",
 					"/admins/login",
@@ -49,11 +56,12 @@ public class SecurityConfig {
 				.requestMatchers("/orders/**").authenticated()
 
 				// 고객 도메인: 일단 로그인한 관리자만
-				.requestMatchers("/customers/**").authenticated()
+				.requestMatchers("/users/**").authenticated()
 
 				// 나머지 요청은 전부 인증 필요
 				.anyRequest().authenticated()
-			);
+			)
+			.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
 	}
