@@ -191,7 +191,7 @@ public class AdminService {
 	 * @param adminInfo 검증을 위한 세션 값
 	 * @return 로그인한 본인 슈퍼관리자 이름, 메일, 전화번호 반환
 	 */
-	@Transactional
+	@Transactional(readOnly = true)
 	public GetMyAdminResponse getMy(AdminInfo adminInfo) {
 		checkSuperAdminAndActive(adminInfo);
 		Admin admin = findByIdOrThrow(adminInfo.getAdminId());

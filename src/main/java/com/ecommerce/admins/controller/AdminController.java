@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -173,7 +174,7 @@ public class AdminController {
 	 * @param session 검증을 위한 세션
 	 * @return 상태코드
 	 */
-	@PatchMapping("/{adminId}/approve")
+	@PostMapping("/{adminId}/approve")
 	public ResponseEntity<Void> approveAdmin(@PathVariable Long adminId, HttpSession session) {
 		adminService.approve(adminId, checkSessionOrThrow(session));
 
@@ -187,7 +188,7 @@ public class AdminController {
 	 * @param session 검증을 위한 세션
 	 * @return 상태코드
 	 */
-	@PatchMapping("/{adminId}/reject")
+	@PostMapping("/{adminId}/reject")
 	public ResponseEntity<RejectAdminResponse> rejectAdmin(@PathVariable Long adminId,
 		@RequestBody @Valid RejectAdminRequest request, HttpSession session) {
 		adminService.reject(adminId, request, checkSessionOrThrow(session));
