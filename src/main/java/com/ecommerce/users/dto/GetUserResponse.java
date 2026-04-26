@@ -15,26 +15,19 @@ public class GetUserResponse {
 	private final String email;
 	private final String phoneNumber;
 	private final UserStatus status;
+	private final Long orderCount;
+	private final Long totalPrice;
 	private final LocalDateTime createdAt;
 
-	private GetUserResponse(Long id, String name, String email, String phoneNumber, UserStatus status,
-		LocalDateTime createdAt) {
+	public GetUserResponse(Long id, String name, String email, String phoneNumber, UserStatus status, Long orderCount,
+		Long totalPrice, LocalDateTime createdAt) {
 		this.id = id;
 		this.name = name;
 		this.email = email;
 		this.phoneNumber = phoneNumber;
 		this.status = status;
+		this.orderCount = orderCount;
+		this.totalPrice = totalPrice;
 		this.createdAt = createdAt;
-	}
-
-	public static GetUserResponse from(User user) {
-		return new GetUserResponse(
-			user.getUserId(),
-			user.getName(),
-			user.getEmail(),
-			user.getPhoneNumber(),
-			user.getStatus(),
-			user.getCreatedAt()
-		);
 	}
 }
