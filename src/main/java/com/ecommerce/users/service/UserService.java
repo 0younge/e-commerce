@@ -1,5 +1,7 @@
 package com.ecommerce.users.service;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -34,7 +36,19 @@ public class UserService {
 	@Transactional(readOnly = true)
 	public Page<GetUserResponse> findByKeywordAndStatus(String keyword, UserStatus status, Pageable pageable) {
 		return userRepository.findByKeywordAndStatus(keyword, status, pageable)
-			.map(user -> GetUserResponse.from(user));
+			.map(user -> {
+				List<Order> orders = user.getOrders(); // 추가
+				return new GetUserResponse(
+					user.getUserId(),
+					user.getName(),
+					user.getEmail(),
+					user.getPhoneNumber(),
+					user.getStatus(),
+					(long)orders.size(),
+					orders.stream().mapToLong(Order::getTotalPrice).sum(),
+					user.getCreatedAt()
+				);
+			});
 	}
 
 	/**
