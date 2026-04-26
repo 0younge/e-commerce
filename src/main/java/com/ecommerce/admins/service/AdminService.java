@@ -9,6 +9,7 @@ import com.ecommerce.admins.dto.CreateAdminRequest;
 import com.ecommerce.admins.dto.GetAdminResponse;
 import com.ecommerce.admins.dto.GetOneAdminResponse;
 import com.ecommerce.admins.dto.LoginAdminRequest;
+import com.ecommerce.admins.dto.LoginAdminResponse;
 import com.ecommerce.admins.dto.UpdateAdminRequest;
 import com.ecommerce.admins.dto.UpdateRoleAdminRequest;
 import com.ecommerce.admins.dto.UpdateStatusAdminRequest;
@@ -16,8 +17,11 @@ import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.admins.entity.AdminInfo;
 import com.ecommerce.admins.entity.AdminRole;
 import com.ecommerce.admins.repository.AdminRepository;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
+
 import com.ecommerce.common.enums.AdminStatus;
+import com.ecommerce.common.security.jwt.JwtTokenProvider;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +32,7 @@ public class AdminService {
 
 	private final AdminRepository adminRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final JwtTokenProvider jwtTokenProvider;
 
 	/**
 	 * 회원가입: 리퀘스트 값을 받아 비밀번호 암호화 이후 서버에 저장
@@ -46,19 +51,36 @@ public class AdminService {
 	/**
 	 * 로그인: 메일과 비밀번호가 일치하는지, 상태값을 확인 후 로그인
 	 * @param request 이메일과 로그인
-	 * @return 세션값 저장 후 반환
+	 * @return 토큰 객체 생성 및 로그인응답 반환
 	 */
 	@Transactional(readOnly = true)
-	public AdminInfo login(@Valid LoginAdminRequest request) {
+	public LoginAdminResponse login(@Valid LoginAdminRequest request) {
 		Admin admin = adminRepository.findByEmail(request.getEmail())
-			.orElseThrow(() -> new IllegalArgumentException("존재하는 이메일을 찾을 수 없습니다,"));
+			.orElseThrow(() -> new IllegalArgumentException("존재하는 이메일을 찾을 수 없습니다."));
 
 		if (!passwordEncoder.matches(request.getPassword(), admin.getPassword())) {
 			throw new IllegalArgumentException("메일과 비밀번호가 일치하지 않습니다.");
 		}
+
 		checkStatusOrThrow(admin);
 
-		return new AdminInfo(admin.getAdminId(), admin.getEmail(), admin.getRole());
+		String accessToken = jwtTokenProvider.createToken(
+			admin.getAdminId(),
+			admin.getEmail(),
+			admin.getRole()
+		);
+
+		return new LoginAdminResponse(
+			admin.getAdminId(),
+			admin.getName(),
+			admin.getEmail(),
+			admin.getPhoneNumber(),
+			admin.getRole().name(),
+			admin.getStatus(),
+			accessToken,
+			admin.getCreatedAt(),
+			admin.getApprovedAt()
+		);
 	}
 
 	/**
