@@ -62,16 +62,26 @@ public class Product extends BaseEntity {
 		this.price = price;
 		this.admin = admin;
 	}
+
 	/**
-	 * 재고 정보 수정 (Order에서 사용)
-	 * Request 객체로 전체 업데이트
+	 * 재고 정보 수정 (ProductService에서 사용)
+	 * Request 객체로 전체 업데이트 + 상태 자동 변경
 	 */
-	public void updateQuantity(ProductRequest request) {
-		this.name = request.getName();
-		this.category = request.getCategory();
-		this.price = request.getPrice();
-		this.quantity = request.getQuantity();
-		this.status = request.getStatus();
+	/**
+	 * 재고만 변경 + 상태 자동 갱신
+	 *
+	 * @param quantity 변경할 재고 수량
+	 */
+	public void updateQuantity(Long quantity) {
+		this.quantity = quantity;
+
+		// 상태 자동 변경
+		if (this.quantity == 0) {
+			this.status = "SOLD_OUT";
+		} else if (this.quantity > 0) {
+			this.status = "FOR_SALE";
+		}
+		// DISCONTINUED는 수동으로만 변경
 	}
 
 	/**

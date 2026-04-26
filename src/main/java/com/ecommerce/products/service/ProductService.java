@@ -98,10 +98,27 @@ public class ProductService {
 		return ProductDetailResponse.from(product, admin);
 	}
 
+	/**
+	 * 재고 변경 (관리자 전용)
+	 *
+	 * @param productId 상품 ID
+	 * @param request 변경할 재고 정보
+	 * @return 변경된 상품 정보
+	 */
+	@Transactional
+	public ProductResponse updateQuantity(Long productId, ProductRequest request) {
 
-	//재고변경로직
+		Product product = productRepository.findById(productId)
+			.orElseThrow(() -> new ProductNotFoundException());
 
-	//사품상태 자동변경(품절/판매중)
+		if (!product.getAdmin().getAdminId().equals(request.getAdminId())) {
+			throw new InvalidRequestException("본인이 등록한 상품만 수정할 수 있습니다.");
+		}
+
+		product.updateQuantity(request.getQuantity());
+
+		return ProductResponse.from(product);
+	}
 
 	/**
 	 * 상품 수정
@@ -150,7 +167,7 @@ public class ProductService {
 		Product product = productRepository.findById(productId)
 			.orElseThrow(() -> new ProductNotFoundException());
 
-		if (!product.getAdmin().getAdminId().equals(adminId)){
+		if (!product.getAdmin().getAdminId().equals(adminId)) {
 
 			throw new InvalidRequestException("본인이 등록한 상품만 삭제할 수 있습니다.");
 		}
