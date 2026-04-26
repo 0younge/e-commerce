@@ -3,6 +3,7 @@ package com.ecommerce.users.dto;
 import java.time.LocalDateTime;
 
 import com.ecommerce.common.enums.UserStatus;
+import com.ecommerce.users.entity.User;
 
 import lombok.Getter;
 
@@ -16,7 +17,7 @@ public class GetUserResponse {
 	private final UserStatus status;
 	private final LocalDateTime createdAt;
 
-	public GetUserResponse(Long id, String name, String email, String phoneNumber, UserStatus status,
+	private GetUserResponse(Long id, String name, String email, String phoneNumber, UserStatus status,
 		LocalDateTime createdAt) {
 		this.id = id;
 		this.name = name;
@@ -24,5 +25,16 @@ public class GetUserResponse {
 		this.phoneNumber = phoneNumber;
 		this.status = status;
 		this.createdAt = createdAt;
+	}
+
+	public static GetUserResponse from(User user) {
+		return new GetUserResponse(
+			user.getUserId(),
+			user.getName(),
+			user.getEmail(),
+			user.getPhoneNumber(),
+			user.getStatus(),
+			user.getCreatedAt()
+		);
 	}
 }

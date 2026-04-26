@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ecommerce.common.enums.UserStatus;
 import com.ecommerce.common.exception.UserNotFoundException;
+import com.ecommerce.orders.entity.Order;
 import com.ecommerce.users.dto.GetOneUserResponse;
 import com.ecommerce.users.dto.GetUserResponse;
 import com.ecommerce.users.dto.PatchUserRequest;
@@ -26,14 +27,7 @@ public class UserService {
 	@Transactional(readOnly = true)
 	public Page<GetUserResponse> findByKeywordAndStatus(String keyword, UserStatus status, Pageable pageable) {
 		return userRepository.findByKeywordAndStatus(keyword, status, pageable)
-			.map(user -> new GetUserResponse(
-				user.getUserId(),
-				user.getName(),
-				user.getEmail(),
-				user.getPhoneNumber(),
-				user.getStatus(),
-				user.getCreatedAt()
-			));
+			.map(user -> GetUserResponse.from(user));
 	}
 
 	@Transactional(readOnly = true)
@@ -41,12 +35,7 @@ public class UserService {
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new UserNotFoundException());
 
-		return new GetOneUserResponse(
-			user.getName(),
-			user.getEmail(),
-			user.getPhoneNumber(),
-			user.getStatus(),
-			user.getCreatedAt());
+		return GetOneUserResponse.from(user);
 	}
 
 	@Transactional
@@ -54,14 +43,7 @@ public class UserService {
 		User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException());
 
 		user.updateDetails(patchUserRequest.getName(), patchUserRequest.getEmail(), patchUserRequest.getPhoneNumber());
-		return new PatchUserResponse(user.getUserId(),
-			user.getName(),
-			user.getEmail(),
-			user.getPhoneNumber(),
-			user.getStatus(),
-			user.getCreatedAt(),
-			user.getModifiedAt()
-		);
+		return PatchUserResponse.from(user);
 	}
 
 	@Transactional
@@ -69,14 +51,7 @@ public class UserService {
 		User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException());
 
 		user.updateStatus(patchUserStatusRequest.getUserStatus());
-		return new PatchUserResponse(user.getUserId(),
-			user.getName(),
-			user.getEmail(),
-			user.getPhoneNumber(),
-			user.getStatus(),
-			user.getCreatedAt(),
-			user.getModifiedAt()
-		);
+		return PatchUserResponse.from(user);
 	}
 
 	@Transactional
