@@ -61,4 +61,18 @@ public class Admin extends BaseEntity {
 		this.role = role;
 	}
 
+	public void updateAdmin(String name, String email, String phoneNumber) {
+		this.name = name;
+		this.email = email;
+		this.phoneNumber = phoneNumber;
+	}
+
+	public void updateRole(AdminRole role) {
+		this.role = role;
+	}
+
+	public void updateStatus(AdminStatus status) {
+		this.status = status;
+	}
+
 }
