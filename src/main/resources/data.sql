@@ -1,5 +1,5 @@
 INSERT INTO admins (name, email, password, phone_number, role, status, deleted, created_at, modified_at)
-VALUES ('관리자', 'admin@test.com', '12345678', '010-9999-9999', 'SUPER_ADMIN', 'ACTIVE', false, NOW(), NOW());
+VALUES ('관리자', 'admin@test.com', '$2a$10$D65zesWQWcOekANz1GW0OeZ/PH3CRK/vhb3tDUrCsDSoEFSfw8z/m', '010-9999-9999', 'SUPER_ADMIN', 'ACTIVE', false, NOW(), NOW());
 
 INSERT INTO users (name, email, phone_number, status, deleted, created_at, modified_at)
 VALUES ('홍길동', 'user1@test.com', '010-1111-1111', 'ACTIVE', false, NOW(), NOW());
