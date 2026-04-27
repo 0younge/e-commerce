@@ -11,6 +11,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.ecommerce.common.security.handler.CustomAccessDeniedHandler;
+import com.ecommerce.common.security.handler.CustomAuthenticationEntryPoint;
 import com.ecommerce.common.security.jwt.JwtAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
@@ -21,12 +23,19 @@ import lombok.RequiredArgsConstructor;
 
 public class SecurityConfig {
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
+	private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+	private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
 			// 1. JWT 기반 REST API에서는 CSRF 방어를 사용하지 않음
 			.csrf(csrf -> csrf.disable())
+
+			.exceptionHandling(exception -> exception
+				.authenticationEntryPoint(customAuthenticationEntryPoint)
+				.accessDeniedHandler(customAccessDeniedHandler)
+			)
 
 			// 2. 세션 로그인 사용 안 함
 			.sessionManagement(session ->
