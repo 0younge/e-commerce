@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductRequest {
+public class CreateProductRequest  {
 
 	@NotNull(message = "관리자 ID는 필수입니다.")
 	private Long adminId;
