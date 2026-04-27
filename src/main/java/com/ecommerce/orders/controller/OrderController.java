@@ -41,7 +41,18 @@ public class OrderController {
 
 	@PostMapping
 	public ResponseEntity<CreateOrderResponse> saveOrder(@Valid @RequestBody CreateOrderRequest request) {
-		return ResponseEntity.status(HttpStatus.CREATED).body(orderService.save(request));
+		return ResponseEntity.status(HttpStatus.CREATED).body(orderService.save(request, null));
+	}
+
+	@PostMapping("/admins")
+	public ResponseEntity<CreateOrderResponse> createAdminOrder(
+		@Valid @RequestBody CreateOrderRequest request,
+		@SessionAttribute(name = AdminConst.ADMIN_INFO, required = false) AdminInfo adminInfo
+	) {
+		if (adminInfo == null) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "관리자 로그인이 필요합니다.");
+		}
+		return ResponseEntity.status(HttpStatus.CREATED).body(orderService.save(request, adminInfo.getAdminId()));
 	}
 
 	@GetMapping
@@ -54,7 +65,6 @@ public class OrderController {
 		@RequestParam(defaultValue = "desc") String sortOrder,
 		@RequestParam(required = false) OrderStatus status
 	) {
-		log.info("주문 리스트 컨트롤러 호출");
 		if (adminInfo == null) {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "관리자 로그인이 필요합니다.");
 		}

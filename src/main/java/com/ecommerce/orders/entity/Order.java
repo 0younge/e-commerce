@@ -83,4 +83,11 @@ public class Order extends BaseEntity {
 		this.cancelReason = reason;
 	}
 
+	public void assignAdmin(Admin admin) {
+		if (this.admin != null) {
+			throw new IllegalStateException("이미 관리자 배정됨");
+		}
+		this.admin = admin;
+	}
+
 }
