@@ -9,9 +9,11 @@ import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.admins.repository.AdminRepository;
 import com.ecommerce.common.exception.InvalidRequestException;
 import com.ecommerce.common.exception.ProductNotFoundException;
-import com.ecommerce.products.dto.ProductDetailResponse;
-import com.ecommerce.products.dto.ProductRequest;
-import com.ecommerce.products.dto.ProductResponse;
+import com.ecommerce.products.dto.CreateProductRequest;
+import com.ecommerce.products.dto.GetProductDetailResponse;
+import com.ecommerce.products.dto.GetProductResponse;
+import com.ecommerce.products.dto.UpdateProductRequest;
+import com.ecommerce.products.dto.UpdateQuantityRequest;
 import com.ecommerce.products.entity.Product;
 import com.ecommerce.products.repository.ProductRepository;
 
@@ -32,7 +34,7 @@ public class ProductService {
 	 * @throws InvalidRequestException 존재하지 않는 관리자ID
 	 */
 	@Transactional
-	public ProductResponse save(ProductRequest request) {
+	public GetProductResponse save(CreateProductRequest request) {  // ✅ 변경
 
 		Admin admin = adminRepository.findById(request.getAdminId())
 			.orElseThrow(() -> new InvalidRequestException("존재하지 않는 관리자입니다."));
@@ -42,11 +44,10 @@ public class ProductService {
 			request.getCategory(),
 			request.getPrice(),
 			request.getQuantity(),
-			request.getStatus(),
 			admin
 		);
 
-		return ProductResponse.from(productRepository.save(product));
+		return GetProductResponse.from(productRepository.save(product));
 	}
 
 	/**
@@ -63,8 +64,11 @@ public class ProductService {
 	 * - GET /products?name=노트북&category=전자기기
 	 * - GET /products?status=FOR_SALE&page=0&size=20
 	 */
+	/**
+	 * 상품 목록 조회 (검색 + 필터링 + 페이징)
+	 */
 	@Transactional(readOnly = true)
-	public Page<ProductResponse> findAllPaged(
+	public Page<GetProductResponse> findAllPaged(
 		Pageable pageable,
 		String name,
 		String category,
@@ -77,8 +81,9 @@ public class ProductService {
 			pageable
 		);
 
-		return productPage.map(ProductResponse::from);
+		return productPage.map(GetProductResponse::from);
 	}
+
 
 	/**
 	 * 상품 상세 조회
@@ -88,14 +93,14 @@ public class ProductService {
 	 * @throws ProductNotFoundException 존재하지 않는 상품
 	 */
 	@Transactional(readOnly = true)
-	public ProductDetailResponse getProductDetail(Long productId) {
+	public GetProductDetailResponse getProductDetail(Long productId) {
 
 		Product product = productRepository.findById(productId)
 			.orElseThrow(ProductNotFoundException::new);
 
 		Admin admin = product.getAdmin();
 
-		return ProductDetailResponse.from(product, admin);
+		return GetProductDetailResponse.from(product, admin);
 	}
 
 	/**
@@ -106,7 +111,7 @@ public class ProductService {
 	 * @return 변경된 상품 정보
 	 */
 	@Transactional
-	public ProductResponse updateQuantity(Long productId, ProductRequest request) {
+	public GetProductResponse updateQuantity(Long productId, UpdateQuantityRequest request) {
 
 		Product product = productRepository.findById(productId)
 			.orElseThrow(() -> new ProductNotFoundException());
@@ -117,7 +122,7 @@ public class ProductService {
 
 		product.updateQuantity(request.getQuantity());
 
-		return ProductResponse.from(product);
+		return GetProductResponse.from(product);
 	}
 
 	/**
@@ -130,7 +135,7 @@ public class ProductService {
 	 * @throws ProductNotFoundException 존재하지 않는 상품
 	 */
 	@Transactional
-	public ProductResponse update(Long id, ProductRequest request) {
+	public GetProductResponse update(Long id, UpdateProductRequest request) {
 
 		Admin admin = adminRepository.findById(request.getAdminId())
 			.orElseThrow(() -> new InvalidRequestException("존재하지 않는 관리자입니다."));
@@ -143,11 +148,11 @@ public class ProductService {
 			request.getCategory(),
 			request.getPrice(),
 			admin
-
 		);
 
-		return ProductResponse.from(product);
+		return GetProductResponse.from(product);
 	}
+
 
 	/**
 	 * 상품 삭제
