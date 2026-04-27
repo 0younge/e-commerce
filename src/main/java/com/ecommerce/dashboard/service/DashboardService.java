@@ -1,5 +1,6 @@
 package com.ecommerce.dashboard.service;
 
+import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -10,6 +11,7 @@ import com.ecommerce.admins.entity.AdminInfo;
 import com.ecommerce.admins.repository.AdminRepository;
 import com.ecommerce.common.enums.AdminStatus;
 import com.ecommerce.dashboard.dto.GetChartsResponse;
+import com.ecommerce.dashboard.dto.GetRecentOrderResponse;
 import com.ecommerce.dashboard.dto.GetSummaryResponse;
 import com.ecommerce.dashboard.dto.GetWidgetsResponse;
 import com.ecommerce.orders.entity.Order;
@@ -65,6 +67,17 @@ public class DashboardService {
 		List<Product> allProducts = productRepository.findAll();
 
 		return GetChartsResponse.from(allReviews, allUsers, allProducts);
+	}
+
+	@Transactional(readOnly = true)
+	public GetRecentOrderResponse getRecentOrders(AdminInfo adminInfo) {
+		List<Order> recentTenOrders = orderRepository.findAll()
+			.stream()
+			.sorted(Comparator.comparing(Order::getCreatedAt).reversed())
+			.limit(10)
+			.toList();
+
+		return GetRecentOrderResponse.from(recentTenOrders);
 	}
 
 	public void findByIdOrThrow(AdminInfo adminInfo) {
