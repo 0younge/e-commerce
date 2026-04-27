@@ -1,8 +1,10 @@
 package com.ecommerce.users.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.ecommerce.common.enums.UserStatus;
+import com.ecommerce.orders.entity.Order;
 import com.ecommerce.users.entity.User;
 
 import lombok.Getter;
@@ -29,5 +31,19 @@ public class GetUserResponse {
 		this.orderCount = orderCount;
 		this.totalPrice = totalPrice;
 		this.createdAt = createdAt;
+	}
+
+	public static GetUserResponse from(User user) {
+		List<Order> orders = user.getOrders();
+		return new GetUserResponse(
+			user.getUserId(),
+			user.getName(),
+			user.getEmail(),
+			user.getPhoneNumber(),
+			user.getStatus(),
+			(long)orders.size(),
+			orders.stream().mapToLong(Order::getTotalPrice).sum(),
+			user.getCreatedAt()
+		);
 	}
 }
