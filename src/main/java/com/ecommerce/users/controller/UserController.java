@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/users")
 public class UserController {
 	private final UserService userService;
 
@@ -43,7 +45,7 @@ public class UserController {
 	 * @param status 검색할 상태
 	 * @return 페이지네이션을 마친 사용자 리스트
 	 */
-	@GetMapping("/users")
+	@GetMapping()
 	public ResponseEntity<ApiResponse<GetPageResponse<GetUserResponse>>> getUserList(
 		@RequestParam(required = false) String keyword,
 		@RequestParam(defaultValue = "1") int page,
@@ -65,7 +67,7 @@ public class UserController {
 	 * @param userId 조회할 사용자 아이디
 	 * @return 특정 사용자의 상세 정보
 	 */
-	@GetMapping("/users/{userId}")
+	@GetMapping("/{userId}")
 	public ResponseEntity<ApiResponse<GetOneUserResponse>> getUserDetails(@PathVariable Long userId) {
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(userService.findUserDetails(userId)));
 	}
@@ -76,7 +78,7 @@ public class UserController {
 	 * @param patchUserRequest 수정할 값
 	 * @return 수정된 사용자 정보
 	 */
-	@PatchMapping("/users/{userId}")
+	@PatchMapping("/{userId}")
 	public ResponseEntity<ApiResponse<PatchUserResponse>> patchUserDetails(@PathVariable Long userId,
 		@Valid @RequestBody PatchUserRequest patchUserRequest) {
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(userService.patchUserDetails(userId, patchUserRequest)));
@@ -88,7 +90,7 @@ public class UserController {
 	 * @param patchUserStatusRequest 변경할 상태
 	 * @return 상태가 변경된 사용자 정보
 	 */
-	@PatchMapping("/users/{userId}/status")
+	@PatchMapping("/{userId}/status")
 	public ResponseEntity<ApiResponse<PatchUserResponse>> patchUserStatus(@PathVariable Long userId,
 		@Valid @RequestBody PatchUserStatusRequest patchUserStatusRequest) {
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(userService.patchUserStatus(userId, patchUserStatusRequest)));
@@ -99,7 +101,7 @@ public class UserController {
 	 * @param userId 삭제할 사용자 아이디
 	 * @return 상태코드
 	 */
-	@DeleteMapping("/users/{userId}")
+	@DeleteMapping("/{userId}")
 	public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Long userId) {
 		userService.deleteById(userId);
 		return ResponseEntity.ok(ApiResponse.success("사용자가 삭제되었습니다."));
