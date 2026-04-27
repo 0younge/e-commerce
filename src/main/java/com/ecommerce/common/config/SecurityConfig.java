@@ -2,6 +2,7 @@ package com.ecommerce.common.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -46,17 +47,20 @@ public class SecurityConfig {
 					"/health"
 				).permitAll()
 
-				// 관리자 도메인: 일단 로그인한 관리자만
-				.requestMatchers("/admins/**").authenticated()
+				// 관리자 도메인: 슈퍼관리자만
+				.requestMatchers("/admins/**").hasRole("SUPER_ADMIN")
 
-				// 상품 도메인: 일단 로그인한 관리자만
-				.requestMatchers("/products/**").authenticated()
+				// 상품 도메인 : 슈퍼관리자 및 운영관리자만
+				.requestMatchers("/products/**").hasAnyRole("SUPER_ADMIN","OPERATION_ADMIN")
 
-				// 주문 도메인: 일단 로그인한 관리자만
-				.requestMatchers("/orders/**").authenticated()
+				// 주문 도메인 : 모든 관리자
+				.requestMatchers("/orders/**").hasAnyRole("SUPER_ADMIN", "OPERATOR_ADMIN", "CS_ADMIN")
 
-				// 고객 도메인: 일단 로그인한 관리자만
-				.requestMatchers("/users/**").authenticated()
+				// 고객 삭제 : 슈퍼 관리자만
+				.requestMatchers(HttpMethod.DELETE,"/users/**").hasRole("SUPER_ADMIN")
+
+				// 리뷰 삭제 : 슈퍼관리자 및 운영관리자만
+				.requestMatchers(HttpMethod.DELETE,"/reviews/**").hasAnyRole("SUPER_ADMIN","OPERATION_ADMIN")
 
 				// 나머지 요청은 전부 인증 필요
 				.anyRequest().authenticated()
