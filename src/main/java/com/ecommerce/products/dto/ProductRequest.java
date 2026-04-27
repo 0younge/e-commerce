@@ -32,6 +32,4 @@ public class ProductRequest {
 	@Min(value = 0, message = "수량은 0 이상이어야 합니다.")
 	private Long quantity;  // ← Integer → Long
 
-	@NotBlank(message = "상태는 필수입니다.")
-	private String status;  // ← ProductStatus → String
 }

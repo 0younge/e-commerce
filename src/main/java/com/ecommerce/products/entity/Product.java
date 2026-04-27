@@ -42,12 +42,12 @@ public class Product extends BaseEntity {
 	@JoinColumn(name = "admin_id")
 	private Admin admin;
 
-	public Product(String name, String category, Long price, Long quantity, String status, Admin admin) {
+	public Product(String name, String category, Long price, Long quantity, Admin admin) {
 		this.name = name;
 		this.category = category;
 		this.price = price;
 		this.quantity = quantity;
-		this.status = status;
+		this.status = "FOR_SALE";
 		this.admin = admin;
 	}
 

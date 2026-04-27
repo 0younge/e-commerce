@@ -1,7 +1,5 @@
 package com.ecommerce.products.controller;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -22,7 +20,6 @@ import com.ecommerce.products.dto.ProductResponse;
 import com.ecommerce.products.service.ProductService;
 
 import jakarta.validation.Valid;
-import jakarta.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
 
 /**
