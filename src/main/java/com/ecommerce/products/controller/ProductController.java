@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ecommerce.common.response.ApiResponse;
 import com.ecommerce.products.dto.CreateProductRequest;
 import com.ecommerce.products.dto.GetProductDetailResponse;
 import com.ecommerce.products.dto.GetProductResponse;
@@ -41,14 +42,13 @@ public class ProductController {
 	 * POST /products
 	 */
 	@PostMapping
-	public ResponseEntity<GetProductResponse> createProduct(
+	public ResponseEntity<ApiResponse<GetProductResponse>> createProduct(
 		@Valid @RequestBody CreateProductRequest request) {
 
 		GetProductResponse response = productService.save(request);
 
-		return ResponseEntity
-			.status(HttpStatus.CREATED)
-			.body(response);
+		return ResponseEntity.ok(ApiResponse.created("상품이 등록되었습니다.", response));
+
 	}
 
 	/**
@@ -56,7 +56,7 @@ public class ProductController {
 	 * GET /products
 	 */
 	@GetMapping
-	public ResponseEntity<Page<GetProductResponse>> getProducts(
+	public ResponseEntity<ApiResponse<Page<GetProductResponse>>> getProducts(
 		Pageable pageable,
 		@RequestParam(required = false) String name,
 		@RequestParam(required = false) String category,
@@ -69,7 +69,7 @@ public class ProductController {
 			status
 		);
 
-		return ResponseEntity.ok(response);
+		return ResponseEntity.ok(ApiResponse.success(response));
 	}
 
 	/**
@@ -77,10 +77,12 @@ public class ProductController {
 	 * GET /products/{productId}
 	 */
 	@GetMapping("/{productId}")
-	public ResponseEntity<GetProductDetailResponse> getProductDetail(
+	public ResponseEntity<ApiResponse<GetProductDetailResponse>> getProductDetail(
 		@PathVariable Long productId) {
 
-		return ResponseEntity.ok(productService.getProductDetail(productId));
+		return ResponseEntity.ok(
+			ApiResponse.success(productService.getProductDetail(productId))
+		);
 	}
 
 	/**
@@ -88,11 +90,13 @@ public class ProductController {
 	 * PUT /products/{id}
 	 */
 	@PutMapping("/{id}")
-	public ResponseEntity<GetProductResponse> update(
+	public ResponseEntity<ApiResponse<GetProductResponse>> update(
 		@PathVariable Long id,
 		@Valid @RequestBody UpdateProductRequest request) {
 
-		return ResponseEntity.ok(productService.update(id, request));
+		return ResponseEntity.ok(
+			ApiResponse.success("상품이 수정되었습니다.", productService.update(id, request))
+		);
 	}
 
 	/**
@@ -100,11 +104,13 @@ public class ProductController {
 	 * PATCH /products/{id}/quantity
 	 */
 	@PatchMapping("/{id}/quantity")
-	public ResponseEntity<GetProductResponse> updateQuantity(
+	public ResponseEntity<ApiResponse<GetProductResponse>> updateQuantity(
 		@PathVariable Long id,
 		@Valid @RequestBody UpdateQuantityRequest request) {
 
-		return ResponseEntity.ok(productService.updateQuantity(id, request));
+		return ResponseEntity.ok(
+			ApiResponse.success("재고가 변경되었습니다.", productService.updateQuantity(id, request))
+		);
 	}
 
 	/**
@@ -112,12 +118,12 @@ public class ProductController {
 	 * DELETE /products/{productId}?adminId={adminId}
 	 */
 	@DeleteMapping("/{productId}")
-	public ResponseEntity<Void> delete(
+	public ResponseEntity<ApiResponse<Void>> delete(
 		@PathVariable Long productId,
 		@RequestParam Long adminId) {
 
 		productService.delete(productId, adminId);
 
-		return ResponseEntity.noContent().build();
+		return ResponseEntity.ok(ApiResponse.success("상품이 삭제되었습니다."));
 	}
 }

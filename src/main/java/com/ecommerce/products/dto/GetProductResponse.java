@@ -17,10 +17,20 @@ public record GetProductResponse(
 	LocalDateTime modifiedAt
 ) {
 	public static GetProductResponse from(Product product) {
+
+
+		Long adminId = null;
+		String adminName = null;
+
+		if (product.getAdmin() != null) {
+			adminId = product.getAdmin().getAdminId();
+			adminName = product.getAdmin().getName();
+		}
+
 		return new GetProductResponse(
 			product.getProductId(),
-			product.getAdmin().getAdminId(),
-			product.getAdmin().getName(),
+			adminId,
+			adminName,
 			product.getName(),
 			product.getCategory(),
 			product.getPrice(),
