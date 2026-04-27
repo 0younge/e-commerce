@@ -6,6 +6,17 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * 재고 변경 요청 DTO
+ *
+ * 사용: PATCH /products/{id}/quantity
+ * 용도: 상품 재고 수량 변경
+ *
+ * 특징:
+ * - quantity = 0 → status 자동 SOLD_OUT
+ * - quantity > 0 → status 자동 FOR_SALE
+ * - adminId로 권한 체크
+ */
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor

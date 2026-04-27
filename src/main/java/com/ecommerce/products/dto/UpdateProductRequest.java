@@ -8,6 +8,16 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * 상품 정보 수정 요청 DTO
+ *
+ * 사용: PUT /products/{id}
+ * 용도: 상품의 기본 정보(이름, 카테고리, 가격) 수정
+ *
+ * 특징:
+ * - quantity는 별도 API로 변경 (PATCH /products/{id}/quantity)
+ * - adminId로 권한 체크
+ */
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor

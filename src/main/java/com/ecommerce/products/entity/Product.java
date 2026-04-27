@@ -2,10 +2,13 @@ package com.ecommerce.products.entity;
 
 import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.common.BaseEntity;
+import com.ecommerce.common.enums.ProductStatus;
 import com.ecommerce.common.exception.InvalidRequestException;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -35,8 +38,10 @@ public class Product extends BaseEntity {
 	private Long price;
 	@Column(nullable = false)
 	private Long quantity;
+
+	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private String status;
+	private ProductStatus status = ProductStatus.FOR_SALE;;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "admin_id")
@@ -47,7 +52,6 @@ public class Product extends BaseEntity {
 		this.category = category;
 		this.price = price;
 		this.quantity = quantity;
-		this.status = "FOR_SALE";
 		this.admin = admin;
 	}
 
@@ -79,11 +83,11 @@ public class Product extends BaseEntity {
 		this.quantity = quantity;
 
 		// DISCONTINUED 상태가 아닐 때만 자동 변경
-		if (!this.status.equals("DISCONTINUED")) {
+		if (this.status != ProductStatus.DISCONTINUED) {
 			if (this.quantity == 0) {
-				this.status = "SOLD_OUT";
+				this.status = ProductStatus.SOLD_OUT;
 			} else if (this.quantity > 0) {
-				this.status = "FOR_SALE";
+				this.status = ProductStatus.FOR_SALE;
 			}
 		}
 	}
@@ -99,7 +103,7 @@ public class Product extends BaseEntity {
 
 		// 재고 0이면 상태 변경
 		if (this.quantity == 0) {
-			this.status = "SOLD_OUT";
+			this.status = ProductStatus.SOLD_OUT;  // ✅ 변경
 		}
 	}
 
@@ -110,8 +114,8 @@ public class Product extends BaseEntity {
 		this.quantity += quantity;
 
 		// 재고 생기면 판매중으로 변경
-		if (this.status.equals("SOLD_OUT")) {
-			this.status = "FOR_SALE";
+		if (this.status == ProductStatus.SOLD_OUT) {  // ✅ 변경
+			this.status = ProductStatus.FOR_SALE;  // ✅ 변경
 		}
 	}
 
@@ -119,7 +123,7 @@ public class Product extends BaseEntity {
 	 * 판매 가능 여부
 	 */
 	public boolean isAvailable() {
-		return this.status.equals("FOR_SALE") && this.quantity > 0;
+		return this.status == ProductStatus.FOR_SALE && this.quantity > 0;  // ✅ 변경
 	}
 
 	/**
@@ -132,8 +136,7 @@ public class Product extends BaseEntity {
 	/**
 	 * 상태 변경
 	 */
-	public void changeStatus(String status) {
+	public void changeStatus(ProductStatus status) {  // ✅ 파라미터 타입 변경
 		this.status = status;
 	}
-
 }
