@@ -32,11 +32,7 @@ public class DashboardService {
 
 	@Transactional(readOnly = true)
 	public GetSummaryResponse getSummary(AdminInfo adminInfo) {
-		Admin admin = adminRepository.findById(adminInfo.getAdminId())
-			.orElseThrow(() -> new IllegalArgumentException("나중에 수정할 예외"));
-		if (!admin.getStatus().equals(AdminStatus.ACTIVE)) {
-			throw new IllegalStateException("권한이 없습니다");
-		}
+		findByIdOrThrow(adminInfo);
 
 		List<Admin> allAdmins = adminRepository.findAll();
 		List<User> allUsers = userRepository.findAll();
@@ -45,5 +41,23 @@ public class DashboardService {
 		List<Review> allReviews = reviewRepository.findAll();
 
 		return GetSummaryResponse.from(allAdmins, allUsers, allProducts, allOrders, allReviews);
+	}
+
+	@Transactional(readOnly = true)
+	public GetWidgetsResponse getWidgets(AdminInfo adminInfo) {
+		findByIdOrThrow(adminInfo);
+
+		List<Order> allOrders = orderRepository.findAll();
+		List<Product> allProducts = productRepository.findAll();
+
+		return GetWidgetsResponse.from(allOrders, allProducts);
+	}
+
+	public void findByIdOrThrow(AdminInfo adminInfo) {
+		Admin admin = adminRepository.findById(adminInfo.getAdminId())
+			.orElseThrow(() -> new IllegalArgumentException("나중에 수정할 예외"));
+		if (!admin.getStatus().equals(AdminStatus.ACTIVE)) {
+			throw new IllegalStateException("권한이 없습니다");
+		}
 	}
 }

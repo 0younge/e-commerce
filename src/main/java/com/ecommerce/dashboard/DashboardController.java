@@ -20,9 +20,15 @@ public class DashboardController {
 	private final DashboardService dashboardService;
 
 	@GetMapping("/summary")
-	public ResponseEntity<ApiResponse<GetSummaryResponse>> getDashboard(
-		@SessionAttribute(name = AdminConst.ADMIN_INFO, required = true) AdminInfo adminInfo) {
-		return ResponseEntity.ok(ApiResponse.success("대쉬보드 조회 성공", dashboardService.getSummary(adminInfo)));
+	public ResponseEntity<ApiResponse<GetSummaryResponse>> getSummary(
+		@SessionAttribute(name = AdminConst.ADMIN_INFO) AdminInfo adminInfo) {
+		return ResponseEntity.ok(ApiResponse.success("Summary 통계 조회 성공", dashboardService.getSummary(adminInfo)));
+	}
+
+	@GetMapping("/widgets")
+	public ResponseEntity<ApiResponse<GetWidgetsResponse>> getWidgets(
+		@SessionAttribute(name = AdminConst.ADMIN_INFO) AdminInfo adminInfo) {
+		return ResponseEntity.ok(ApiResponse.success("Widgets 데이터 조회 성공", dashboardService.getWidgets(adminInfo)));
 	}
 
 }
