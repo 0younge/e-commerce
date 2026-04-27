@@ -2,7 +2,6 @@ package com.ecommerce.review.entity;
 
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
-import org.springframework.data.annotation.AccessType;
 
 import com.ecommerce.common.BaseEntity;
 import com.ecommerce.orders.entity.Order;
@@ -11,6 +10,8 @@ import com.ecommerce.users.entity.User;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -28,6 +29,7 @@ import lombok.NoArgsConstructor;
 public class Review extends BaseEntity {
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long reviewId;
 
 	private int rating;
@@ -35,15 +37,15 @@ public class Review extends BaseEntity {
 	private String content;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "order_Id", nullable = false)
+	@JoinColumn(name = "order_id", nullable = false)
 	private Order order;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_Id", nullable = false)
+	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "product_Id", nullable = false)
+	@JoinColumn(name = "product_id", nullable = false)
 	private Product product;
 
 	public Review(Long reviewId, int rating, String content, Order order, User user, Product product) {
