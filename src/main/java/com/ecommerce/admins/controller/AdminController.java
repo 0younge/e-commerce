@@ -33,6 +33,7 @@ import com.ecommerce.admins.entity.AdminInfo;
 import com.ecommerce.admins.entity.AdminRole;
 import com.ecommerce.admins.service.AdminService;
 import com.ecommerce.common.enums.AdminStatus;
+import com.ecommerce.common.exception.AdminLoginStatusException;
 import com.ecommerce.common.response.ApiResponse;
 
 import jakarta.servlet.http.HttpSession;
@@ -259,7 +260,7 @@ public class AdminController {
 	public AdminInfo checkSessionOrThrow(HttpSession session) {
 		AdminInfo adminInfo = (AdminInfo)session.getAttribute(AdminConst.ADMIN_INFO);
 		if (adminInfo == null) {
-			throw new IllegalStateException("로그인이 필요한 작업입니다.");
+			throw new AdminLoginStatusException();
 		}
 		return adminInfo;
 	}
