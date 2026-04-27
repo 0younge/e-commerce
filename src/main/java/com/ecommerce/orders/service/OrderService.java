@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.admins.repository.AdminRepository;
@@ -44,12 +45,11 @@ public class OrderService {
 
 	/**
 	 * 주문 생성
-	 *
 	 * @param request 요청body
 	 * @return 응답body
 	 */
 	@Transactional
-	public CreateOrderResponse save(CreateOrderRequest request) {
+	public CreateOrderResponse save(CreateOrderRequest request, Long adminId) {
 		User user = userRepository.findById(request.getUserId()).orElseThrow(
 			UserNotFoundException::new
 		);
@@ -66,13 +66,15 @@ public class OrderService {
 		Long totalPrice = product.getPrice() * request.getQuantity();
 
 		Order order = new Order(orderNumber, request.getQuantity(), totalPrice, user, product);
-		Order savedOrder = orderRepository.save(order);
-
 
 		// 유저주문과 관리자 주문 구분
-		Long adminId = Optional.ofNullable(savedOrder.getAdmin())
-			.map(Admin::getAdminId)
-			.orElse(null);
+		if (adminId != null) {
+			Admin admin = adminRepository.findById(adminId).orElseThrow(
+				() -> new IllegalStateException("관리자 로그인이 팔요합니다."));
+			order.assignAdmin(admin);
+		}
+
+		Order savedOrder = orderRepository.save(order);
 
 		return new CreateOrderResponse(
 			savedOrder.getOrderId(),
