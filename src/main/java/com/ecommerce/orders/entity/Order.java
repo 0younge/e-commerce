@@ -60,16 +60,15 @@ public class Order extends BaseEntity {
 	private Product product;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "admin_Id", nullable = false)
+	@JoinColumn(name = "admin_Id", nullable = true)
 	private Admin admin;
 
-	public Order(String number, Long quantity, Long totalPrice, User user, Product product, Admin admin) {
+	public Order(String number, Long quantity, Long totalPrice, User user, Product product) {
 		this.number = number;
 		this.quantity = quantity;
 		this.totalPrice = totalPrice;
 		this.user = user;
 		this.product = product;
-		this.admin = admin;
 	}
 
 	public void updateStatus(OrderStatus nextStatus) {
