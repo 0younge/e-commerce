@@ -27,6 +27,7 @@ import com.ecommerce.orders.dto.GetOrderOneResponse;
 import com.ecommerce.orders.dto.UpdateOrderStatusRequest;
 import com.ecommerce.orders.service.OrderService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,15 +40,8 @@ public class OrderController {
 	private final OrderService orderService;
 
 	@PostMapping
-	public ResponseEntity<CreateOrderResponse> saveOrder(
-		@RequestBody CreateOrderRequest request,
-		@SessionAttribute(name = AdminConst.ADMIN_INFO, required = false) AdminInfo adminInfo
-	) {
-		log.info("주문 생성 컨트롤러 호출");
-		if (adminInfo == null) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "관리자 로그인이 필요합니다.");
-		}
-		return ResponseEntity.status(HttpStatus.CREATED).body(orderService.save(request, adminInfo.getAdminId()));
+	public ResponseEntity<CreateOrderResponse> saveOrder(@Valid @RequestBody CreateOrderRequest request) {
+		return ResponseEntity.status(HttpStatus.CREATED).body(orderService.save(request));
 	}
 
 	@GetMapping
@@ -90,14 +84,9 @@ public class OrderController {
 		return ResponseEntity.ok().build();
 	}
 
-	@DeleteMapping("/{orderId}")
-	public ResponseEntity<Void> deleteOrder(@PathVariable Long orderId) {
-		orderService.delete(orderId);
-		return ResponseEntity.noContent().build();
-	}
-
 	@PatchMapping("/{orderId}/cancel")
 	public ResponseEntity<Void> cancelOrder(
+		@Valid
 		@PathVariable Long orderId,
 		@RequestBody CancelOrderRequest request
 	) {

@@ -2,9 +2,10 @@ package com.ecommerce.orders.service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Currency;
 import java.util.List;
+import java.util.Optional;
 
+import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.admins.repository.AdminRepository;
 import com.ecommerce.common.enums.OrderStatus;
+import com.ecommerce.common.exception.InvalidRequestException;
+import com.ecommerce.common.exception.OrderNotFoundException;
 import com.ecommerce.common.exception.ProductNotFoundException;
 import com.ecommerce.common.exception.UserNotFoundException;
 import com.ecommerce.orders.dto.CreateOrderRequest;
@@ -42,20 +45,16 @@ public class OrderService {
 	/**
 	 * 주문 생성
 	 *
-	 * @param request
-	 * @param adminId
-	 * @return
+	 * @param request 요청body
+	 * @return 응답body
 	 */
 	@Transactional
-	public CreateOrderResponse save(CreateOrderRequest request, Long adminId) {
+	public CreateOrderResponse save(CreateOrderRequest request) {
 		User user = userRepository.findById(request.getUserId()).orElseThrow(
 			UserNotFoundException::new
 		);
 		Product product = productRepository.findById(request.getProductId()).orElseThrow(
 			ProductNotFoundException::new
-		);
-		Admin admin = adminRepository.findById(adminId).orElseThrow(
-			() -> new IllegalStateException("관리자를 찾을 수 없습니다.")
 		);
 
 		//주문 수량만큼 상품 재고 검증 및 차감 처리 - Product클래스에서 구현 필요
@@ -66,15 +65,21 @@ public class OrderService {
 		String orderNumber = generateOrderNumber(user);
 		Long totalPrice = product.getPrice() * request.getQuantity();
 
-		Order order = new Order(orderNumber, request.getQuantity(), totalPrice, user, product, admin);
+		Order order = new Order(orderNumber, request.getQuantity(), totalPrice, user, product);
 		Order savedOrder = orderRepository.save(order);
+
+
+		// 유저주문과 관리자 주문 구분
+		Long adminId = Optional.ofNullable(savedOrder.getAdmin())
+			.map(Admin::getAdminId)
+			.orElse(null);
 
 		return new CreateOrderResponse(
 			savedOrder.getOrderId(),
 			savedOrder.getNumber(),
 			savedOrder.getUser().getUserId(),
 			savedOrder.getProduct().getProductId(),
-			savedOrder.getAdmin().getAdminId(),
+			adminId,
 			savedOrder.getQuantity(),
 			savedOrder.getTotalPrice(),
 			savedOrder.getStatus(),
@@ -82,6 +87,11 @@ public class OrderService {
 		);
 	}
 
+	/**
+	 *
+	 * @param user
+	 * @return
+	 */
 	private String generateOrderNumber(User user) {
 		String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
 
@@ -132,7 +142,7 @@ public class OrderService {
 	@Transactional(readOnly = true)
 	public GetOrderOneResponse getOne(Long orderId) {
 		Order order = orderRepository.findById(orderId).orElseThrow(
-			() -> new IllegalStateException("존재하지 않는 주문입니다.")
+			OrderNotFoundException::new
 		);
 		return new GetOrderOneResponse(
 			order.getNumber(),
@@ -152,23 +162,23 @@ public class OrderService {
 	@Transactional
 	public void updateStatus(Long orderId, OrderStatus nextStatus) {
 		Order order = orderRepository.findById(orderId).orElseThrow(
-			() -> new IllegalStateException("존재하지 않는 주문입니다.")
+			OrderNotFoundException::new
 		);
 		OrderStatus currentStatus = order.getStatus();
 		if (currentStatus == OrderStatus.CANCELED) {
-			throw new IllegalStateException("취소된 주문은 상태 변경 불가합니다.");
+			throw new InvalidRequestException("취소된 주문은 상태 변경 불가합니다.");
 		}
 		if (currentStatus == OrderStatus.READY) {
 			if (nextStatus != OrderStatus.SHIPPING && nextStatus != OrderStatus.CANCELED) {
-				throw new IllegalStateException("준비 중 단계에서는 배송 시작이나 취소만 가능합니다.");
+				throw new InvalidRequestException("준비 중 단계에서는 배송 시작이나 취소만 가능합니다.");
 			}
 		} else if (currentStatus == OrderStatus.SHIPPING) {
 			if (nextStatus != OrderStatus.DELIVERED) {
-				throw new IllegalStateException("배송 중 단계에서는 배송 완료만 가능합니다.");
+				throw new InvalidRequestException("배송 중 단계에서는 배송 완료만 가능합니다.");
 			}
 		} else if (currentStatus == OrderStatus.DELIVERED) {
 			if (nextStatus != OrderStatus.DELIVERED) {
-				throw new IllegalStateException("이미 배송 완료된 주문은 수정할 수 없습니다.");
+				throw new InvalidRequestException("이미 배송 완료된 주문은 수정할 수 없습니다.");
 			}
 		}
 		/*
@@ -177,18 +187,15 @@ public class OrderService {
 		order.updateStatus(nextStatus);
 	}
 
-	@Transactional
-	public void delete(Long orderId) {
-		Order order = orderRepository.findById(orderId).orElseThrow(
-			() -> new IllegalStateException("존재하지 않는 주문입니다.")
-		);
-		orderRepository.delete(order);
-	}
-
+	/**
+	 *
+	 * @param orderId
+	 * @param cancelReason
+	 */
 	@Transactional
 	public void cancelOrder(Long orderId, String cancelReason) {
 		Order order = orderRepository.findById(orderId).orElseThrow(
-			() -> new IllegalStateException("존재하지 않는 주문입니다.")
+			OrderNotFoundException::new
 		);
 		order.cancel(cancelReason);
 
