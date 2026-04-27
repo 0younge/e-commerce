@@ -2,18 +2,18 @@ package com.ecommerce.dashboard.dto;
 
 import java.util.List;
 import java.util.Map;
-import java.util.PrimitiveIterator;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import com.ecommerce.common.enums.UserStatus;
 import com.ecommerce.products.entity.Product;
 import com.ecommerce.review.entity.Review;
 import com.ecommerce.users.entity.User;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import lombok.Getter;
 
 @Getter
+@JsonPropertyOrder({"oneStarCount", "twoStarCount", "threeStarCount", "fourStarCount", "fiveStarCount", "activeUsers", "inactiveUsers", "suspendedUsers", "categoryCount"})
 public class GetChartsResponse {
 
 	private final Long oneStarCount;

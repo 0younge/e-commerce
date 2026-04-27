@@ -6,10 +6,12 @@ import java.util.List;
 import com.ecommerce.common.enums.OrderStatus;
 import com.ecommerce.orders.entity.Order;
 import com.ecommerce.products.entity.Product;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import lombok.Getter;
 
 @Getter
+@JsonPropertyOrder({"totalSales", "todaySales", "readyOrders", "shippingOrders", "deliveredOrders", "shortageProducts", "soldOutProducts"})
 public class GetWidgetsResponse {
 
 	private final Long totalSales;
