@@ -1,6 +1,5 @@
 package com.ecommerce.admins.controller;
 
-import org.hibernate.Session;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import com.ecommerce.admins.dto.CreateAdminRequest;
 import com.ecommerce.admins.dto.GetAdminResponse;
@@ -75,7 +75,6 @@ public class AdminController {
 	 * @param sortOrder 정렬 순서
 	 * @param role 검색할 역할
 	 * @param status 검색할 상태
-	 * @param session 검증을 위한 세션
 	 * @return 페이지네이션을 마친 관리자 리스트
 	 */
 	@GetMapping
@@ -83,12 +82,13 @@ public class AdminController {
 		@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size,
 		@RequestParam(defaultValue = "createdAt") String sortBy, @RequestParam(defaultValue = "desc") String sortOrder,
 		@RequestParam(required = false) AdminRole role, @RequestParam(required = false) AdminStatus status,
-		HttpSession session) {
+		@AuthenticationPrincipal AdminInfo adminInfo ) // 수정: 세션 대신 JWT 인증 정보 사용
+	{
 		Pageable pageable = PageRequest.of(page - 1, size,
 			sortOrder.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending());
 
 		return ResponseEntity.ok(
-			adminService.getAdminList(keyword, role, status, pageable, checkSessionOrThrow(session)));
+			adminService.getAdminList(keyword, role, status, pageable, adminInfo));
 	}
 
 	/**
