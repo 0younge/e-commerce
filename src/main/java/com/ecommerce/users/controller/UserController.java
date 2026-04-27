@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ecommerce.common.enums.UserStatus;
 import com.ecommerce.common.exception.InvalidRequestException;
+import com.ecommerce.common.response.ApiResponse;
 import com.ecommerce.users.dto.GetOneUserResponse;
 import com.ecommerce.users.dto.GetPageResponse;
 import com.ecommerce.users.dto.GetUserResponse;
@@ -43,7 +44,7 @@ public class UserController {
 	 * @return 페이지네이션을 마친 사용자 리스트
 	 */
 	@GetMapping("/users")
-	public ResponseEntity<GetPageResponse<GetUserResponse>> getUserList(
+	public ResponseEntity<ApiResponse<GetPageResponse<GetUserResponse>>> getUserList(
 		@RequestParam(required = false) String keyword,
 		@RequestParam(defaultValue = "1") int page,
 		@RequestParam(defaultValue = "10") int size,
@@ -56,7 +57,7 @@ public class UserController {
 		}
 		Pageable pageable = PageRequest.of(page - 1, size, Sort.Direction.valueOf(sortOrder), sortBy);
 		Page<GetUserResponse> result = userService.findByKeywordAndStatus(keyword, status, pageable);
-		return ResponseEntity.status(HttpStatus.OK).body(GetPageResponse.of(result));
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(GetPageResponse.of(result)));
 	}
 
 	/**
@@ -65,8 +66,8 @@ public class UserController {
 	 * @return 특정 사용자의 상세 정보
 	 */
 	@GetMapping("/users/{userId}")
-	public ResponseEntity<GetOneUserResponse> getUserDetails(@PathVariable Long userId) {
-		return ResponseEntity.status(HttpStatus.OK).body(userService.findUserDetails(userId));
+	public ResponseEntity<ApiResponse<GetOneUserResponse>> getUserDetails(@PathVariable Long userId) {
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(userService.findUserDetails(userId)));
 	}
 
 	/**
@@ -76,9 +77,9 @@ public class UserController {
 	 * @return 수정된 사용자 정보
 	 */
 	@PatchMapping("/users/{userId}")
-	public ResponseEntity<PatchUserResponse> patchUserDetails(@PathVariable Long userId,
+	public ResponseEntity<ApiResponse<PatchUserResponse>> patchUserDetails(@PathVariable Long userId,
 		@Valid @RequestBody PatchUserRequest patchUserRequest) {
-		return ResponseEntity.status(HttpStatus.OK).body(userService.patchUserDetails(userId, patchUserRequest));
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(userService.patchUserDetails(userId, patchUserRequest)));
 	}
 
 	/**
@@ -88,9 +89,9 @@ public class UserController {
 	 * @return 상태가 변경된 사용자 정보
 	 */
 	@PatchMapping("/users/{userId}/status")
-	public ResponseEntity<PatchUserResponse> patchUserStatus(@PathVariable Long userId,
+	public ResponseEntity<ApiResponse<PatchUserResponse>> patchUserStatus(@PathVariable Long userId,
 		@Valid @RequestBody PatchUserStatusRequest patchUserStatusRequest) {
-		return ResponseEntity.status(HttpStatus.OK).body(userService.patchUserStatus(userId, patchUserStatusRequest));
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(userService.patchUserStatus(userId, patchUserStatusRequest)));
 	}
 
 	/**
@@ -99,8 +100,8 @@ public class UserController {
 	 * @return 상태코드
 	 */
 	@DeleteMapping("/users/{userId}")
-	public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
+	public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Long userId) {
 		userService.deleteById(userId);
-		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+		return ResponseEntity.ok(ApiResponse.success("사용자가 삭제되었습니다."));
 	}
 }
