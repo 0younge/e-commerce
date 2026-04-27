@@ -15,7 +15,6 @@ import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.admins.repository.AdminRepository;
 import com.ecommerce.common.enums.OrderStatus;
 import com.ecommerce.common.exception.AdminLoginStatusException;
-import com.ecommerce.common.exception.InvalidRequestException;
 import com.ecommerce.common.exception.OrderNotFoundException;
 import com.ecommerce.common.exception.ProductNotFoundException;
 import com.ecommerce.common.exception.UserNotFoundException;
@@ -153,12 +152,11 @@ public class OrderService {
 	/**
 	 * 특정 주문 조회 - 관리자 로그인시에만 접근 가능
 	 *
-	 * @param orderId 주문 고유 아이디
-	 * @param adminId
+	 * @param orderId 주문 고유 id
 	 * @return 특정 주문의 상세 정보
 	 */
 	@Transactional(readOnly = true)
-	public GetOrderOneResponse getOne(Long orderId, Long adminId) {
+	public GetOrderOneResponse getOne(Long orderId) {
 		Order order = orderRepository.findById(orderId).orElseThrow(
 			OrderNotFoundException::new
 		);
@@ -179,7 +177,8 @@ public class OrderService {
 
 	/**
 	 * 주문 상태 수정 - 관리자 로그인시에만 접근 가능
-	 * @param orderId 주문 고유 아이디
+	 *
+	 * @param orderId    주문 고유 id
 	 * @param nextStatus 다음 상태
 	 */
 	@Transactional
@@ -187,32 +186,12 @@ public class OrderService {
 		Order order = orderRepository.findById(orderId).orElseThrow(
 			OrderNotFoundException::new
 		);
-		OrderStatus currentStatus = order.getStatus();
-		if (currentStatus == OrderStatus.CANCELED) {
-			throw new InvalidRequestException("취소된 주문은 상태 변경 불가합니다.");
-		}
-		if (currentStatus == OrderStatus.READY) {
-			if (nextStatus != OrderStatus.SHIPPING && nextStatus != OrderStatus.CANCELED) {
-				throw new InvalidRequestException("준비 중 단계에서는 배송 시작이나 취소만 가능합니다.");
-			}
-		} else if (currentStatus == OrderStatus.SHIPPING) {
-			if (nextStatus != OrderStatus.DELIVERED) {
-				throw new InvalidRequestException("배송 중 단계에서는 배송 완료만 가능합니다.");
-			}
-		} else if (currentStatus == OrderStatus.DELIVERED) {
-			if (nextStatus != OrderStatus.DELIVERED) {
-				throw new InvalidRequestException("이미 배송 완료된 주문은 수정할 수 없습니다.");
-			}
-		}
-		/*
-		관리자페이지에서 배송 시작 버튼 누르면 배송중으로 변경되어야함
-		 */
-		order.updateStatus(nextStatus);
+		order.changeStatus(nextStatus);
 	}
 
 	/**
 	 * 주문 취소
-	 * @param orderId 주문 고유 아이디
+	 * @param orderId 주문 고유 id
 	 * @param cancelReason 취소 사유
 	 */
 	@Transactional

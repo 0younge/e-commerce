@@ -71,8 +71,27 @@ public class Order extends BaseEntity {
 		this.product = product;
 	}
 
-	public void updateStatus(OrderStatus nextStatus) {
-		this.status = nextStatus;
+	public void changeStatus(OrderStatus nextStatus) {
+		if (this.status == OrderStatus.CANCELED) {
+			throw new IllegalStateException("취소된 주문은 변경 불가");
+		}
+
+		switch (this.status) {
+			case READY ->  {
+				if (nextStatus != OrderStatus.SHIPPING && nextStatus != OrderStatus.CANCELED) {
+					throw new IllegalStateException("준비중 -> 배송중 or 취소만 가능");
+				}
+			}
+			case SHIPPING -> {
+				if (nextStatus != OrderStatus.DELIVERED) {
+					throw new IllegalStateException("배송중 -> 배송완료만 가능;");
+				}
+			}
+			case DELIVERED -> {
+				throw new IllegalStateException("이미 배송 완료");
+			}
+		}
+		this.status=nextStatus;
 	}
 
 	public void cancel(String reason) {

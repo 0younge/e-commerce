@@ -91,13 +91,18 @@ public class OrderController {
 		if (adminInfo == null) {
 			throw new AdminLoginStatusException();
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(orderService.getOne(orderId, adminInfo.getAdminId()));
+		return ResponseEntity.status(HttpStatus.OK).body(orderService.getOne(orderId));
 	}
 
 	@PatchMapping("/{orderId}")
 	public ResponseEntity<Void> updateOrderStatus(
 		@PathVariable Long orderId,
-		@RequestBody UpdateOrderStatusRequest request) {
+		@RequestBody UpdateOrderStatusRequest request,
+		@SessionAttribute(name = AdminConst.ADMIN_INFO, required = false) AdminInfo adminInfo
+	) {
+		if (adminInfo == null) {
+			throw new AdminLoginStatusException();
+		}
 		orderService.updateStatus(orderId, request.getStatus());
 		return ResponseEntity.ok().build();
 	}
