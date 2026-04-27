@@ -1,4 +1,4 @@
-package com.ecommerce.products.dto;
+package com.ecommerce.products.dto.request;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -9,19 +9,19 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
- * 상품 정보 수정 요청 DTO
+ * 상품 등록 요청 DTO
  *
- * 사용: PUT /products/{id}
- * 용도: 상품의 기본 정보(이름, 카테고리, 가격) 수정
+ * 사용: POST /products
+ * 용도: 새 상품 등록 시 사용
  *
  * 특징:
- * - quantity는 별도 API로 변경 (PATCH /products/{id}/quantity)
- * - adminId로 권한 체크
+ * - status는 자동으로 FOR_SALE 설정됨
+ * - adminId로 등록자 지정
  */
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateProductRequest {
+public class CreateProductRequest  {
 
 	@NotNull(message = "관리자 ID는 필수입니다.")
 	private Long adminId;
@@ -36,5 +36,9 @@ public class UpdateProductRequest {
 
 	@NotNull(message = "가격은 필수입니다.")
 	@Min(value = 0, message = "가격은 0 이상이어야 합니다.")
-	private Long price;
+	private Long price;  //
+
+	@NotNull(message = "수량은 필수입니다.")
+	@Min(value = 0, message = "수량은 0 이상이어야 합니다.")
+	private Long quantity;
 }
