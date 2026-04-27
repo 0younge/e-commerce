@@ -3,20 +3,18 @@ package com.ecommerce.orders.service;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Optional;
 
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.admins.repository.AdminRepository;
 import com.ecommerce.common.enums.OrderStatus;
+import com.ecommerce.common.exception.AdminLoginStatusException;
 import com.ecommerce.common.exception.InvalidRequestException;
 import com.ecommerce.common.exception.OrderNotFoundException;
 import com.ecommerce.common.exception.ProductNotFoundException;
@@ -69,7 +67,8 @@ public class OrderService {
 		// 유저주문과 관리자 주문 구분
 		if (adminId != null) {
 			Admin admin = adminRepository.findById(adminId).orElseThrow(
-				() -> new IllegalStateException("관리자 로그인이 팔요합니다."));
+				AdminLoginStatusException::new
+			);
 			order.assignAdmin(admin);
 		}
 
@@ -89,9 +88,9 @@ public class OrderService {
 	}
 
 	/**
-	 *
-	 * @param user
-	 * @return
+	 * 주문 번호 생성 (주문생성날짜_유저id_주문번호)
+	 * @param user 유저 번호
+	 * @return 주문번호
 	 */
 	private String generateOrderNumber(User user) {
 		String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
@@ -102,6 +101,17 @@ public class OrderService {
 		return String.format("%s_%d_%d", datePart, user.getUserId(), nextOrderNumber);
 	}
 
+	/**
+	 * 주문 리스트 조회 - 관리자 로그인시에만 접근 가능
+	 * @param adminId 관리자 id
+	 * @param keyword 검색할 키워드
+	 * @param page 페이지 번호
+	 * @param size 페이지당 개수
+	 * @param sortBy 정렬 기준
+	 * @param sortOrder 정렬 순서
+	 * @param status 검색할 상태
+	 * @return 페이지네이션을 마친 주문 리스트
+	 */
 	@Transactional(readOnly = true)
 	public Page<GetOrderAllResponse> getAll(
 		Long adminId,
@@ -136,12 +146,19 @@ public class OrderService {
 			order.getQuantity(),
 			order.getTotalPrice(),
 			order.getStatus(),
-			order.getAdmin().getName()
+			order.getAdmin() != null ? order.getAdmin().getName() : null
 		));
 	}
 
+	/**
+	 * 특정 주문 조회 - 관리자 로그인시에만 접근 가능
+	 *
+	 * @param orderId 주문 고유 아이디
+	 * @param adminId
+	 * @return 특정 주문의 상세 정보
+	 */
 	@Transactional(readOnly = true)
-	public GetOrderOneResponse getOne(Long orderId) {
+	public GetOrderOneResponse getOne(Long orderId, Long adminId) {
 		Order order = orderRepository.findById(orderId).orElseThrow(
 			OrderNotFoundException::new
 		);
@@ -154,12 +171,17 @@ public class OrderService {
 			order.getTotalPrice(),
 			order.getCreatedAt(),
 			order.getStatus(),
-			order.getAdmin().getName(),
-			order.getAdmin().getEmail(),
-			order.getAdmin().getRole()
+			order.getAdmin() != null ? order.getAdmin().getName() : null,
+			order.getAdmin() != null ? order.getAdmin().getEmail() : null,
+			order.getAdmin() != null ? order.getAdmin().getRole() : null
 		);
 	}
 
+	/**
+	 * 주문 상태 수정 - 관리자 로그인시에만 접근 가능
+	 * @param orderId 주문 고유 아이디
+	 * @param nextStatus 다음 상태
+	 */
 	@Transactional
 	public void updateStatus(Long orderId, OrderStatus nextStatus) {
 		Order order = orderRepository.findById(orderId).orElseThrow(
@@ -190,7 +212,7 @@ public class OrderService {
 
 	/**
 	 * 주문 취소
-	 * @param orderId 오더 아이디
+	 * @param orderId 주문 고유 아이디
 	 * @param cancelReason 취소 사유
 	 */
 	@Transactional

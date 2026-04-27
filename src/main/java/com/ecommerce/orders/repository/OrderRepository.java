@@ -17,19 +17,18 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 	long countByUser(User user);
 
 	@Query("""
-		SELECT o FROM Order o
-		JOIN o.user u
-		JOIN o.product p
-		JOIN o.admin a
-		WHERE o.admin.adminId = :adminId
-		AND (
-		    :keyword IS NULL OR :keyword = '' OR
-		    o.number LIKE %:keyword% OR
-		    u.name LIKE %:keyword%
-		)
-		AND (
-		    :status IS NULL OR o.status = :status
-		)
+		    SELECT o FROM Order o
+		    JOIN o.user u
+		    JOIN o.product p
+		    LEFT JOIN o.admin a
+		    WHERE (
+		        :keyword IS NULL OR :keyword = '' OR
+		        o.number LIKE %:keyword% OR
+		        u.name LIKE %:keyword%
+		    )
+		    AND (
+		        :status IS NULL OR o.status = :status
+		    )
 		""")
 	Page<Order> searchOrders(
 		@Param("adminId") Long adminId,

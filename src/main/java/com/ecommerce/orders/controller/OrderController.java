@@ -16,9 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.admins.entity.AdminConst;
 import com.ecommerce.admins.entity.AdminInfo;
 import com.ecommerce.common.enums.OrderStatus;
+import com.ecommerce.common.exception.AdminLoginStatusException;
 import com.ecommerce.orders.dto.CancelOrderRequest;
 import com.ecommerce.orders.dto.CreateOrderRequest;
 import com.ecommerce.orders.dto.CreateOrderResponse;
@@ -66,7 +68,7 @@ public class OrderController {
 		@RequestParam(required = false) OrderStatus status
 	) {
 		if (adminInfo == null) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "관리자 로그인이 필요합니다.");
+			throw new AdminLoginStatusException();
 		}
 		return ResponseEntity.ok(
 			orderService.getAll(
@@ -82,8 +84,14 @@ public class OrderController {
 	}
 
 	@GetMapping("/{orderId}")
-	public ResponseEntity<GetOrderOneResponse> getOrder(@PathVariable Long orderId) {
-		return ResponseEntity.status(HttpStatus.OK).body(orderService.getOne(orderId));
+	public ResponseEntity<GetOrderOneResponse> getOrder(
+		@PathVariable Long orderId,
+		@SessionAttribute(name = AdminConst.ADMIN_INFO, required = false) AdminInfo adminInfo
+	) {
+		if (adminInfo == null) {
+			throw new AdminLoginStatusException();
+		}
+		return ResponseEntity.status(HttpStatus.OK).body(orderService.getOne(orderId, adminInfo.getAdminId()));
 	}
 
 	@PatchMapping("/{orderId}")
