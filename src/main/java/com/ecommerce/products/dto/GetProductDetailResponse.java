@@ -5,7 +5,16 @@ import java.time.LocalDateTime;
 import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.products.entity.Product;
 
-public record ProductDetailResponse(
+/**
+ * 상품 상세 정보 응답 DTO
+ *
+ * 사용: GET /products/{productId} (상세 조회)
+ *
+ * 특징:
+ * - Admin 상세 정보 포함 (adminId, adminName, adminEmail)
+ * - GetProductResponse보다 더 많은 Admin 정보 제공
+ */
+public record GetProductDetailResponse(
 	Long productId,
 	String name,
 	String category,
@@ -20,14 +29,15 @@ public record ProductDetailResponse(
 	LocalDateTime createdAt,
 	LocalDateTime modifiedAt
 ) {
-	public static ProductDetailResponse from(Product product, Admin admin) {
-		return new ProductDetailResponse(
+	public static GetProductDetailResponse from(Product product, Admin admin) {
+
+		return new GetProductDetailResponse(
 			product.getProductId(),
 			product.getName(),
 			product.getCategory(),
 			product.getPrice(),
 			product.getQuantity(),
-			product.getStatus(),  // ← .name() 삭제
+			product.getStatus().name(),
 			admin.getAdminId(),
 			admin.getName(),
 			admin.getEmail(),
