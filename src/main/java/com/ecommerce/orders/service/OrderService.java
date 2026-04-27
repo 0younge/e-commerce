@@ -57,9 +57,8 @@ public class OrderService {
 			ProductNotFoundException::new
 		);
 
-		//주문 수량만큼 상품 재고 검증 및 차감 처리 - Product클래스에서 구현 필요
-		// product.decreaseStock(request.getQuantity());
-		//재고 변경에 따른 상품 상태 자동 전환 처리 - Product클래스에서 구현 필요
+		//주문 수량만큼 상품 재고 검증 및 차감 처리 & 상품 상태 변경
+		product.decreaseQuantity(request.getQuantity());
 
 		//주문 번호 생성 및 총 가격 계산
 		String orderNumber = generateOrderNumber(user);
@@ -190,9 +189,9 @@ public class OrderService {
 	}
 
 	/**
-	 *
-	 * @param orderId
-	 * @param cancelReason
+	 * 주문 취소
+	 * @param orderId 오더 아이디
+	 * @param cancelReason 취소 사유
 	 */
 	@Transactional
 	public void cancelOrder(Long orderId, String cancelReason) {
@@ -201,7 +200,7 @@ public class OrderService {
 		);
 		order.cancel(cancelReason);
 
-		//재고 복구 로직 추가 필요 product랑 협의.
 		Product product = order.getProduct();
+		product.increaseQuantity(order.getQuantity());
 	}
 }
