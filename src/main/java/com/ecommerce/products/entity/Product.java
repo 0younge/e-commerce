@@ -1,5 +1,8 @@
 package com.ecommerce.products.entity;
 
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+
 import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.common.BaseEntity;
 import com.ecommerce.common.enums.ProductStatus;
@@ -23,6 +26,8 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @Table(name = "products")
+@SQLDelete(sql = "UPDATE products SET deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE product_id = ?")
+@SQLRestriction("deleted = false")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product extends BaseEntity {
 
@@ -41,7 +46,8 @@ public class Product extends BaseEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private ProductStatus status = ProductStatus.FOR_SALE;;
+	private ProductStatus status = ProductStatus.FOR_SALE;
+	;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "admin_id")
