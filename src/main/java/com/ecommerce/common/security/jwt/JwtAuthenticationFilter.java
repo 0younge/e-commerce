@@ -9,6 +9,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.ecommerce.admins.entity.AdminInfo; // 수정: JWT 인증 후 principal로 담을 관리자 정보
+import com.ecommerce.admins.entity.AdminRole; // 수정: 문자열 role을 AdminRole enum으로 변환하기 위해 추가
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,9 +41,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			SimpleGrantedAuthority authority =
 				new SimpleGrantedAuthority("ROLE_" + role);
 
+			// 수정: 컨트롤러에서 @AuthenticationPrincipal로 꺼내 쓸 AdminInfo 생성
+			AdminInfo adminInfo = new AdminInfo(
+				adminId,
+				email,
+				AdminRole.valueOf(role)
+			);
+
 			UsernamePasswordAuthenticationToken authentication =
 				new UsernamePasswordAuthenticationToken(
-					email,
+					adminInfo, // 수정: 기존 email 대신 AdminInfo를 principal로 저장
 					null,
 					List.of(authority)
 				);
