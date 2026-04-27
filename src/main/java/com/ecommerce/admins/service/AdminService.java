@@ -2,6 +2,7 @@ package com.ecommerce.admins.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,8 @@ import com.ecommerce.admins.repository.AdminRepository;
 import com.ecommerce.common.PasswordEncoder;
 import com.ecommerce.common.enums.AdminStatus;
 import com.ecommerce.common.exception.AccessDeniedException;
+import com.ecommerce.common.exception.AdminNotFoundException;
+import com.ecommerce.common.exception.AdminStatusException;
 import com.ecommerce.common.exception.DuplicateResourceException;
 import com.ecommerce.common.exception.LoginFailedException;
 
@@ -62,7 +65,7 @@ public class AdminService {
 	@Transactional(readOnly = true)
 	public AdminInfo login(@Valid LoginAdminRequest request) {
 		Admin admin = adminRepository.findByEmail(request.getEmail())
-			.orElseThrow(() -> new IllegalArgumentException("존재하는 이메일을 찾을 수 없습니다,"));
+			.orElseThrow(() -> new AdminNotFoundException("존재하는 이메일을 찾을 수 없습니다,"));
 		// TODO: 마지막에 비밀번호 암호화 할 것
 		if (!request.getPassword().equals(admin.getPassword())) {
 			throw new LoginFailedException();
@@ -237,7 +240,7 @@ public class AdminService {
 	 * @return 예외처리를 마친 어드민 값
 	 */
 	public Admin findByIdOrThrow(Long adminId) {
-		return adminRepository.findById(adminId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+		return adminRepository.findById(adminId).orElseThrow(() -> new AdminNotFoundException("존재하지 않는 유저입니다."));
 	}
 
 	/**
@@ -246,10 +249,10 @@ public class AdminService {
 	 */
 	public void checkStatusOrThrow(Admin admin) {
 		switch (admin.getStatus()) {
-			case INACTIVE -> throw new IllegalArgumentException("계정 비활성화됨");
-			case SUSPENDED -> throw new IllegalArgumentException("계정 정지됨");
-			case PENDING -> throw new IllegalArgumentException("계정 승인대기중");
-			case REJECTED -> throw new IllegalArgumentException("계정 신청 거부됨");
+			case INACTIVE -> throw new AdminStatusException(HttpStatus.FORBIDDEN, "계정 비활성화됨");
+			case SUSPENDED -> throw new AdminStatusException(HttpStatus.FORBIDDEN, "계정 정지됨");
+			case PENDING -> throw new AdminStatusException(HttpStatus.FORBIDDEN, "계정 승인대기중");
+			case REJECTED -> throw new AdminStatusException(HttpStatus.FORBIDDEN, "계정 신청 거부됨");
 		}
 	}
 
@@ -273,10 +276,10 @@ public class AdminService {
 	public Admin checkStatusPending(Long adminId) {
 		Admin admin = findByIdOrThrow(adminId);
 		switch (admin.getStatus()) {
-			case INACTIVE -> throw new IllegalArgumentException("계정 비활성화됨");
-			case SUSPENDED -> throw new IllegalArgumentException("계정 정지됨");
-			case ACTIVE -> throw new IllegalArgumentException("이미 계정이 활성상태입니다.");
-			case REJECTED -> throw new IllegalArgumentException("계정 신청 거부됨");
+			case INACTIVE -> throw new AdminStatusException(HttpStatus.FORBIDDEN, "계정 비활성화됨");
+			case SUSPENDED -> throw new AdminStatusException(HttpStatus.FORBIDDEN, "계정 정지됨");
+			case ACTIVE -> throw new AdminStatusException(HttpStatus.CONFLICT, "이미 계정이 활성상태입니다.");
+			case REJECTED -> throw new AdminStatusException(HttpStatus.FORBIDDEN, "계정 신청 거부됨");
 		}
 		return admin;
 	}
