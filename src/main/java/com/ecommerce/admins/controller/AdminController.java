@@ -1,6 +1,5 @@
 package com.ecommerce.admins.controller;
 
-import org.hibernate.Session;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -9,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,11 +19,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ecommerce.admins.dto.CreateAdminRequest;
 import com.ecommerce.admins.dto.GetAdminResponse;
+import com.ecommerce.admins.dto.GetMyAdminResponse;
 import com.ecommerce.admins.dto.GetOneAdminResponse;
 import com.ecommerce.admins.dto.LoginAdminRequest;
+import com.ecommerce.admins.dto.RejectAdminRequest;
+import com.ecommerce.admins.dto.RejectAdminResponse;
 import com.ecommerce.admins.dto.UpdateAdminRequest;
+import com.ecommerce.admins.dto.UpdateMyAdminRequest;
+import com.ecommerce.admins.dto.UpdateMyPasswordRequest;
 import com.ecommerce.admins.dto.UpdateRoleAdminRequest;
 import com.ecommerce.admins.dto.UpdateStatusAdminRequest;
+import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.admins.entity.AdminConst;
 import com.ecommerce.admins.entity.AdminInfo;
 import com.ecommerce.admins.entity.AdminRole;
@@ -163,9 +169,87 @@ public class AdminController {
 	}
 
 	/**
+	 * 관리자 승인
+	 * @param adminId 승인할 관리자 아이디
+	 * @param session 검증을 위한 세션
+	 * @return 상태코드
+	 */
+	@PostMapping("/{adminId}/approve")
+	public ResponseEntity<Void> approveAdmin(@PathVariable Long adminId, HttpSession session) {
+		adminService.approve(adminId, checkSessionOrThrow(session));
+
+		return ResponseEntity.ok().build();
+	}
+
+	/**
+	 * 관리자 거부
+	 * @param adminId 거부할 관리자 아이디
+	 * @param request 거부사유
+	 * @param session 검증을 위한 세션
+	 * @return 상태코드
+	 */
+	@PostMapping("/{adminId}/reject")
+	public ResponseEntity<RejectAdminResponse> rejectAdmin(@PathVariable Long adminId,
+		@RequestBody @Valid RejectAdminRequest request, HttpSession session) {
+
+		return ResponseEntity.ok(adminService.reject(adminId, request, checkSessionOrThrow(session)));
+	}
+
+	/**
+	 * 내 프로필 조회
+	 * @param session 검증을 위한 세션
+	 * @return 내 이름, 메일, 전화번호 반환
+	 */
+	@GetMapping("/my")
+	public ResponseEntity<GetMyAdminResponse> getMy(HttpSession session) {
+		return ResponseEntity.ok(adminService.getMy(checkSessionOrThrow(session)));
+	}
+
+	/**
+	 * 내 프로필 수정
+	 * @param request 수정할 이름, 메일, 전화번호
+	 * @param session 검증을 위한 세션
+	 * @return 상태코드
+	 */
+	@PatchMapping("/my")
+	public ResponseEntity<Void> updateMy(@RequestBody @Valid UpdateMyAdminRequest request, HttpSession session) {
+		AdminInfo adminInfo = adminService.updateMy(request, checkSessionOrThrow(session));
+		session.setAttribute(AdminConst.ADMIN_INFO, adminInfo);
+
+		return ResponseEntity.ok().build();
+	}
+
+	/**
+	 * 내 비밀번호 수정
+	 * @param request 변경할 비밀번호
+	 * @param session 검증을 위한 세션
+	 * @return 상태코드
+	 */
+	@PatchMapping("/my/password")
+	public ResponseEntity<Void> updateMyPassword(@RequestBody @Valid UpdateMyPasswordRequest request,
+		HttpSession session) {
+		adminService.updateMyPassword(request, checkSessionOrThrow(session));
+
+		return ResponseEntity.ok().build();
+	}
+
+	/**
+	 * 로그아웃
+	 * @param session 검증을 위한 세션
+	 * @return 상태코드
+	 */
+	@PostMapping("/logout")
+	public ResponseEntity<Void> logoutAdmin(HttpSession session) {
+		checkSessionOrThrow(session);
+		session.invalidate();
+
+		return ResponseEntity.ok().build();
+	}
+
+	/**
 	 * 로그인 확인 메서드
-	 * 	 * @param session 검증을 위한 세션
-	 * 	 * @return 검증을 마친 세션의 세션값
+	 * @param session 검증을 위한 세션
+	 * @return 검증을 마친 세션의 세션값
 	 */
 	public AdminInfo checkSessionOrThrow(HttpSession session) {
 		AdminInfo adminInfo = (AdminInfo)session.getAttribute(AdminConst.ADMIN_INFO);
