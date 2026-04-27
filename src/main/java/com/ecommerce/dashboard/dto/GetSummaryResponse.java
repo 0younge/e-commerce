@@ -1,4 +1,4 @@
-package com.ecommerce.dashboard;
+package com.ecommerce.dashboard.dto;
 
 import java.time.LocalDate;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.ecommerce.dashboard;
+package com.ecommerce.dashboard.service;
 
 import java.util.List;
 
@@ -9,6 +9,9 @@ import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.admins.entity.AdminInfo;
 import com.ecommerce.admins.repository.AdminRepository;
 import com.ecommerce.common.enums.AdminStatus;
+import com.ecommerce.dashboard.dto.GetChartsResponse;
+import com.ecommerce.dashboard.dto.GetSummaryResponse;
+import com.ecommerce.dashboard.dto.GetWidgetsResponse;
 import com.ecommerce.orders.entity.Order;
 import com.ecommerce.orders.repository.OrderRepository;
 import com.ecommerce.products.entity.Product;
@@ -51,6 +54,17 @@ public class DashboardService {
 		List<Product> allProducts = productRepository.findAll();
 
 		return GetWidgetsResponse.from(allOrders, allProducts);
+	}
+
+	@Transactional(readOnly = true)
+	public GetChartsResponse getCharts(AdminInfo adminInfo) {
+		findByIdOrThrow(adminInfo);
+
+		List<Review> allReviews = reviewRepository.findAll();
+		List<User> allUsers = userRepository.findAll();
+		List<Product> allProducts = productRepository.findAll();
+
+		return GetChartsResponse.from(allReviews, allUsers, allProducts);
 	}
 
 	public void findByIdOrThrow(AdminInfo adminInfo) {
