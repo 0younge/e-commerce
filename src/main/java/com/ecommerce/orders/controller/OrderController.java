@@ -111,8 +111,12 @@ public class OrderController {
 	public ResponseEntity<Void> cancelOrder(
 		@Valid
 		@PathVariable Long orderId,
-		@RequestBody CancelOrderRequest request
+		@RequestBody CancelOrderRequest request,
+		@SessionAttribute(name = AdminConst.ADMIN_INFO, required = false) AdminInfo adminInfo
 	) {
+		if (adminInfo == null) {
+			throw new AdminLoginStatusException();
+		}
 		if (request.getCancelReason() == null || request.getCancelReason().isBlank()){
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "취소 사유는 필수입니다.");
 		}
