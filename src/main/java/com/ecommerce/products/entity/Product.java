@@ -103,7 +103,7 @@ public class Product extends BaseEntity {
 
 		// 재고 0이면 상태 변경
 		if (this.quantity == 0) {
-			this.status = ProductStatus.SOLD_OUT;  // ✅ 변경
+			this.status = ProductStatus.SOLD_OUT;
 		}
 	}
 
@@ -114,8 +114,8 @@ public class Product extends BaseEntity {
 		this.quantity += quantity;
 
 		// 재고 생기면 판매중으로 변경
-		if (this.status == ProductStatus.SOLD_OUT) {  // ✅ 변경
-			this.status = ProductStatus.FOR_SALE;  // ✅ 변경
+		if (this.status == ProductStatus.SOLD_OUT) {
+			this.status = ProductStatus.FOR_SALE;
 		}
 	}
 
@@ -123,7 +123,7 @@ public class Product extends BaseEntity {
 	 * 판매 가능 여부
 	 */
 	public boolean isAvailable() {
-		return this.status == ProductStatus.FOR_SALE && this.quantity > 0;  // ✅ 변경
+		return this.status == ProductStatus.FOR_SALE && this.quantity > 0;
 	}
 
 	/**
@@ -136,7 +136,7 @@ public class Product extends BaseEntity {
 	/**
 	 * 상태 변경
 	 */
-	public void changeStatus(ProductStatus status) {  // ✅ 파라미터 타입 변경
+	public void changeStatus(ProductStatus status) {
 		this.status = status;
 	}
 }
