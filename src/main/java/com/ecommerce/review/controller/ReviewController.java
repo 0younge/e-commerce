@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.SessionAttribute;
@@ -27,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/reviews")
 public class ReviewController {
 	private final ReviewService reviewService;
 
@@ -40,7 +42,7 @@ public class ReviewController {
 	 * @param rating 검색할 평점
 	 * @return 페이지네이션을 마친 리뷰 리스트
 	 */
-	@GetMapping("/reviews")
+	@GetMapping()
 	public ResponseEntity<ApiResponse<GetPageResponse<GetReviewListResponse>>> getReviewList(
 		@RequestParam(required = false) String keyword,
 		@RequestParam(defaultValue = "1") int page,
@@ -63,7 +65,7 @@ public class ReviewController {
 	 * @param reviewId 조회할 리뷰 아이디
 	 * @return 특정 리뷰의 상세 정보
 	 */
-	@GetMapping("/reviews/{reviewId}")
+	@GetMapping("/{reviewId}")
 	public ResponseEntity<ApiResponse<GetOneReviewResponse>> getOneReview(@PathVariable Long reviewId) {
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(reviewService.findById(reviewId)));
 	}
@@ -74,7 +76,7 @@ public class ReviewController {
 	 * @param adminInfo 세션에 저장된 관리자 정보
 	 * @return 삭제 결과 메시지
 	 */
-	@DeleteMapping("/reviews/{reviewId}")
+	@DeleteMapping("/{reviewId}")
 	public ResponseEntity<ApiResponse<Void>> deleteReview(@PathVariable Long reviewId,
 		@SessionAttribute(name = AdminConst.ADMIN_INFO, required = false) AdminInfo adminInfo) {
 
