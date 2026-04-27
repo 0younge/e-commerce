@@ -1,16 +1,12 @@
 package com.ecommerce.admins.dto;
 
-import java.lang.reflect.Field;
-
-import com.ecommerce.admins.entity.Admin;
-
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 
 @Getter
-public class UpdateAdminRequest {
+public class UpdateMyAdminRequest {
 
 	@NotBlank(message = "이름은 필수로 작성해야합니다.")
 	private final String name;
@@ -21,10 +17,9 @@ public class UpdateAdminRequest {
 	@Pattern(regexp = "^010-\\d{4}-\\d{4}$", message = "010-XXXX-XXXX 형식을 지켜야합니다.")
 	private final String phoneNumber;
 
-	public UpdateAdminRequest(String name, String email, String phoneNumber) {
+	public UpdateMyAdminRequest(String name, String email, String phoneNumber) {
 		this.name = name;
 		this.email = email;
 		this.phoneNumber = phoneNumber;
 	}
-
 }

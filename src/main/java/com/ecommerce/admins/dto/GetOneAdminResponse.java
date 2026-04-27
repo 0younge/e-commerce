@@ -5,10 +5,12 @@ import java.time.LocalDateTime;
 import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.admins.entity.AdminRole;
 import com.ecommerce.common.enums.AdminStatus;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import lombok.Getter;
 
 @Getter
+@JsonPropertyOrder({"name", "email", "phoneNumber", "role", "status", "createdAt", "approvedAt"})
 public class GetOneAdminResponse {
 
 	private final String name;

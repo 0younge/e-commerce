@@ -4,6 +4,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.ecommerce.common.response.ErrorResponse;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 	@ExceptionHandler(BusinessException.class)
