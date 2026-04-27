@@ -54,7 +54,7 @@ public class SecurityConfig {
 				.requestMatchers("/products/**").hasAnyRole("SUPER_ADMIN","OPERATION_ADMIN")
 
 				// 주문 도메인 : 모든 관리자
-				.requestMatchers("/orders/**").hasAnyRole("SUPER_ADMIN", "OPERATOR_ADMIN", "CS_ADMIN")
+				.requestMatchers("/orders/**").hasAnyRole("SUPER_ADMIN", "OPERATION_ADMIN", "CS_ADMIN")
 
 				// 고객 삭제 : 슈퍼 관리자만
 				.requestMatchers(HttpMethod.DELETE,"/users/**").hasRole("SUPER_ADMIN")
