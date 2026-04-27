@@ -181,7 +181,18 @@ public class OrderService {
 	public void delete(Long orderId) {
 		Order order = orderRepository.findById(orderId).orElseThrow(
 			() -> new IllegalStateException("존재하지 않는 주문입니다.")
-			);
+		);
 		orderRepository.delete(order);
+	}
+
+	@Transactional
+	public void cancelOrder(Long orderId, String cancelReason) {
+		Order order = orderRepository.findById(orderId).orElseThrow(
+			() -> new IllegalStateException("존재하지 않는 주문입니다.")
+		);
+		order.cancel(cancelReason);
+
+		//재고 복구 로직 추가 필요 product랑 협의.
+		Product product = order.getProduct();
 	}
 }

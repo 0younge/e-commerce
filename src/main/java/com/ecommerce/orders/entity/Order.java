@@ -49,6 +49,8 @@ public class Order extends BaseEntity {
 	@Column(nullable = false)
 	private Long totalPrice;
 
+	private String cancelReason;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
@@ -72,6 +74,14 @@ public class Order extends BaseEntity {
 
 	public void updateStatus(OrderStatus nextStatus) {
 		this.status = nextStatus;
+	}
+
+	public void cancel(String reason) {
+		if (this.status != OrderStatus.READY) {
+			throw new IllegalStateException("준비중 상태에서만 주문 취소가 가능합니다.");
+		}
+		this.status = OrderStatus.CANCELED;
+		this.cancelReason = reason;
 	}
 
 }

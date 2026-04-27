@@ -19,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.ecommerce.admins.entity.AdminConst;
 import com.ecommerce.admins.entity.AdminInfo;
 import com.ecommerce.common.enums.OrderStatus;
+import com.ecommerce.orders.dto.CancelOrderRequest;
 import com.ecommerce.orders.dto.CreateOrderRequest;
 import com.ecommerce.orders.dto.CreateOrderResponse;
 import com.ecommerce.orders.dto.GetOrderAllResponse;
@@ -56,8 +57,8 @@ public class OrderController {
 		@RequestParam(defaultValue = "1") int page,
 		@RequestParam(defaultValue = "10") int size,
 		@RequestParam(defaultValue = "createdAt") String sortBy,
-		@RequestParam(defaultValue = "desc")String sortOrder,
-		@RequestParam(required = false)OrderStatus status
+		@RequestParam(defaultValue = "desc") String sortOrder,
+		@RequestParam(required = false) OrderStatus status
 	) {
 		log.info("주문 리스트 컨트롤러 호출");
 		if (adminInfo == null) {
@@ -93,5 +94,17 @@ public class OrderController {
 	public ResponseEntity<Void> deleteOrder(@PathVariable Long orderId) {
 		orderService.delete(orderId);
 		return ResponseEntity.noContent().build();
+	}
+
+	@PatchMapping("/{orderId}/cancel")
+	public ResponseEntity<Void> cancelOrder(
+		@PathVariable Long orderId,
+		@RequestBody CancelOrderRequest request
+	) {
+		if (request.getCancelReason() == null || request.getCancelReason().isBlank()){
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "취소 사유는 필수입니다.");
+		}
+		orderService.cancelOrder(orderId, request.getCancelReason());
+		return ResponseEntity.ok().build();
 	}
 }
