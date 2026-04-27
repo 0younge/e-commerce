@@ -88,7 +88,7 @@ public class UserService {
 	public PatchUserResponse patchUserStatus(Long userId, PatchUserStatusRequest patchUserStatusRequest) {
 		User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException());
 
-		user.updateStatus(patchUserStatusRequest.getUserStatus());
+		user.updateStatus(UserStatus.valueOf(patchUserStatusRequest.getUserStatus()));
 		return PatchUserResponse.from(user);
 	}
 
