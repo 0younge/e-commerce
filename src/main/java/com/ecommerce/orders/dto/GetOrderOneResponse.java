@@ -21,5 +21,5 @@ public class GetOrderOneResponse {
 	private final OrderStatus status;
 	private final String adminName;
 	private final String adminEmail;
-	private final AdminRole adminRle;
+	private final AdminRole adminRole;
 }
