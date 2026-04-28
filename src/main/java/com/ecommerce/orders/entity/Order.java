@@ -60,20 +60,38 @@ public class Order extends BaseEntity {
 	private Product product;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "admin_Id", nullable = false)
+	@JoinColumn(name = "admin_Id", nullable = true)
 	private Admin admin;
 
-	public Order(String number, Long quantity, Long totalPrice, User user, Product product, Admin admin) {
+	public Order(String number, Long quantity, Long totalPrice, User user, Product product) {
 		this.number = number;
 		this.quantity = quantity;
 		this.totalPrice = totalPrice;
 		this.user = user;
 		this.product = product;
-		this.admin = admin;
 	}
 
-	public void updateStatus(OrderStatus nextStatus) {
-		this.status = nextStatus;
+	public void changeStatus(OrderStatus nextStatus) {
+		if (this.status == OrderStatus.CANCELED) {
+			throw new IllegalStateException("취소된 주문은 변경 불가");
+		}
+
+		switch (this.status) {
+			case READY ->  {
+				if (nextStatus != OrderStatus.SHIPPING && nextStatus != OrderStatus.CANCELED) {
+					throw new IllegalStateException("준비중 -> 배송중 or 취소만 가능");
+				}
+			}
+			case SHIPPING -> {
+				if (nextStatus != OrderStatus.DELIVERED) {
+					throw new IllegalStateException("배송중 -> 배송완료만 가능;");
+				}
+			}
+			case DELIVERED -> {
+				throw new IllegalStateException("이미 배송 완료");
+			}
+		}
+		this.status=nextStatus;
 	}
 
 	public void cancel(String reason) {
@@ -82,6 +100,13 @@ public class Order extends BaseEntity {
 		}
 		this.status = OrderStatus.CANCELED;
 		this.cancelReason = reason;
+	}
+
+	public void assignAdmin(Admin admin) {
+		if (this.admin != null) {
+			throw new IllegalStateException("이미 관리자 배정됨");
+		}
+		this.admin = admin;
 	}
 
 }
