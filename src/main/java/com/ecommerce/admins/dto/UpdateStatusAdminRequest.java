@@ -11,9 +11,9 @@ public class UpdateStatusAdminRequest {
 
 	@NotBlank(message = "상태는 필수로 작성해야합니다.")
 	@Pattern(regexp = "^(ACTIVE|INACTIVE|SUSPENDED|PENDING|REJECTED)$", message = "ACTIVE|INACTIVE|SUSPENDED|PENDING|REJECTED중에서 선택해야 합니다.")
-	private final AdminStatus status;
+	private final String status;
 
-	public UpdateStatusAdminRequest(AdminStatus status) {
+	public UpdateStatusAdminRequest(String status) {
 		this.status = status;
 	}
 }

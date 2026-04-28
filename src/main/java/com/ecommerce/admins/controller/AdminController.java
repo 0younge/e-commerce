@@ -19,10 +19,15 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import com.ecommerce.admins.dto.CreateAdminRequest;
 import com.ecommerce.admins.dto.GetAdminResponse;
+import com.ecommerce.admins.dto.GetMyAdminResponse;
 import com.ecommerce.admins.dto.GetOneAdminResponse;
 import com.ecommerce.admins.dto.LoginAdminRequest;
 import com.ecommerce.admins.dto.LoginAdminResponse;
+import com.ecommerce.admins.dto.RejectAdminRequest;
+import com.ecommerce.admins.dto.RejectAdminResponse;
 import com.ecommerce.admins.dto.UpdateAdminRequest;
+import com.ecommerce.admins.dto.UpdateMyAdminRequest;
+import com.ecommerce.admins.dto.UpdateMyPasswordRequest;
 import com.ecommerce.admins.dto.UpdateRoleAdminRequest;
 import com.ecommerce.admins.dto.UpdateStatusAdminRequest;
 import com.ecommerce.admins.entity.AdminConst;
@@ -30,6 +35,8 @@ import com.ecommerce.admins.entity.AdminInfo;
 import com.ecommerce.admins.entity.AdminRole;
 import com.ecommerce.admins.service.AdminService;
 import com.ecommerce.common.enums.AdminStatus;
+import com.ecommerce.common.exception.AdminLoginStatusException;
+import com.ecommerce.common.response.ApiResponse;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -48,10 +55,10 @@ public class AdminController {
 	 * @return 상태코드
 	 */
 	@PostMapping("/signup")
-	public ResponseEntity<Void> createAdmin(@RequestBody @Valid CreateAdminRequest request) {
+	public ResponseEntity<ApiResponse<Void>> createAdmin(@RequestBody @Valid CreateAdminRequest request) {
 		adminService.save(request);
 
-		return ResponseEntity.status(HttpStatus.CREATED).build();
+		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created("관리자 회원가입 성공", null));
 	}
 
 	/**
@@ -60,10 +67,10 @@ public class AdminController {
 	 * @return 서비스 로직에서 생성된 JWT 반환
 	 */
 	@PostMapping("/login")
-	public ResponseEntity<LoginAdminResponse> loginAdmin(@RequestBody @Valid LoginAdminRequest request) {
+	public ResponseEntity<ApiResponse<LoginAdminResponse>> loginAdmin(@RequestBody @Valid LoginAdminRequest request) {
 		LoginAdminResponse response = adminService.login(request);
 
-		return ResponseEntity.ok(response);
+		return ResponseEntity.ok().body(ApiResponse.success("관리자 조회 성공"));
 	}
 
 	/**
@@ -78,7 +85,7 @@ public class AdminController {
 	 * @return 페이지네이션을 마친 관리자 리스트
 	 */
 	@GetMapping
-	public ResponseEntity<Page<GetAdminResponse>> getAdminList(@RequestParam(required = false) String keyword,
+	public ResponseEntity<ApiResponse<Page<GetAdminResponse>>> getAdminList(@RequestParam(required = false) String keyword,
 		@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size,
 		@RequestParam(defaultValue = "createdAt") String sortBy, @RequestParam(defaultValue = "desc") String sortOrder,
 		@RequestParam(required = false) AdminRole role, @RequestParam(required = false) AdminStatus status,
@@ -87,8 +94,9 @@ public class AdminController {
 		Pageable pageable = PageRequest.of(page - 1, size,
 			sortOrder.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending());
 
-		return ResponseEntity.ok(
-			adminService.getAdminList(keyword, role, status, pageable, adminInfo));
+		return ResponseEntity.ok()
+			.body(ApiResponse.success("관리자 전체 조회 성공",
+				adminService.getAdminList(keyword, role, status, pageable, adminInfo)));
 	}
 
 	/**
@@ -98,8 +106,10 @@ public class AdminController {
 	 * @return 특정 관리자의 이름, 메일, 전화번호, 역할, 상태, 생성일, 수락일 반환
 	 */
 	@GetMapping("/{adminId}")
-	public ResponseEntity<GetOneAdminResponse> getOneAdmin(@PathVariable Long adminId, HttpSession session) {
-		return ResponseEntity.ok(adminService.getOne(adminId, checkSessionOrThrow(session)));
+	public ResponseEntity<ApiResponse<GetOneAdminResponse>> getOneAdmin(@PathVariable Long adminId,
+		HttpSession session) {
+		return ResponseEntity.ok(
+			ApiResponse.created("관리자 상세 조회 성공", adminService.getOne(adminId, checkSessionOrThrow(session))));
 	}
 
 	/**
@@ -110,11 +120,11 @@ public class AdminController {
 	 * @return 상태코드
 	 */
 	@PatchMapping("/{adminId}")
-	public ResponseEntity<Void> updateAdmin(@RequestBody @Valid UpdateAdminRequest request, @PathVariable Long adminId,
-		HttpSession session) {
+	public ResponseEntity<ApiResponse<Void>> updateAdmin(@RequestBody @Valid UpdateAdminRequest request,
+		@PathVariable Long adminId, HttpSession session) {
 		adminService.update(adminId, request, checkSessionOrThrow(session));
 
-		return ResponseEntity.ok().build();
+		return ResponseEntity.ok(ApiResponse.success("관리자 정보 수정 성공"));
 	}
 
 	/**
@@ -125,11 +135,11 @@ public class AdminController {
 	 * @return 상태코드
 	 */
 	@PatchMapping("/{adminId}/role")
-	public ResponseEntity<Void> updateRoleAdmin(@RequestBody @Valid UpdateRoleAdminRequest request,
+	public ResponseEntity<ApiResponse<Void>> updateRoleAdmin(@RequestBody @Valid UpdateRoleAdminRequest request,
 		@PathVariable Long adminId, HttpSession session) {
 		adminService.updateRole(adminId, request, checkSessionOrThrow(session));
 
-		return ResponseEntity.ok().build();
+		return ResponseEntity.ok(ApiResponse.success("관리자 역할 변경 성공"));
 	}
 
 	/**
@@ -140,11 +150,11 @@ public class AdminController {
 	 * @return 상태코드
 	 */
 	@PatchMapping("/{adminId}/status")
-	public ResponseEntity<Void> updateStatusAdmin(@RequestBody @Valid UpdateStatusAdminRequest request,
+	public ResponseEntity<ApiResponse<Void>> updateStatusAdmin(@RequestBody @Valid UpdateStatusAdminRequest request,
 		@PathVariable Long adminId, HttpSession session) {
 		adminService.updateStatus(adminId, request, checkSessionOrThrow(session));
 
-		return ResponseEntity.ok().build();
+		return ResponseEntity.ok(ApiResponse.success("관리자 상태 변경 성공"));
 	}
 
 	/**
@@ -154,21 +164,101 @@ public class AdminController {
 	 * @return 상태코드
 	 */
 	@DeleteMapping("/{adminId}")
-	public ResponseEntity<Void> deleteAdmin(@PathVariable Long adminId, HttpSession session) {
+	public ResponseEntity<ApiResponse<Void>> deleteAdmin(@PathVariable Long adminId, HttpSession session) {
 		adminService.delete(adminId, checkSessionOrThrow(session));
 
-		return ResponseEntity.noContent().build();
+		return ResponseEntity.ok(ApiResponse.success("관리자 삭제 성공"));
+	}
+
+	/**
+	 * 관리자 승인
+	 * @param adminId 승인할 관리자 아이디
+	 * @param session 검증을 위한 세션
+	 * @return 상태코드
+	 */
+	@PatchMapping("/{adminId}/approve")
+	public ResponseEntity<ApiResponse<Void>> approveAdmin(@PathVariable Long adminId, HttpSession session) {
+		adminService.approve(adminId, checkSessionOrThrow(session));
+
+		return ResponseEntity.ok(ApiResponse.success("관리자 승인 성공"));
+	}
+
+	/**
+	 * 관리자 거부
+	 * @param adminId 거부할 관리자 아이디
+	 * @param request 거부사유
+	 * @param session 검증을 위한 세션
+	 * @return 상태코드
+	 */
+	@PatchMapping("/{adminId}/reject")
+	public ResponseEntity<ApiResponse<RejectAdminResponse>> rejectAdmin(@PathVariable Long adminId,
+		@RequestBody @Valid RejectAdminRequest request, HttpSession session) {
+
+		return ResponseEntity.ok(
+			ApiResponse.success("관리자 거부 성공", adminService.reject(adminId, request, checkSessionOrThrow(session))));
+	}
+
+	/**
+	 * 내 프로필 조회
+	 * @param session 검증을 위한 세션
+	 * @return 내 이름, 메일, 전화번호 반환
+	 */
+	@GetMapping("/my")
+	public ResponseEntity<ApiResponse<GetMyAdminResponse>> getMy(HttpSession session) {
+		return ResponseEntity.ok(ApiResponse.success("내 프로필 조회 성공", adminService.getMy(checkSessionOrThrow(session))));
+	}
+
+	/**
+	 * 내 프로필 수정
+	 * @param request 수정할 이름, 메일, 전화번호
+	 * @param session 검증을 위한 세션
+	 * @return 상태코드
+	 */
+	@PatchMapping("/my")
+	public ResponseEntity<ApiResponse<Void>> updateMy(@RequestBody @Valid UpdateMyAdminRequest request,
+		HttpSession session) {
+		AdminInfo adminInfo = adminService.updateMy(request, checkSessionOrThrow(session));
+		session.setAttribute(AdminConst.ADMIN_INFO, adminInfo);
+
+		return ResponseEntity.ok(ApiResponse.success("내 프로필 수정 성공"));
+	}
+
+	/**
+	 * 내 비밀번호 수정
+	 * @param request 변경할 비밀번호
+	 * @param session 검증을 위한 세션
+	 * @return 상태코드
+	 */
+	@PatchMapping("/my/password")
+	public ResponseEntity<ApiResponse<Void>> updateMyPassword(@RequestBody @Valid UpdateMyPasswordRequest request,
+		HttpSession session) {
+		adminService.updateMyPassword(request, checkSessionOrThrow(session));
+
+		return ResponseEntity.ok(ApiResponse.success("내 비밀번호 수정 성공"));
+	}
+
+	/**
+	 * 로그아웃
+	 * @param session 검증을 위한 세션
+	 * @return 상태코드
+	 */
+	@PostMapping("/logout")
+	public ResponseEntity<ApiResponse<Void>> logoutAdmin(HttpSession session) {
+		checkSessionOrThrow(session);
+		session.invalidate();
+
+		return ResponseEntity.ok(ApiResponse.success("로그아웃 성공"));
 	}
 
 	/**
 	 * 로그인 확인 메서드
-	 * 	 * @param session 검증을 위한 세션
-	 * 	 * @return 검증을 마친 세션의 세션값
+	 * @param session 검증을 위한 세션
+	 * @return 검증을 마친 세션의 세션값
 	 */
 	public AdminInfo checkSessionOrThrow(HttpSession session) {
 		AdminInfo adminInfo = (AdminInfo)session.getAttribute(AdminConst.ADMIN_INFO);
 		if (adminInfo == null) {
-			throw new IllegalStateException("로그인이 필요한 작업입니다.");
+			throw new AdminLoginStatusException();
 		}
 		return adminInfo;
 	}

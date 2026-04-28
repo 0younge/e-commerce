@@ -1,5 +1,7 @@
 package com.ecommerce.users.repository;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,4 +23,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 		@Param("status") UserStatus status,
 		Pageable pageable
 	);
+
+	@Query("SELECT u FROM User u LEFT JOIN FETCH u.orders WHERE u.userId = :userId")
+	Optional<User> findByIdWithOrders(@Param("userId") Long userId);
 }

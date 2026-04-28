@@ -4,6 +4,7 @@ import com.ecommerce.admins.entity.AdminRole;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -24,9 +25,9 @@ public class CreateAdminRequest {
 	private final String phoneNumber;
 	@NotBlank(message = "역할은 필수로 작성해야합니다.")
 	@Pattern(regexp = "^(SUPER_ADMIN|OPERATION_ADMIN|CS_ADMIN)$", message = "SUPER_ADMIN|OPERATION_ADMIN|CS_ADMIN중에서 선택해야 합니다.")
-	private final AdminRole role;
+	private final String role;
 
-	public CreateAdminRequest(String name, String email, String password, String phoneNumber, AdminRole role) {
+	public CreateAdminRequest(String name, String email, String password, String phoneNumber, String role) {
 		this.name = name;
 		this.email = email;
 		this.password = password;

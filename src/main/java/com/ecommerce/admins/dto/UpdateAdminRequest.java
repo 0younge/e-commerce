@@ -21,7 +21,7 @@ public class UpdateAdminRequest {
 	@Pattern(regexp = "^010-\\d{4}-\\d{4}$", message = "010-XXXX-XXXX 형식을 지켜야합니다.")
 	private final String phoneNumber;
 
-	private UpdateAdminRequest(String name, String email, String phoneNumber) {
+	public UpdateAdminRequest(String name, String email, String phoneNumber) {
 		this.name = name;
 		this.email = email;
 		this.phoneNumber = phoneNumber;
