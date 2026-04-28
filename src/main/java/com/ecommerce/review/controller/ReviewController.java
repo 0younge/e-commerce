@@ -12,11 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.SessionAttribute;
-import org.springframework.web.server.ResponseStatusException;
 
-import com.ecommerce.admins.entity.AdminConst;
-import com.ecommerce.admins.entity.AdminInfo;
 import com.ecommerce.common.exception.InvalidRequestException;
 import com.ecommerce.common.response.ApiResponse;
 import com.ecommerce.review.dto.GetOneReviewResponse;
@@ -73,16 +69,11 @@ public class ReviewController {
 	/**
 	 * 리뷰 삭제
 	 * @param reviewId 삭제할 리뷰 아이디
-	 * @param adminInfo 세션에 저장된 관리자 정보
 	 * @return 삭제 결과 메시지
 	 */
 	@DeleteMapping("/{reviewId}")
-	public ResponseEntity<ApiResponse<Void>> deleteReview(@PathVariable Long reviewId,
-		@SessionAttribute(name = AdminConst.ADMIN_INFO, required = false) AdminInfo adminInfo) {
+	public ResponseEntity<ApiResponse<Void>> deleteReview(@PathVariable Long reviewId) {
 
-		if (adminInfo == null) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "관리자 로그인이 필요합니다.");
-		}
 		reviewService.deleteById(reviewId);
 		return ResponseEntity.ok(ApiResponse.success("리뷰가 삭제되었습니다."));
 	}
