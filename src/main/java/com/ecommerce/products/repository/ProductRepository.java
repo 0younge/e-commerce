@@ -28,7 +28,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 		Pageable pageable
 	);
 
-	List<Review> findRevuewsByProductId(Long productId);
+	@Query("SELECT r FROM Review r WHERE r.product.productId = :productId")
+	List<Review> findReviewsByProductId(@Param("productId") Long productId);
 
 }
 

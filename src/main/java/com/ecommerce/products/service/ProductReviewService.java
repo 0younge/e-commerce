@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ecommerce.common.exception.ProductNotFoundException;
 import com.ecommerce.products.dto.response.GetLatestReview;
-import com.ecommerce.products.dto.response.GetProductDetailResponse;
+import com.ecommerce.products.dto.response.GetProductReviewResponse;
 import com.ecommerce.products.dto.response.GetReviewStatistics;
 import com.ecommerce.products.entity.Product;
 import com.ecommerce.products.repository.ProductRepository;
@@ -17,38 +17,35 @@ import com.ecommerce.review.entity.Review;
 import com.ecommerce.review.repository.ReviewRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 상품 리뷰 조회 서비스
  *
  * <p>상품 상세 조회 시 리뷰 통계 및 최신 리뷰를 제공합니다.</p>
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
-public class ProcutReviewService {
+public class ProductReviewService {
 
 	private final ReviewRepository reviewRepository;
 	private final ProductRepository productRepository;
-
 
 	/**
 	 * 상품 상세 조회 (리뷰 포함)
 	 */
 	@Transactional(readOnly = true)
-	public GetProductDetailResponse getProductDetail(Long productId) {
+	public GetProductReviewResponse getProductDetail(Long productId) {
 
-		
 		Product product = productRepository.findById(productId)
 			.orElseThrow(() -> new ProductNotFoundException());
 
-		
 		GetReviewStatistics statistics = calculateReviewStatistics(productId);
 
-		
 		List<GetLatestReview> latestReviews = getLatestReviews(productId, 3);
 
-		
-		return GetProductDetailResponse.of(product, statistics, latestReviews);
+		return GetProductReviewResponse.of(product, statistics, latestReviews);
 	}
 
 	/**
@@ -56,7 +53,7 @@ public class ProcutReviewService {
 	 */
 	private List<GetLatestReview> getLatestReviews(Long productId, int limit) {
 
-		List<Review> reviews = productRepository.findRevuewsByProductId(productId);
+		List<Review> reviews = productRepository.findReviewsByProductId(productId);
 
 		List<GetLatestReview> latestReviews = reviews.stream()
 			.sorted((r1, r2) -> r2.getCreatedAt().compareTo(r1.getCreatedAt()))
@@ -64,17 +61,20 @@ public class ProcutReviewService {
 			.map(GetLatestReview::from)
 			.toList();
 
+		log.info("최신 리뷰 조회: productId={}, 개수={}",
+			productId, latestReviews.size());
+
 		return latestReviews;
 	}
 
 	/**
 	 * 리뷰 통계 계산
 	 */
-	private GetReviewStatistics calculateReviewStatistics(Long prodcutId){
+	private GetReviewStatistics calculateReviewStatistics(Long prodcutId) {
 
-		List<Review> reviews = productRepository.findRevuewsByProductId(prodcutId);
+		List<Review> reviews = productRepository.findReviewsByProductId(prodcutId);
 
-		if (reviews.isEmpty()){
+		if (reviews.isEmpty()) {
 			return GetReviewStatistics.of(0.0, 0L, Map.of());
 		}
 
@@ -83,7 +83,7 @@ public class ProcutReviewService {
 			.average()
 			.orElse(0.0);
 
-		Long total = (long) reviews.size();
+		Long total = (long)reviews.size();
 
 		Map<Integer, Long> counts = reviews.stream()
 			.collect(Collectors.groupingBy(
@@ -93,8 +93,5 @@ public class ProcutReviewService {
 
 		return GetReviewStatistics.of(avg, total, counts);
 	}
-
-
-
 
 }

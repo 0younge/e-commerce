@@ -50,7 +50,7 @@ public class Product extends BaseEntity {
 	;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "admin_id")
+	@JoinColumn(name = "admin_id", nullable = true)
 	private Admin admin;
 
 	public Product(String name, String category, Long price, Long quantity, Admin admin) {
