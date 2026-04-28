@@ -8,7 +8,7 @@ INSERT INTO users (name, email, phone_number, status, deleted, created_at, modif
 VALUES ('김철수', 'user2@test.com', '010-2222-2222', 'ACTIVE', false, NOW(), NOW());
 
 INSERT INTO products (name, category, price, quantity, status, deleted, admin_id, created_at, modified_at)
-VALUES ('노트북', '전자기기', 1000000, 10, 'SELLING', false, NULL, NOW(), NOW());
+VALUES ('노트북', '전자기기', 1000000, 10, 'FOR_SALE', false, NULL, NOW(), NOW());
 
 INSERT INTO products (name, category, price, quantity, status, deleted, admin_id, created_at, modified_at)
-VALUES ('마우스', '전자기기', 30000, 50, 'SELLING', false, NULL, NOW(), NOW());
+VALUES ('마우스', '전자기기', 30000, 50, 'FOR_SALE', false, NULL, NOW(), NOW());
