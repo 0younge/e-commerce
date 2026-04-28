@@ -1,7 +1,7 @@
 package com.ecommerce.dashboard.service;
 
-import java.util.Comparator;
-import java.util.List;
+import java.time.LocalDate;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,17 +10,15 @@ import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.admins.entity.AdminInfo;
 import com.ecommerce.admins.repository.AdminRepository;
 import com.ecommerce.common.enums.AdminStatus;
+import com.ecommerce.common.enums.OrderStatus;
+import com.ecommerce.common.enums.UserStatus;
 import com.ecommerce.dashboard.dto.GetChartsResponse;
 import com.ecommerce.dashboard.dto.GetRecentOrderResponse;
 import com.ecommerce.dashboard.dto.GetSummaryResponse;
 import com.ecommerce.dashboard.dto.GetWidgetsResponse;
-import com.ecommerce.orders.entity.Order;
 import com.ecommerce.orders.repository.OrderRepository;
-import com.ecommerce.products.entity.Product;
 import com.ecommerce.products.repository.ProductRepository;
-import com.ecommerce.review.entity.Review;
 import com.ecommerce.review.repository.ReviewRepository;
-import com.ecommerce.users.entity.User;
 import com.ecommerce.users.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -38,46 +36,68 @@ public class DashboardService {
 	@Transactional(readOnly = true)
 	public GetSummaryResponse getSummary(AdminInfo adminInfo) {
 		findByIdOrThrow(adminInfo);
+		LocalDate today = LocalDate.now();
 
-		List<Admin> allAdmins = adminRepository.findAll();
-		List<User> allUsers = userRepository.findAll();
-		List<Product> allProducts = productRepository.findAll();
-		List<Order> allOrders = orderRepository.findAll();
-		List<Review> allReviews = reviewRepository.findAll();
+		return GetSummaryResponse.from(
+			adminRepository.count(),
+			adminRepository.countByStatus(AdminStatus.ACTIVE),
 
-		return GetSummaryResponse.from(allAdmins, allUsers, allProducts, allOrders, allReviews);
+			userRepository.count(),
+			userRepository.countByStatus(UserStatus.ACTIVE),
+
+			productRepository.count(),
+			productRepository.countLowStock(5),
+
+			orderRepository.count(),
+			orderRepository.countByDate(today),
+
+			reviewRepository.count(),
+			Optional.ofNullable(reviewRepository.findAverageRating()).orElse(0.0)
+		);
 	}
 
 	@Transactional(readOnly = true)
 	public GetWidgetsResponse getWidgets(AdminInfo adminInfo) {
 		findByIdOrThrow(adminInfo);
+		LocalDate today = LocalDate.now();
 
-		List<Order> allOrders = orderRepository.findAll();
-		List<Product> allProducts = productRepository.findAll();
+		return GetWidgetsResponse.from(
+			orderRepository.sumTotalPrice(),
+			orderRepository.sumTotalPriceByDate(today),
 
-		return GetWidgetsResponse.from(allOrders, allProducts);
+			orderRepository.countByStatus(OrderStatus.READY),
+			orderRepository.countByStatus(OrderStatus.SHIPPING),
+			orderRepository.countByStatus(OrderStatus.DELIVERED),
+
+			productRepository.countLowStock(5),
+			productRepository.countOutOfStock()
+		);
 	}
 
 	@Transactional(readOnly = true)
 	public GetChartsResponse getCharts(AdminInfo adminInfo) {
 		findByIdOrThrow(adminInfo);
 
-		List<Review> allReviews = reviewRepository.findAll();
-		List<User> allUsers = userRepository.findAll();
-		List<Product> allProducts = productRepository.findAll();
+		return GetChartsResponse.from(
+			reviewRepository.countByRating(1),
+			reviewRepository.countByRating(2),
+			reviewRepository.countByRating(3),
+			reviewRepository.countByRating(4),
+			reviewRepository.countByRating(5),
 
-		return GetChartsResponse.from(allReviews, allUsers, allProducts);
+			userRepository.countByStatus(UserStatus.ACTIVE),
+			userRepository.countByStatus(UserStatus.INACTIVE),
+			userRepository.countByStatus(UserStatus.SUSPENDED),
+
+			productRepository.countGroupByCategory()
+		);
 	}
 
 	@Transactional(readOnly = true)
 	public GetRecentOrderResponse getRecentOrders(AdminInfo adminInfo) {
-		List<Order> recentTenOrders = orderRepository.findAll()
-			.stream()
-			.sorted(Comparator.comparing(Order::getCreatedAt).reversed())
-			.limit(10)
-			.toList();
+		findByIdOrThrow(adminInfo);
 
-		return GetRecentOrderResponse.from(recentTenOrders);
+		return GetRecentOrderResponse.from(orderRepository.findRecentTenOrders());
 	}
 
 	public void findByIdOrThrow(AdminInfo adminInfo) {

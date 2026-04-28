@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ecommerce.common.exception.ReviewNotFoundException;
 import com.ecommerce.review.dto.GetOneReviewResponse;
 import com.ecommerce.review.dto.GetReviewListResponse;
 import com.ecommerce.review.entity.Review;
@@ -27,31 +28,31 @@ public class ReviewService {
 	@Transactional(readOnly = true)
 	public Page<GetReviewListResponse> findByKeywordAndRating(String keyword, Integer rating, Pageable pageable) {
 		return reviewRepository.findByKeywordAndRating(keyword, rating, pageable)
-			.map(review -> GetReviewListResponse.from(review));
+			.map(GetReviewListResponse::from);
 	}
 
 	/**
 	 * 특정 리뷰 조회
 	 * @param reviewId 조회할 리뷰 아이디
 	 * @return 특정 리뷰의 상세 정보
-	 * @throws IllegalStateException 리뷰가 존재하지 않을 경우
+	 * @throws ReviewNotFoundException 리뷰가 존재하지 않을 경우
 	 */
 	@Transactional(readOnly = true)
 	public GetOneReviewResponse findById(Long reviewId) {
 		Review review = reviewRepository.findById(reviewId)
-			.orElseThrow(() -> new IllegalStateException("리뷰를 찾을 수 없습니다."));
+			.orElseThrow(ReviewNotFoundException::new);
 		return GetOneReviewResponse.from(review);
 	}
 
 	/**
 	 * 리뷰 삭제 (소프트 삭제)
 	 * @param reviewId 삭제할 리뷰 아이디
-	 * @throws IllegalStateException 리뷰가 존재하지 않을 경우
+	 * @throws ReviewNotFoundException 리뷰가 존재하지 않을 경우
 	 */
 	@Transactional
 	public void deleteById(Long reviewId) {
 		Review review = reviewRepository.findById(reviewId)
-			.orElseThrow(() -> new IllegalStateException("리뷰를 찾을 수 없습니다."));
+			.orElseThrow(ReviewNotFoundException::new);
 		review.softDelete();
 	}
 }
