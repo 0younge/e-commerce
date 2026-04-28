@@ -88,17 +88,17 @@ public class ProductController {
 
 	/**
 	 * 상품 수정
-	 * PUT /products/{id}
+	 * PUT /products/{productId}
 	 */
-	@PutMapping("/{id}")
+	@PutMapping("/{productId}")
 	public ResponseEntity<ApiResponse<GetProductResponse>> update(
 		@AuthenticationPrincipal SecurityAdminInfo loginAdmin,
-		@PathVariable Long id,
+		@PathVariable Long productId,
 		@Valid @RequestBody UpdateProductRequest request) {
 
 		return ResponseEntity.ok(
 			ApiResponse.success("상품이 수정되었습니다.",
-				productService.update(id, request, loginAdmin.adminId()))
+				productService.update(productId, request, loginAdmin.adminId()))
 		);
 	}
 
@@ -106,15 +106,15 @@ public class ProductController {
 	 * 재고 변경
 	 * PATCH /products/{id}/quantity
 	 */
-	@PatchMapping("/{id}/quantity")
+	@PatchMapping("/{productId}/quantity")
 	public ResponseEntity<ApiResponse<GetProductResponse>> updateQuantity(
 		@AuthenticationPrincipal SecurityAdminInfo loginAdmin,
-		@PathVariable Long id,
+		@PathVariable Long productId,
 		@Valid @RequestBody UpdateQuantityRequest request) {
 
 		return ResponseEntity.ok(
 			ApiResponse.success("재고가 변경되었습니다.",
-				productService.updateQuantity(id, request, loginAdmin.adminId()))
+				productService.updateQuantity(productId, request, loginAdmin.adminId()))
 		);
 	}
 
