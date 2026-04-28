@@ -56,8 +56,8 @@ public class SecurityConfig {
 					"/health"
 				).permitAll()
 
-				// 관리자 도메인: 슈퍼관리자만
-				.requestMatchers("/admins/**").hasRole("SUPER_ADMIN")
+				// 관리자 도메인: 모든 관리자
+				.requestMatchers("/admins/**").hasAnyRole("SUPER_ADMIN", "OPERATION_ADMIN", "CS_ADMIN")
 
 				// 상품 도메인 : 슈퍼관리자 및 운영관리자만
 				.requestMatchers("/products/**").hasAnyRole("SUPER_ADMIN","OPERATION_ADMIN")
