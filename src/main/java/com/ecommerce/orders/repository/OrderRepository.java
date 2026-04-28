@@ -1,6 +1,7 @@
 package com.ecommerce.orders.repository;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.ecommerce.common.enums.OrderStatus;
+import com.ecommerce.dashboard.dto.RecentOrderDto;
 import com.ecommerce.orders.entity.Order;
 import com.ecommerce.users.entity.User;
 
@@ -51,5 +53,21 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
 	@Query("SELECT COUNT(o) FROM Order o WHERE o.status = :status")
 	long countByStatus(@Param("status") OrderStatus status);
+
+	@Query("""
+    SELECT new com.ecommerce.dashboard.dto.RecentOrderDto(
+        o.orderId,
+        u.name,
+        p.name,
+        o.totalPrice,
+        o.status
+    )
+    FROM Order o
+    JOIN o.user u
+    JOIN o.product p
+    ORDER BY o.createdAt DESC
+    LIMIT 10
+    """)
+	List<RecentOrderDto> findRecentTenOrders();
 
 }

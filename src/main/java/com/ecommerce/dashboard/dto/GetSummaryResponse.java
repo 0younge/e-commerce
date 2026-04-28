@@ -1,15 +1,5 @@
 package com.ecommerce.dashboard.dto;
 
-import java.time.LocalDate;
-import java.util.List;
-
-import com.ecommerce.admins.entity.Admin;
-import com.ecommerce.common.enums.AdminStatus;
-import com.ecommerce.common.enums.UserStatus;
-import com.ecommerce.orders.entity.Order;
-import com.ecommerce.products.entity.Product;
-import com.ecommerce.review.entity.Review;
-import com.ecommerce.users.entity.User;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import lombok.Getter;

@@ -1,11 +1,7 @@
 package com.ecommerce.dashboard.service;
 
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,16 +16,11 @@ import com.ecommerce.dashboard.dto.GetChartsResponse;
 import com.ecommerce.dashboard.dto.GetRecentOrderResponse;
 import com.ecommerce.dashboard.dto.GetSummaryResponse;
 import com.ecommerce.dashboard.dto.GetWidgetsResponse;
-import com.ecommerce.orders.entity.Order;
 import com.ecommerce.orders.repository.OrderRepository;
-import com.ecommerce.products.entity.Product;
 import com.ecommerce.products.repository.ProductRepository;
-import com.ecommerce.review.entity.Review;
 import com.ecommerce.review.repository.ReviewRepository;
-import com.ecommerce.users.entity.User;
 import com.ecommerce.users.repository.UserRepository;
 
-import jdk.jfr.Category;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -104,13 +95,9 @@ public class DashboardService {
 
 	@Transactional(readOnly = true)
 	public GetRecentOrderResponse getRecentOrders(AdminInfo adminInfo) {
-		List<Order> recentTenOrders = orderRepository.findAll()
-			.stream()
-			.sorted(Comparator.comparing(Order::getCreatedAt).reversed())
-			.limit(10)
-			.toList();
+		findByIdOrThrow(adminInfo);
 
-		return GetRecentOrderResponse.from(recentTenOrders);
+		return new GetRecentOrderResponse(orderRepository.findRecentTenOrders());
 	}
 
 	public void findByIdOrThrow(AdminInfo adminInfo) {
