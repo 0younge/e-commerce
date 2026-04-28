@@ -4,16 +4,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.ecommerce.common.enums.UserStatus;
-import com.ecommerce.products.entity.Product;
-import com.ecommerce.review.entity.Review;
-import com.ecommerce.users.entity.User;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import lombok.Getter;
 
 @Getter
-@JsonPropertyOrder({"oneStarCount", "twoStarCount", "threeStarCount", "fourStarCount", "fiveStarCount", "activeUsers", "inactiveUsers", "suspendedUsers", "categoryCount"})
+@JsonPropertyOrder({"oneStarCount", "twoStarCount", "threeStarCount", "fourStarCount", "fiveStarCount", "activeUsers",
+	"inactiveUsers", "suspendedUsers", "categoryCount"})
 public class GetChartsResponse {
 
 	private final Long oneStarCount;
@@ -26,8 +23,9 @@ public class GetChartsResponse {
 	private final Long suspendedUsers;
 	private final Map<String, Long> categoryCount;
 
-	private GetChartsResponse(Long oneStarCount, Long twoStarCount, Long threeStarCount, Long fourStarCount, Long fiveStarCount,
-		Long activeUsers, Long inactiveUsers, Long suspendedUsers, Map<String, Long> categoryCount) {
+	public GetChartsResponse(Long oneStarCount, Long twoStarCount, Long threeStarCount, Long fourStarCount,
+		Long fiveStarCount, Long activeUsers, Long inactiveUsers, Long suspendedUsers,
+		List<CategoryCountDto> categoryCount) {
 		this.oneStarCount = oneStarCount;
 		this.twoStarCount = twoStarCount;
 		this.threeStarCount = threeStarCount;
@@ -36,24 +34,15 @@ public class GetChartsResponse {
 		this.activeUsers = activeUsers;
 		this.inactiveUsers = inactiveUsers;
 		this.suspendedUsers = suspendedUsers;
-		this.categoryCount = categoryCount;
+		this.categoryCount = categoryCount.stream()
+			.collect(Collectors.toMap(CategoryCountDto::getCategory, CategoryCountDto::getCount));
 	}
 
-	public static GetChartsResponse from(List<Review> allReviews, List<User> allUsers, List<Product> allProducts) {
-		return new GetChartsResponse(
-
-			allReviews.stream().filter(a -> a.getRating() == 1).count(),
-			allReviews.stream().filter(a -> a.getRating() == 2).count(),
-			allReviews.stream().filter(a -> a.getRating() == 3).count(),
-			allReviews.stream().filter(a -> a.getRating() == 4).count(),
-			allReviews.stream().filter(a -> a.getRating() == 5).count(),
-
-			allUsers.stream().filter(a -> UserStatus.ACTIVE.equals(a.getStatus())).count(),
-			allUsers.stream().filter(a -> UserStatus.INACTIVE.equals(a.getStatus())).count(),
-			allUsers.stream().filter(a -> UserStatus.SUSPENDED.equals(a.getStatus())).count(),
-
-			allProducts.stream().collect(Collectors.groupingBy(Product::getCategory, Collectors.counting()))
-		);
+	public static GetChartsResponse from(Long oneStarCount, Long twoStarCount, Long threeStarCount, Long fourStarCount,
+		Long fiveStarCount, Long activeUsers, Long inactiveUsers, Long suspendedUsers,
+		List<CategoryCountDto> categoryCount) {
+		return new GetChartsResponse(oneStarCount, twoStarCount, threeStarCount, fourStarCount, fiveStarCount,
+			activeUsers, inactiveUsers, suspendedUsers, categoryCount);
 	}
 
 }

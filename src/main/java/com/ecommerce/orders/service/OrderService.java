@@ -2,7 +2,6 @@ package com.ecommerce.orders.service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Currency;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -15,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.admins.repository.AdminRepository;
 import com.ecommerce.common.enums.OrderStatus;
+import com.ecommerce.common.exception.AdminLoginStatusException;
+import com.ecommerce.common.exception.OrderNotFoundException;
 import com.ecommerce.common.exception.ProductNotFoundException;
 import com.ecommerce.common.exception.UserNotFoundException;
 import com.ecommerce.orders.dto.CreateOrderRequest;
@@ -41,10 +42,8 @@ public class OrderService {
 
 	/**
 	 * 주문 생성
-	 *
-	 * @param request
-	 * @param adminId
-	 * @return
+	 * @param request 요청body
+	 * @return 응답body
 	 */
 	@Transactional
 	public CreateOrderResponse save(CreateOrderRequest request, Long adminId) {
@@ -54,19 +53,24 @@ public class OrderService {
 		Product product = productRepository.findById(request.getProductId()).orElseThrow(
 			ProductNotFoundException::new
 		);
-		Admin admin = adminRepository.findById(adminId).orElseThrow(
-			() -> new IllegalStateException("관리자를 찾을 수 없습니다.")
-		);
 
-		//주문 수량만큼 상품 재고 검증 및 차감 처리 - Product클래스에서 구현 필요
-		// product.decreaseStock(request.getQuantity());
-		//재고 변경에 따른 상품 상태 자동 전환 처리 - Product클래스에서 구현 필요
+		//주문 수량만큼 상품 재고 검증 및 차감 처리 & 상품 상태 변경
+		product.decreaseQuantity(request.getQuantity());
 
 		//주문 번호 생성 및 총 가격 계산
 		String orderNumber = generateOrderNumber(user);
 		Long totalPrice = product.getPrice() * request.getQuantity();
 
-		Order order = new Order(orderNumber, request.getQuantity(), totalPrice, user, product, admin);
+		Order order = new Order(orderNumber, request.getQuantity(), totalPrice, user, product);
+
+		// 유저주문과 관리자 주문 구분
+		if (adminId != null) {
+			Admin admin = adminRepository.findById(adminId).orElseThrow(
+				AdminLoginStatusException::new
+			);
+			order.assignAdmin(admin);
+		}
+
 		Order savedOrder = orderRepository.save(order);
 
 		return new CreateOrderResponse(
@@ -74,7 +78,7 @@ public class OrderService {
 			savedOrder.getNumber(),
 			savedOrder.getUser().getUserId(),
 			savedOrder.getProduct().getProductId(),
-			savedOrder.getAdmin().getAdminId(),
+			adminId,
 			savedOrder.getQuantity(),
 			savedOrder.getTotalPrice(),
 			savedOrder.getStatus(),
@@ -82,6 +86,11 @@ public class OrderService {
 		);
 	}
 
+	/**
+	 * 주문 번호 생성 (주문생성날짜_유저id_주문번호)
+	 * @param user 유저 번호
+	 * @return 주문번호
+	 */
 	private String generateOrderNumber(User user) {
 		String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
 
@@ -91,6 +100,17 @@ public class OrderService {
 		return String.format("%s_%d_%d", datePart, user.getUserId(), nextOrderNumber);
 	}
 
+	/**
+	 * 주문 리스트 조회 - 관리자 로그인시에만 접근 가능
+	 * @param adminId 관리자 id
+	 * @param keyword 검색할 키워드
+	 * @param page 페이지 번호
+	 * @param size 페이지당 개수
+	 * @param sortBy 정렬 기준
+	 * @param sortOrder 정렬 순서
+	 * @param status 검색할 상태
+	 * @return 페이지네이션을 마친 주문 리스트
+	 */
 	@Transactional(readOnly = true)
 	public Page<GetOrderAllResponse> getAll(
 		Long adminId,
@@ -125,14 +145,20 @@ public class OrderService {
 			order.getQuantity(),
 			order.getTotalPrice(),
 			order.getStatus(),
-			order.getAdmin().getName()
+			order.getAdmin() != null ? order.getAdmin().getName() : null
 		));
 	}
 
+	/**
+	 * 특정 주문 조회 - 관리자 로그인시에만 접근 가능
+	 *
+	 * @param orderId 주문 고유 id
+	 * @return 특정 주문의 상세 정보
+	 */
 	@Transactional(readOnly = true)
 	public GetOrderOneResponse getOne(Long orderId) {
 		Order order = orderRepository.findById(orderId).orElseThrow(
-			() -> new IllegalStateException("존재하지 않는 주문입니다.")
+			OrderNotFoundException::new
 		);
 		return new GetOrderOneResponse(
 			order.getNumber(),
@@ -143,56 +169,39 @@ public class OrderService {
 			order.getTotalPrice(),
 			order.getCreatedAt(),
 			order.getStatus(),
-			order.getAdmin().getName(),
-			order.getAdmin().getEmail(),
-			order.getAdmin().getRole()
+			order.getAdmin() != null ? order.getAdmin().getName() : null,
+			order.getAdmin() != null ? order.getAdmin().getEmail() : null,
+			order.getAdmin() != null ? order.getAdmin().getRole() : null
 		);
 	}
 
+	/**
+	 * 주문 상태 수정 - 관리자 로그인시에만 접근 가능
+	 *
+	 * @param orderId    주문 고유 id
+	 * @param nextStatus 다음 상태
+	 */
 	@Transactional
 	public void updateStatus(Long orderId, OrderStatus nextStatus) {
 		Order order = orderRepository.findById(orderId).orElseThrow(
-			() -> new IllegalStateException("존재하지 않는 주문입니다.")
+			OrderNotFoundException::new
 		);
-		OrderStatus currentStatus = order.getStatus();
-		if (currentStatus == OrderStatus.CANCELED) {
-			throw new IllegalStateException("취소된 주문은 상태 변경 불가합니다.");
-		}
-		if (currentStatus == OrderStatus.READY) {
-			if (nextStatus != OrderStatus.SHIPPING && nextStatus != OrderStatus.CANCELED) {
-				throw new IllegalStateException("준비 중 단계에서는 배송 시작이나 취소만 가능합니다.");
-			}
-		} else if (currentStatus == OrderStatus.SHIPPING) {
-			if (nextStatus != OrderStatus.DELIVERED) {
-				throw new IllegalStateException("배송 중 단계에서는 배송 완료만 가능합니다.");
-			}
-		} else if (currentStatus == OrderStatus.DELIVERED) {
-			if (nextStatus != OrderStatus.DELIVERED) {
-				throw new IllegalStateException("이미 배송 완료된 주문은 수정할 수 없습니다.");
-			}
-		}
-		/*
-		관리자페이지에서 배송 시작 버튼 누르면 배송중으로 변경되어야함
-		 */
-		order.updateStatus(nextStatus);
+		order.changeStatus(nextStatus);
 	}
 
-	@Transactional
-	public void delete(Long orderId) {
-		Order order = orderRepository.findById(orderId).orElseThrow(
-			() -> new IllegalStateException("존재하지 않는 주문입니다.")
-		);
-		orderRepository.delete(order);
-	}
-
+	/**
+	 * 주문 취소
+	 * @param orderId 주문 고유 id
+	 * @param cancelReason 취소 사유
+	 */
 	@Transactional
 	public void cancelOrder(Long orderId, String cancelReason) {
 		Order order = orderRepository.findById(orderId).orElseThrow(
-			() -> new IllegalStateException("존재하지 않는 주문입니다.")
+			OrderNotFoundException::new
 		);
 		order.cancel(cancelReason);
 
-		//재고 복구 로직 추가 필요 product랑 협의.
 		Product product = order.getProduct();
+		product.increaseQuantity(order.getQuantity());
 	}
 }
