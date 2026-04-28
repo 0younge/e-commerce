@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ecommerce.common.exception.ReviewNotFoundException;
 import com.ecommerce.review.dto.GetOneReviewResponse;
 import com.ecommerce.review.dto.GetReviewListResponse;
 import com.ecommerce.review.entity.Review;
@@ -39,7 +40,7 @@ public class ReviewService {
 	@Transactional(readOnly = true)
 	public GetOneReviewResponse findById(Long reviewId) {
 		Review review = reviewRepository.findById(reviewId)
-			.orElseThrow(() -> new IllegalStateException("리뷰를 찾을 수 없습니다."));
+			.orElseThrow(() -> new ReviewNotFoundException());
 		return GetOneReviewResponse.from(review);
 	}
 
@@ -51,7 +52,7 @@ public class ReviewService {
 	@Transactional
 	public void deleteById(Long reviewId) {
 		Review review = reviewRepository.findById(reviewId)
-			.orElseThrow(() -> new IllegalStateException("리뷰를 찾을 수 없습니다."));
+			.orElseThrow(() -> new ReviewNotFoundException());
 		review.softDelete();
 	}
 }
