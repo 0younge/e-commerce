@@ -2,8 +2,10 @@ package com.ecommerce.admins.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.http.HttpStatus;
 
 import com.ecommerce.admins.dto.CreateAdminRequest;
 import com.ecommerce.admins.dto.GetAdminResponse;
@@ -31,7 +33,6 @@ import com.ecommerce.common.exception.AccessDeniedException;
 import com.ecommerce.common.exception.AdminNotFoundException;
 import com.ecommerce.common.exception.AdminStatusException;
 import com.ecommerce.common.exception.DuplicateResourceException;
-import com.ecommerce.common.exception.LoginFailedException;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

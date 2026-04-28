@@ -70,7 +70,7 @@ public class AdminController {
 	public ResponseEntity<ApiResponse<LoginAdminResponse>> loginAdmin(@RequestBody @Valid LoginAdminRequest request) {
 		LoginAdminResponse response = adminService.login(request);
 
-		return ResponseEntity.ok().body(ApiResponse.success("관리자 조회 성공"));
+		return ResponseEntity.ok().body(ApiResponse.success("로그인 성공!",response));
 	}
 
 	/**
