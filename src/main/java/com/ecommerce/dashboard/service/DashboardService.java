@@ -3,7 +3,9 @@ package com.ecommerce.dashboard.service;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +29,7 @@ import com.ecommerce.review.repository.ReviewRepository;
 import com.ecommerce.users.entity.User;
 import com.ecommerce.users.repository.UserRepository;
 
+import jdk.jfr.Category;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -84,11 +87,19 @@ public class DashboardService {
 	public GetChartsResponse getCharts(AdminInfo adminInfo) {
 		findByIdOrThrow(adminInfo);
 
-		List<Review> allReviews = reviewRepository.findAll();
-		List<User> allUsers = userRepository.findAll();
-		List<Product> allProducts = productRepository.findAll();
+		return new GetChartsResponse(
+			reviewRepository.countByRating(1),
+			reviewRepository.countByRating(2),
+			reviewRepository.countByRating(3),
+			reviewRepository.countByRating(4),
+			reviewRepository.countByRating(5),
 
-		return GetChartsResponse.from(allReviews, allUsers, allProducts);
+			userRepository.countByStatus(UserStatus.ACTIVE),
+			userRepository.countByStatus(UserStatus.INACTIVE),
+			userRepository.countByStatus(UserStatus.SUSPENDED),
+
+			productRepository.countGroupByCategory()
+		);
 	}
 
 	@Transactional(readOnly = true)
