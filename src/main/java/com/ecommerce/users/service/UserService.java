@@ -33,7 +33,7 @@ public class UserService {
 	@Transactional(readOnly = true)
 	public Page<GetUserResponse> findByKeywordAndStatus(String keyword, UserStatus status, Pageable pageable) {
 		return userRepository.findByKeywordAndStatus(keyword, status, pageable)
-			.map(user -> GetUserResponse.from(user));
+			.map(GetUserResponse::from);
 	}
 
 	/**
@@ -44,7 +44,7 @@ public class UserService {
 	@Transactional(readOnly = true)
 	public GetOneUserResponse findUserDetails(Long userId) {
 		User user = userRepository.findByIdWithOrders(userId)
-			.orElseThrow(() -> new UserNotFoundException());
+			.orElseThrow(UserNotFoundException::new);
 
 		return GetOneUserResponse.from(user);
 	}
@@ -57,7 +57,7 @@ public class UserService {
 	 */
 	@Transactional
 	public PatchUserResponse patchUserDetails(Long userId, PatchUserRequest patchUserRequest) {
-		User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException());
+		User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
 		user.updateDetails(patchUserRequest.getName(), patchUserRequest.getEmail(), patchUserRequest.getPhoneNumber());
 		return PatchUserResponse.from(user);
@@ -71,7 +71,7 @@ public class UserService {
 	 */
 	@Transactional
 	public PatchUserResponse patchUserStatus(Long userId, PatchUserStatusRequest patchUserStatusRequest) {
-		User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException());
+		User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
 		user.updateStatus(UserStatus.valueOf(patchUserStatusRequest.getUserStatus()));
 		return PatchUserResponse.from(user);
@@ -83,7 +83,7 @@ public class UserService {
 	 */
 	@Transactional
 	public void deleteById(Long userId) {
-		User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException());
+		User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 		user.softDelete();
 	}
 }
