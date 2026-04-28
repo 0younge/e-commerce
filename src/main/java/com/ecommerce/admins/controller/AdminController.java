@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -84,6 +85,7 @@ public class AdminController {
 	 * @param status 검색할 상태
 	 * @return 페이지네이션을 마친 관리자 리스트
 	 */
+	@PreAuthorize("hasRole('SUPER_ADMIN')")
 	@GetMapping
 	public ResponseEntity<ApiResponse<Page<GetAdminResponse>>> getAdminList(@RequestParam(required = false) String keyword,
 		@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size,
@@ -105,6 +107,7 @@ public class AdminController {
 	 * @param loginAdmin 검증을 위한 세션
 	 * @return 특정 관리자의 이름, 메일, 전화번호, 역할, 상태, 생성일, 수락일 반환
 	 */
+	@PreAuthorize("hasRole('SUPER_ADMIN')")
 	@GetMapping("/{adminId}")
 	public ResponseEntity<ApiResponse<GetOneAdminResponse>> getOneAdmin(@PathVariable Long adminId,
 		@AuthenticationPrincipal SecurityAdminInfo loginAdmin) {
@@ -119,6 +122,7 @@ public class AdminController {
 	 * @param loginAdmin 검증을 위한 세션
 	 * @return 상태코드
 	 */
+	@PreAuthorize("hasRole('SUPER_ADMIN')")
 	@PatchMapping("/{adminId}")
 	public ResponseEntity<ApiResponse<Void>> updateAdmin(@RequestBody @Valid UpdateAdminRequest request,
 		@PathVariable Long adminId, @AuthenticationPrincipal SecurityAdminInfo loginAdmin) {
@@ -134,6 +138,7 @@ public class AdminController {
 	 * @param loginAdmin 검증을 위한 세션 값
 	 * @return 상태코드
 	 */
+	@PreAuthorize("hasRole('SUPER_ADMIN')")
 	@PatchMapping("/{adminId}/role")
 	public ResponseEntity<ApiResponse<Void>> updateRoleAdmin(@RequestBody @Valid UpdateRoleAdminRequest request,
 		@PathVariable Long adminId, @AuthenticationPrincipal SecurityAdminInfo loginAdmin) {
@@ -149,6 +154,7 @@ public class AdminController {
 	 * @param loginAdmin 검증을 위한 세션 값
 	 * @return 상태코드
 	 */
+	@PreAuthorize("hasRole('SUPER_ADMIN')")
 	@PatchMapping("/{adminId}/status")
 	public ResponseEntity<ApiResponse<Void>> updateStatusAdmin(@RequestBody @Valid UpdateStatusAdminRequest request,
 		@PathVariable Long adminId, @AuthenticationPrincipal SecurityAdminInfo loginAdmin) {
@@ -163,6 +169,7 @@ public class AdminController {
 	 * @param loginAdmin 검증을 위한 세션 값
 	 * @return 상태코드
 	 */
+	@PreAuthorize("hasRole('SUPER_ADMIN')")
 	@DeleteMapping("/{adminId}")
 	public ResponseEntity<ApiResponse<Void>> deleteAdmin(@PathVariable Long adminId, @AuthenticationPrincipal SecurityAdminInfo loginAdmin) {
 		adminService.delete(adminId, loginAdmin.adminId());
@@ -176,6 +183,7 @@ public class AdminController {
 	 * @param loginAdmin 검증을 위한 세션 값
 	 * @return 상태코드
 	 */
+	@PreAuthorize("hasRole('SUPER_ADMIN')")
 	@PatchMapping("/{adminId}/approve")
 	public ResponseEntity<ApiResponse<Void>> approveAdmin(@PathVariable Long adminId, @AuthenticationPrincipal SecurityAdminInfo loginAdmin) {
 		adminService.approve(adminId, loginAdmin.adminId());
@@ -190,6 +198,7 @@ public class AdminController {
 	 * @param loginAdmin 검증을 위한 세션 값
 	 * @return 상태코드
 	 */
+	@PreAuthorize("hasRole('SUPER_ADMIN')")
 	@PatchMapping("/{adminId}/reject")
 	public ResponseEntity<ApiResponse<RejectAdminResponse>> rejectAdmin(@PathVariable Long adminId,
 		@RequestBody @Valid RejectAdminRequest request, @AuthenticationPrincipal SecurityAdminInfo loginAdmin) {
