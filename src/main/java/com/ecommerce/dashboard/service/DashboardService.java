@@ -3,15 +3,18 @@ package com.ecommerce.dashboard.service;
 import java.time.LocalDate;
 import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ecommerce.admins.entity.Admin;
-import com.ecommerce.admins.entity.AdminInfo;
 import com.ecommerce.admins.repository.AdminRepository;
 import com.ecommerce.common.enums.AdminStatus;
 import com.ecommerce.common.enums.OrderStatus;
 import com.ecommerce.common.enums.UserStatus;
+import com.ecommerce.common.exception.AdminNotFoundException;
+import com.ecommerce.common.exception.AdminStatusException;
+import com.ecommerce.common.security.auth.SecurityAdminInfo;
 import com.ecommerce.dashboard.dto.GetChartsResponse;
 import com.ecommerce.dashboard.dto.GetRecentOrderResponse;
 import com.ecommerce.dashboard.dto.GetSummaryResponse;
@@ -34,8 +37,8 @@ public class DashboardService {
 	private final ReviewRepository reviewRepository;
 
 	@Transactional(readOnly = true)
-	public GetSummaryResponse getSummary(AdminInfo adminInfo) {
-		findByIdOrThrow(adminInfo);
+	public GetSummaryResponse getSummary(SecurityAdminInfo loginAdmin) {
+		findByIdOrThrow(loginAdmin);
 		LocalDate today = LocalDate.now();
 
 		return GetSummaryResponse.from(
@@ -57,8 +60,8 @@ public class DashboardService {
 	}
 
 	@Transactional(readOnly = true)
-	public GetWidgetsResponse getWidgets(AdminInfo adminInfo) {
-		findByIdOrThrow(adminInfo);
+	public GetWidgetsResponse getWidgets(SecurityAdminInfo loginAdmin) {
+		findByIdOrThrow(loginAdmin);
 		LocalDate today = LocalDate.now();
 
 		return GetWidgetsResponse.from(
@@ -75,8 +78,8 @@ public class DashboardService {
 	}
 
 	@Transactional(readOnly = true)
-	public GetChartsResponse getCharts(AdminInfo adminInfo) {
-		findByIdOrThrow(adminInfo);
+	public GetChartsResponse getCharts(SecurityAdminInfo loginAdmin) {
+		findByIdOrThrow(loginAdmin);
 
 		return GetChartsResponse.from(
 			reviewRepository.countByRating(1),
@@ -94,17 +97,17 @@ public class DashboardService {
 	}
 
 	@Transactional(readOnly = true)
-	public GetRecentOrderResponse getRecentOrders(AdminInfo adminInfo) {
-		findByIdOrThrow(adminInfo);
+	public GetRecentOrderResponse getRecentOrders(SecurityAdminInfo loginAdmin) {
+		findByIdOrThrow(loginAdmin);
 
 		return GetRecentOrderResponse.from(orderRepository.findRecentTenOrders());
 	}
 
-	public void findByIdOrThrow(AdminInfo adminInfo) {
-		Admin admin = adminRepository.findById(adminInfo.getAdminId())
-			.orElseThrow(() -> new IllegalArgumentException("나중에 수정할 예외"));
+	public void findByIdOrThrow(SecurityAdminInfo loginAdmin) {
+		Admin admin = adminRepository.findById(loginAdmin.adminId())
+			.orElseThrow(() -> new AdminNotFoundException("존재하지 않는 유저입니다."));
 		if (!admin.getStatus().equals(AdminStatus.ACTIVE)) {
-			throw new IllegalStateException("권한이 없습니다");
+			throw new AdminStatusException(HttpStatus.FORBIDDEN, "활성 상태 관리자만 접근할 수 있습니다.");
 		}
 	}
 }
