@@ -2,7 +2,6 @@ package com.ecommerce.products.controller;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,11 +15,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ecommerce.common.response.ApiResponse;
-import com.ecommerce.products.dto.CreateProductRequest;
-import com.ecommerce.products.dto.GetProductDetailResponse;
-import com.ecommerce.products.dto.GetProductResponse;
-import com.ecommerce.products.dto.UpdateProductRequest;
-import com.ecommerce.products.dto.UpdateQuantityRequest;
+import com.ecommerce.products.dto.request.CreateProductRequest;
+import com.ecommerce.products.dto.response.GetProductDetailResponse;
+import com.ecommerce.products.dto.response.GetProductResponse;
+import com.ecommerce.products.dto.request.UpdateProductRequest;
+import com.ecommerce.products.dto.request.UpdateQuantityRequest;
 import com.ecommerce.products.service.ProductService;
 
 import jakarta.validation.Valid;

@@ -9,11 +9,11 @@ import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.admins.repository.AdminRepository;
 import com.ecommerce.common.exception.InvalidRequestException;
 import com.ecommerce.common.exception.ProductNotFoundException;
-import com.ecommerce.products.dto.CreateProductRequest;
-import com.ecommerce.products.dto.GetProductDetailResponse;
-import com.ecommerce.products.dto.GetProductResponse;
-import com.ecommerce.products.dto.UpdateProductRequest;
-import com.ecommerce.products.dto.UpdateQuantityRequest;
+import com.ecommerce.products.dto.request.CreateProductRequest;
+import com.ecommerce.products.dto.response.GetProductDetailResponse;
+import com.ecommerce.products.dto.response.GetProductResponse;
+import com.ecommerce.products.dto.request.UpdateProductRequest;
+import com.ecommerce.products.dto.request.UpdateQuantityRequest;
 import com.ecommerce.products.entity.Product;
 import com.ecommerce.products.repository.ProductRepository;
 
@@ -34,7 +34,7 @@ public class ProductService {
 	 * @throws InvalidRequestException 존재하지 않는 관리자ID
 	 */
 	@Transactional
-	public GetProductResponse save(CreateProductRequest request) {  // ✅ 변경
+	public GetProductResponse save(CreateProductRequest request) {
 
 		Admin admin = adminRepository.findById(request.getAdminId())
 			.orElseThrow(() -> new InvalidRequestException("존재하지 않는 관리자입니다."));
@@ -98,9 +98,7 @@ public class ProductService {
 		Product product = productRepository.findById(productId)
 			.orElseThrow(ProductNotFoundException::new);
 
-		Admin admin = product.getAdmin();
-
-		return GetProductDetailResponse.from(product, admin);
+		return GetProductDetailResponse.from(product);
 	}
 
 	/**

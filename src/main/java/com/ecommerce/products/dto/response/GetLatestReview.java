@@ -9,7 +9,7 @@ import com.ecommerce.review.entity.Review;
  */
 public record GetLatestReview(
 	String userName,        // 고객명
-	Integer rating,         // 평점
+	double rating,         // 평점
 	String content,         // 리뷰 내용
 	LocalDateTime createdAt // 작성일
 ) {

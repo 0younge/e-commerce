@@ -1,6 +1,8 @@
 
 package com.ecommerce.products.repository;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,7 +10,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+
 import com.ecommerce.products.entity.Product;
+import com.ecommerce.review.entity.Review;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
@@ -20,8 +24,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 	Page<Product> searchProducts(
 		@Param("name") String name,
 		@Param("category") String category,
-		@Param("status") String status,  // ← ProductStatus → String
+		@Param("status") String status,
 		Pageable pageable
 	);
+
+	List<Review> findRevuewsByProductId(Long productId);
+
 }
 
