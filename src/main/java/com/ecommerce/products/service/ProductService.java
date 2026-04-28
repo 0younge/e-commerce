@@ -18,8 +18,8 @@ import com.ecommerce.products.dto.UpdateProductRequest;
 import com.ecommerce.products.dto.UpdateQuantityRequest;
 import com.ecommerce.products.entity.Product;
 import com.ecommerce.products.repository.ProductRepository;
-import com.ecommerce.review.dto.GetOneReviewResponse;
-import com.ecommerce.review.dto.GetReviewListResponse;
+import com.ecommerce.review.dto.ReviewResponse;
+import com.ecommerce.review.dto.ReviewStats;
 import com.ecommerce.review.entity.Review;
 import com.ecommerce.review.repository.ReviewRepository;
 
@@ -41,9 +41,10 @@ public class ProductService {
 	 * @throws InvalidRequestException 존재하지 않는 관리자ID
 	 */
 	@Transactional
-	public GetProductResponse save(CreateProductRequest request) {
+	public GetProductResponse save(CreateProductRequest request) {  // ✅ 변경
 
-
+		Admin admin = adminRepository.findById(request.getAdminId())
+			.orElseThrow(() -> new InvalidRequestException("존재하지 않는 관리자입니다."));
 
 		Product product = new Product(
 			request.getName(),
@@ -90,7 +91,6 @@ public class ProductService {
 		return productPage.map(GetProductResponse::from);
 	}
 
-
 	/**
 	 * 상품 상세 조회
 	 *
@@ -100,15 +100,33 @@ public class ProductService {
 	 */
 	@Transactional(readOnly = true)
 	public GetProductDetailResponse getProductDetail(Long productId) {
-
 		Product product = productRepository.findById(productId)
 			.orElseThrow(ProductNotFoundException::new);
 
 		Admin admin = product.getAdmin();
 
-		return GetProductDetailResponse.from(product, admin);
-	}
+		List<Review> reviews = reviewRepository.findByProductProductId(productId);
 
+		double avg = reviews.stream().mapToDouble(Review::getRating).average().orElse(0.0);
+
+		ReviewStats reviewStats = new ReviewStats(
+			Math.round(avg * 10) / 10.0,
+			reviews.size(),
+			(int)reviews.stream().filter(r -> r.getRating() == 1).count(),
+			(int)reviews.stream().filter(r -> r.getRating() == 2).count(),
+			(int)reviews.stream().filter(r -> r.getRating() == 3).count(),
+			(int)reviews.stream().filter(r -> r.getRating() == 4).count(),
+			(int)reviews.stream().filter(r -> r.getRating() == 5).count()
+		);
+
+		List<ReviewResponse> reviewResponses = reviewRepository
+			.findTop3ByProductProductIdOrderByCreatedAtDesc(productId)
+			.stream()
+			.map(ReviewResponse::from)
+			.toList();
+
+		return GetProductDetailResponse.from(product, admin, reviewStats, reviewResponses);
+	}
 
 	/**
 	 * 재고 변경 (관리자 전용)
@@ -123,12 +141,14 @@ public class ProductService {
 		Product product = productRepository.findById(productId)
 			.orElseThrow(() -> new ProductNotFoundException());
 
+		if (!product.getAdmin().getAdminId().equals(request.getAdminId())) {
+			throw new InvalidRequestException("본인이 등록한 상품만 수정할 수 있습니다.");
+		}
 
 		product.updateQuantity(request.getQuantity());
 
 		return GetProductResponse.from(product);
 	}
-
 
 	/**
 	 * 상품 수정
@@ -142,6 +162,8 @@ public class ProductService {
 	@Transactional
 	public GetProductResponse update(Long id, UpdateProductRequest request) {
 
+		Admin admin = adminRepository.findById(request.getAdminId())
+			.orElseThrow(() -> new InvalidRequestException("존재하지 않는 관리자입니다."));
 
 		Product product = productRepository.findById(id)
 			.orElseThrow(() -> new ProductNotFoundException());
@@ -156,7 +178,6 @@ public class ProductService {
 		return GetProductResponse.from(product);
 	}
 
-
 	/**
 	 * 상품 삭제
 	 * 권한: Admin만 가능 (본인이 등록한 상품만)
@@ -169,6 +190,8 @@ public class ProductService {
 	@Transactional
 	public void delete(Long productId, Long adminId) {
 
+		Admin admin = adminRepository.findById(adminId)
+			.orElseThrow(() -> new InvalidRequestException("존재하지 않는 관리자입니다."));
 
 		Product product = productRepository.findById(productId)
 			.orElseThrow(() -> new ProductNotFoundException());
