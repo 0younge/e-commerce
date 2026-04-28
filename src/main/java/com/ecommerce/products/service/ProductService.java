@@ -41,9 +41,9 @@ public class ProductService {
 	 * @throws InvalidRequestException 존재하지 않는 관리자ID
 	 */
 	@Transactional
-	public GetProductResponse save(CreateProductRequest request) {  // ✅ 변경
+	public GetProductResponse save(CreateProductRequest request, Long adminId) {
 
-		Admin admin = adminRepository.findById(request.getAdminId())
+		Admin admin = adminRepository.findById(adminId)
 			.orElseThrow(() -> new InvalidRequestException("존재하지 않는 관리자입니다."));
 
 		Product product = new Product(
@@ -54,7 +54,10 @@ public class ProductService {
 			admin
 		);
 
-		return GetProductResponse.from(productRepository.save(product));
+		Product savedProduct = productRepository.save(product);
+
+
+		return GetProductResponse.from(savedProduct);
 	}
 
 	/**
@@ -136,16 +139,17 @@ public class ProductService {
 	 * @return 변경된 상품 정보
 	 */
 	@Transactional
-	public GetProductResponse updateQuantity(Long productId, UpdateQuantityRequest request) {
+	public GetProductResponse updateQuantity(Long productId, UpdateQuantityRequest request, Long adminId) {
 
 		Product product = productRepository.findById(productId)
-			.orElseThrow(() -> new ProductNotFoundException());
+			.orElseThrow(ProductNotFoundException::new);
 
-		if (!product.getAdmin().getAdminId().equals(request.getAdminId())) {
+		if (!product.getAdmin().getAdminId().equals(adminId)) {
 			throw new InvalidRequestException("본인이 등록한 상품만 수정할 수 있습니다.");
 		}
 
 		product.updateQuantity(request.getQuantity());
+
 
 		return GetProductResponse.from(product);
 	}
@@ -160,13 +164,13 @@ public class ProductService {
 	 * @throws ProductNotFoundException 존재하지 않는 상품
 	 */
 	@Transactional
-	public GetProductResponse update(Long id, UpdateProductRequest request) {
+	public GetProductResponse update(Long id, UpdateProductRequest request, Long adminId) {
 
-		Admin admin = adminRepository.findById(request.getAdminId())
+		Admin admin = adminRepository.findById(adminId)
 			.orElseThrow(() -> new InvalidRequestException("존재하지 않는 관리자입니다."));
 
 		Product product = productRepository.findById(id)
-			.orElseThrow(() -> new ProductNotFoundException());
+			.orElseThrow(ProductNotFoundException::new);
 
 		product.update(
 			request.getName(),
@@ -174,6 +178,7 @@ public class ProductService {
 			request.getPrice(),
 			admin
 		);
+
 
 		return GetProductResponse.from(product);
 	}
@@ -194,14 +199,14 @@ public class ProductService {
 			.orElseThrow(() -> new InvalidRequestException("존재하지 않는 관리자입니다."));
 
 		Product product = productRepository.findById(productId)
-			.orElseThrow(() -> new ProductNotFoundException());
+			.orElseThrow(ProductNotFoundException::new);
 
 		if (!product.getAdmin().getAdminId().equals(adminId)) {
-
 			throw new InvalidRequestException("본인이 등록한 상품만 삭제할 수 있습니다.");
 		}
 
 		productRepository.delete(product);
-	}
 
+	}
 }
+

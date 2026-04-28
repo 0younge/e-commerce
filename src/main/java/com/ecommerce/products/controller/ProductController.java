@@ -2,7 +2,6 @@ package com.ecommerce.products.controller;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,10 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.SessionAttribute;
 
-import com.ecommerce.admins.entity.AdminConst;
-import com.ecommerce.admins.entity.AdminInfo;
 import com.ecommerce.common.response.ApiResponse;
 import com.ecommerce.common.security.auth.SecurityAdminInfo;
 import com.ecommerce.products.dto.CreateProductRequest;
@@ -48,13 +44,12 @@ public class ProductController {
 	 */
 	@PostMapping
 	public ResponseEntity<ApiResponse<GetProductResponse>> createProduct(
-		@AuthenticationPrincipal Long adminId,
+		@AuthenticationPrincipal SecurityAdminInfo loginAdmin,
 		@Valid @RequestBody CreateProductRequest request) {
 
-		GetProductResponse response = productService.save(request);
+		GetProductResponse response = productService.save(request, loginAdmin.adminId());
 
 		return ResponseEntity.ok(ApiResponse.created("상품이 등록되었습니다.", response));
-
 	}
 
 	/**
@@ -102,7 +97,8 @@ public class ProductController {
 		@Valid @RequestBody UpdateProductRequest request) {
 
 		return ResponseEntity.ok(
-			ApiResponse.success("상품이 수정되었습니다.", productService.update(id, request))
+			ApiResponse.success("상품이 수정되었습니다.",
+				productService.update(id, request, loginAdmin.adminId()))
 		);
 	}
 
@@ -117,7 +113,8 @@ public class ProductController {
 		@Valid @RequestBody UpdateQuantityRequest request) {
 
 		return ResponseEntity.ok(
-			ApiResponse.success("재고가 변경되었습니다.", productService.updateQuantity(id, request))
+			ApiResponse.success("재고가 변경되었습니다.",
+				productService.updateQuantity(id, request, loginAdmin.adminId()))
 		);
 	}
 
