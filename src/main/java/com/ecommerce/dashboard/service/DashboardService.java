@@ -38,7 +38,7 @@ public class DashboardService {
 		findByIdOrThrow(adminInfo);
 		LocalDate today = LocalDate.now();
 
-		return new GetSummaryResponse(
+		return GetSummaryResponse.from(
 			adminRepository.count(),
 			adminRepository.countByStatus(AdminStatus.ACTIVE),
 
@@ -61,7 +61,7 @@ public class DashboardService {
 		findByIdOrThrow(adminInfo);
 		LocalDate today = LocalDate.now();
 
-		return new GetWidgetsResponse(
+		return GetWidgetsResponse.from(
 			orderRepository.sumTotalPrice(),
 			orderRepository.sumTotalPriceByDate(today),
 
@@ -78,7 +78,7 @@ public class DashboardService {
 	public GetChartsResponse getCharts(AdminInfo adminInfo) {
 		findByIdOrThrow(adminInfo);
 
-		return new GetChartsResponse(
+		return GetChartsResponse.from(
 			reviewRepository.countByRating(1),
 			reviewRepository.countByRating(2),
 			reviewRepository.countByRating(3),
@@ -97,7 +97,7 @@ public class DashboardService {
 	public GetRecentOrderResponse getRecentOrders(AdminInfo adminInfo) {
 		findByIdOrThrow(adminInfo);
 
-		return new GetRecentOrderResponse(orderRepository.findRecentTenOrders());
+		return GetRecentOrderResponse.from(orderRepository.findRecentTenOrders());
 	}
 
 	public void findByIdOrThrow(AdminInfo adminInfo) {

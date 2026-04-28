@@ -5,7 +5,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 
 @Getter
-@JsonPropertyOrder({"totalAdmins", "activeAdmins", "totalUsers", "activeUsers", "shortageProducts", "totalOrders", "todayOrders", "totalReview", "avgRating"})
+@JsonPropertyOrder({"totalAdmins", "activeAdmins", "totalUsers", "activeUsers", "shortageProducts", "totalOrders",
+	"todayOrders", "totalReview", "avgRating"})
 public class GetSummaryResponse {
 
 	private final Long totalAdmins;
@@ -19,7 +20,7 @@ public class GetSummaryResponse {
 	private final Long totalReview;
 	private final double avgRating;
 
-	public GetSummaryResponse(Long totalAdmins, Long activeAdmins, Long totalUsers, Long activeUsers,
+	private GetSummaryResponse(Long totalAdmins, Long activeAdmins, Long totalUsers, Long activeUsers,
 		Long totalProducts, Long shortageProducts, Long totalOrders, Long todayOrders, Long totalReview,
 		double avgRating) {
 		this.totalAdmins = totalAdmins;
@@ -32,6 +33,13 @@ public class GetSummaryResponse {
 		this.todayOrders = todayOrders;
 		this.totalReview = totalReview;
 		this.avgRating = avgRating;
+	}
+
+	public static GetSummaryResponse from(Long totalAdmins, Long activeAdmins, Long totalUsers, Long activeUsers,
+		Long totalProducts, Long shortageProducts, Long totalOrders, Long todayOrders, Long totalReview,
+		double avgRating) {
+		return new GetSummaryResponse(totalAdmins, activeAdmins, totalUsers, activeUsers, totalProducts,
+			shortageProducts, totalOrders, todayOrders, totalReview, avgRating);
 	}
 
 }

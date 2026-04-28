@@ -12,4 +12,8 @@ public class GetRecentOrderResponse {
 	public GetRecentOrderResponse(List<RecentOrderDto> orders) {
 		this.orders = orders;
 	}
+
+	public static GetRecentOrderResponse from(List<RecentOrderDto> orders) {
+		return new GetRecentOrderResponse(orders);
+	}
 }

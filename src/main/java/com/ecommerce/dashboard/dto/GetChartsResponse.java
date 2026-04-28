@@ -9,7 +9,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 
 @Getter
-@JsonPropertyOrder({"oneStarCount", "twoStarCount", "threeStarCount", "fourStarCount", "fiveStarCount", "activeUsers", "inactiveUsers", "suspendedUsers", "categoryCount"})
+@JsonPropertyOrder({"oneStarCount", "twoStarCount", "threeStarCount", "fourStarCount", "fiveStarCount", "activeUsers",
+	"inactiveUsers", "suspendedUsers", "categoryCount"})
 public class GetChartsResponse {
 
 	private final Long oneStarCount;
@@ -22,8 +23,9 @@ public class GetChartsResponse {
 	private final Long suspendedUsers;
 	private final Map<String, Long> categoryCount;
 
-	public GetChartsResponse(Long oneStarCount, Long twoStarCount, Long threeStarCount, Long fourStarCount, Long fiveStarCount,
-		Long activeUsers, Long inactiveUsers, Long suspendedUsers, List<CategoryCountDto> categoryCount) {
+	public GetChartsResponse(Long oneStarCount, Long twoStarCount, Long threeStarCount, Long fourStarCount,
+		Long fiveStarCount, Long activeUsers, Long inactiveUsers, Long suspendedUsers,
+		List<CategoryCountDto> categoryCount) {
 		this.oneStarCount = oneStarCount;
 		this.twoStarCount = twoStarCount;
 		this.threeStarCount = threeStarCount;
@@ -33,10 +35,14 @@ public class GetChartsResponse {
 		this.inactiveUsers = inactiveUsers;
 		this.suspendedUsers = suspendedUsers;
 		this.categoryCount = categoryCount.stream()
-			.collect(Collectors.toMap(
-				CategoryCountDto::getCategory,
-				CategoryCountDto::getCount
-			));
+			.collect(Collectors.toMap(CategoryCountDto::getCategory, CategoryCountDto::getCount));
+	}
+
+	public static GetChartsResponse from(Long oneStarCount, Long twoStarCount, Long threeStarCount, Long fourStarCount,
+		Long fiveStarCount, Long activeUsers, Long inactiveUsers, Long suspendedUsers,
+		List<CategoryCountDto> categoryCount) {
+		return new GetChartsResponse(oneStarCount, twoStarCount, threeStarCount, fourStarCount, fiveStarCount,
+			activeUsers, inactiveUsers, suspendedUsers, categoryCount);
 	}
 
 }

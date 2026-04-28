@@ -5,7 +5,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 
 @Getter
-@JsonPropertyOrder({"totalSales", "todaySales", "readyOrders", "shippingOrders", "deliveredOrders", "shortageProducts", "soldOutProducts"})
+@JsonPropertyOrder({"totalSales", "todaySales", "readyOrders", "shippingOrders", "deliveredOrders", "shortageProducts",
+	"soldOutProducts"})
 public class GetWidgetsResponse {
 
 	private final Long totalSales;
@@ -16,7 +17,7 @@ public class GetWidgetsResponse {
 	private final Long shortageProducts;
 	private final Long soldOutProducts;
 
-	public GetWidgetsResponse(Long totalSales, Long todaySales, Long readyOrders, Long shippingOrders,
+	private GetWidgetsResponse(Long totalSales, Long todaySales, Long readyOrders, Long shippingOrders,
 		Long deliveredOrders, Long shortageProducts, Long soldOutProducts) {
 		this.totalSales = totalSales;
 		this.todaySales = todaySales;
@@ -25,6 +26,12 @@ public class GetWidgetsResponse {
 		this.deliveredOrders = deliveredOrders;
 		this.shortageProducts = shortageProducts;
 		this.soldOutProducts = soldOutProducts;
+	}
+
+	public static GetWidgetsResponse from(Long totalSales, Long todaySales, Long readyOrders, Long shippingOrders,
+		Long deliveredOrders, Long shortageProducts, Long soldOutProducts) {
+		return new GetWidgetsResponse(totalSales, todaySales, readyOrders, shippingOrders, deliveredOrders,
+			shortageProducts, soldOutProducts);
 	}
 
 }
