@@ -1,9 +1,12 @@
 package com.ecommerce.products.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.products.entity.Product;
+import com.ecommerce.review.dto.ReviewResponse;
+import com.ecommerce.review.dto.ReviewStats;
 
 /**
  * 상품 상세 정보 응답 DTO
@@ -26,10 +29,22 @@ public record GetProductDetailResponse(
 	String adminName,
 	String adminEmail,
 
+	double ratingAverage,
+	int totalReviewsCount,
+	int ratingCount1,
+	int ratingCount2,
+	int ratingCount3,
+	int ratingCount4,
+	int ratingCount5,
+
+	List<ReviewResponse> reviews,
+
 	LocalDateTime createdAt,
 	LocalDateTime modifiedAt
+
 ) {
-	public static GetProductDetailResponse from(Product product, Admin admin) {
+	public static GetProductDetailResponse from(Product product, Admin admin, ReviewStats reviewStats,
+		List<ReviewResponse> reviews) {
 
 		return new GetProductDetailResponse(
 			product.getProductId(),
@@ -41,6 +56,14 @@ public record GetProductDetailResponse(
 			admin.getAdminId(),
 			admin.getName(),
 			admin.getEmail(),
+			reviewStats.getRatingAverage(),
+			reviewStats.getTotalReviewsCount(),
+			reviewStats.getRatingCount1(),
+			reviewStats.getRatingCount2(),
+			reviewStats.getRatingCount3(),
+			reviewStats.getRatingCount4(),
+			reviewStats.getRatingCount5(),
+			reviews,
 			product.getCreatedAt(),
 			product.getModifiedAt()
 		);
