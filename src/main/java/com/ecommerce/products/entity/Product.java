@@ -1,10 +1,15 @@
 package com.ecommerce.products.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.common.BaseEntity;
 import com.ecommerce.common.enums.ProductStatus;
 import com.ecommerce.common.exception.InvalidRequestException;
+import com.ecommerce.review.entity.Review;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -15,6 +20,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -43,9 +49,13 @@ public class Product extends BaseEntity {
 	@Column(nullable = false)
 	private ProductStatus status = ProductStatus.FOR_SALE;
 
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "admin_id")
 	private Admin admin;
+
+	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+	private List<Review> reviews = new ArrayList<>();
 
 	public Product(String name, String category, Long price, Long quantity, Admin admin) {
 		this.name = name;

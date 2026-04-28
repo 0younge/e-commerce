@@ -1,5 +1,7 @@
 package com.ecommerce.products.service;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,10 @@ import com.ecommerce.products.dto.UpdateProductRequest;
 import com.ecommerce.products.dto.UpdateQuantityRequest;
 import com.ecommerce.products.entity.Product;
 import com.ecommerce.products.repository.ProductRepository;
+import com.ecommerce.review.dto.ReviewResponse;
+import com.ecommerce.review.dto.ReviewStats;
+import com.ecommerce.review.entity.Review;
+import com.ecommerce.review.repository.ReviewRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,6 +31,7 @@ public class ProductService {
 
 	private final ProductRepository productRepository;
 	private final AdminRepository adminRepository;
+	private final ReviewRepository reviewRepository;
 
 	/**
 	 * 상품 등록
@@ -84,7 +91,6 @@ public class ProductService {
 		return productPage.map(GetProductResponse::from);
 	}
 
-
 	/**
 	 * 상품 상세 조회
 	 *
@@ -94,13 +100,32 @@ public class ProductService {
 	 */
 	@Transactional(readOnly = true)
 	public GetProductDetailResponse getProductDetail(Long productId) {
-
 		Product product = productRepository.findById(productId)
 			.orElseThrow(ProductNotFoundException::new);
 
 		Admin admin = product.getAdmin();
 
-		return GetProductDetailResponse.from(product, admin);
+		List<Review> reviews = reviewRepository.findByProductProductId(productId);
+
+		double avg = reviews.stream().mapToDouble(Review::getRating).average().orElse(0.0);
+
+		ReviewStats reviewStats = new ReviewStats(
+			Math.round(avg * 10) / 10.0,
+			reviews.size(),
+			(int)reviews.stream().filter(r -> r.getRating() == 1).count(),
+			(int)reviews.stream().filter(r -> r.getRating() == 2).count(),
+			(int)reviews.stream().filter(r -> r.getRating() == 3).count(),
+			(int)reviews.stream().filter(r -> r.getRating() == 4).count(),
+			(int)reviews.stream().filter(r -> r.getRating() == 5).count()
+		);
+
+		List<ReviewResponse> reviewResponses = reviewRepository
+			.findTop3ByProductProductIdOrderByCreatedAtDesc(productId)
+			.stream()
+			.map(ReviewResponse::from)
+			.toList();
+
+		return GetProductDetailResponse.from(product, admin, reviewStats, reviewResponses);
 	}
 
 	/**
@@ -152,7 +177,6 @@ public class ProductService {
 
 		return GetProductResponse.from(product);
 	}
-
 
 	/**
 	 * 상품 삭제
