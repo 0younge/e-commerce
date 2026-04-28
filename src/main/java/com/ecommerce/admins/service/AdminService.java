@@ -32,7 +32,6 @@ import com.ecommerce.common.exception.AdminNotFoundException;
 import com.ecommerce.common.exception.AdminStatusException;
 import com.ecommerce.common.exception.DuplicateResourceException;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -48,7 +47,7 @@ public class AdminService {
 	 * @param request 이름, 메일, 비번, 전화번호, 역할
 	 */
 	@Transactional
-	public void save(@Valid CreateAdminRequest request) {
+	public void save(CreateAdminRequest request) {
 		if (adminRepository.existsByEmail(request.getEmail())) {
 			throw new DuplicateResourceException("이미 사용중인 메일입니다.");
 		}
@@ -64,7 +63,7 @@ public class AdminService {
 	 * @return 토큰 객체 생성 및 로그인응답 반환
 	 */
 	@Transactional(readOnly = true)
-	public LoginAdminResponse login(@Valid LoginAdminRequest request) {
+	public LoginAdminResponse login(LoginAdminRequest request) {
 		Admin admin = adminRepository.findByEmail(request.getEmail())
 			.orElseThrow(() -> new AdminNotFoundException("존재하지 않는 이메일입니다."));
 
@@ -75,7 +74,7 @@ public class AdminService {
 
 		String accessToken = jwtTokenProvider.createToken(admin.getAdminId(), admin.getEmail(), admin.getRole());
 
-		return new LoginAdminResponse(admin.getAdminId(), admin.getEmail(), admin.getRole().name(), accessToken);
+		return LoginAdminResponse.from(admin, accessToken);
 	}
 
 	/**
@@ -90,8 +89,7 @@ public class AdminService {
 	@Transactional(readOnly = true)
 	public Page<GetAdminResponse> getAdminList(String keyword, AdminRole role, AdminStatus status, Pageable pageable,
 		Long loginAdminId) {
-		Admin loginAdmin = findByIdOrThrow(loginAdminId);
-		checkSuperAdminAndActive(loginAdmin);
+		checkStatusOrThrow(findByIdOrThrow(loginAdminId));
 
 		return adminRepository.findAllByCondition(keyword, role, status, pageable).map(GetAdminResponse::from);
 	}
@@ -104,8 +102,7 @@ public class AdminService {
 	 */
 	@Transactional(readOnly = true)
 	public GetOneAdminResponse getOne(Long adminId, Long loginAdminId) {
-		Admin loginAdmin = findByIdOrThrow(loginAdminId);
-		checkSuperAdminAndActive(loginAdmin);
+		checkStatusOrThrow(findByIdOrThrow(loginAdminId));
 
 		Admin admin = findByIdOrThrow(adminId);
 
@@ -120,8 +117,7 @@ public class AdminService {
 	 */
 	@Transactional
 	public void update(Long adminId, UpdateAdminRequest request, Long loginAdminId) {
-		Admin loginAdmin = findByIdOrThrow(loginAdminId);
-		checkSuperAdminAndActive(loginAdmin);
+		checkStatusOrThrow(findByIdOrThrow(loginAdminId));
 
 		Admin admin = findByIdOrThrow(adminId);
 
@@ -135,9 +131,8 @@ public class AdminService {
 	 * @param loginAdminId 검증을 위한 JWT 값
 	 */
 	@Transactional
-	public void updateRole(Long adminId, @Valid UpdateRoleAdminRequest request, Long loginAdminId) {
-		Admin loginAdmin = findByIdOrThrow(loginAdminId);
-		checkSuperAdminAndActive(loginAdmin);
+	public void updateRole(Long adminId, UpdateRoleAdminRequest request, Long loginAdminId) {
+		checkStatusOrThrow(findByIdOrThrow(loginAdminId));
 		Admin admin = findByIdOrThrow(adminId);
 		AdminRole requestRole = AdminRole.valueOf(request.getRole());
 
@@ -151,9 +146,8 @@ public class AdminService {
 	 * @param loginAdminId 검증을 위한 JWT 값
 	 */
 	@Transactional
-	public void updateStatus(Long adminId, @Valid UpdateStatusAdminRequest request, Long loginAdminId) {
-		Admin loginAdmin = findByIdOrThrow(loginAdminId);
-		checkSuperAdminAndActive(loginAdmin);
+	public void updateStatus(Long adminId, UpdateStatusAdminRequest request, Long loginAdminId) {
+		checkStatusOrThrow(findByIdOrThrow(loginAdminId));
 		Admin admin = findByIdOrThrow(adminId);
 		AdminStatus requestStatus = AdminStatus.valueOf(request.getStatus());
 
@@ -167,8 +161,7 @@ public class AdminService {
 	 */
 	@Transactional
 	public void delete(Long adminId, Long loginAdminId) {
-		Admin loginAdmin = findByIdOrThrow(loginAdminId);
-		checkSuperAdminAndActive(loginAdmin);
+		checkStatusOrThrow(findByIdOrThrow(loginAdminId));
 		Admin admin = findByIdOrThrow(adminId);
 
 		admin.softDelete();
@@ -181,8 +174,7 @@ public class AdminService {
 	 */
 	@Transactional
 	public void approve(Long adminId, Long loginAdminId) {
-		Admin loginAdmin = findByIdOrThrow(loginAdminId);
-		checkSuperAdminAndActive(loginAdmin);
+		checkStatusOrThrow(findByIdOrThrow(loginAdminId));
 		Admin admin = checkStatusPending(adminId);
 
 		admin.approve();
@@ -195,9 +187,8 @@ public class AdminService {
 	 * @param loginAdminId 검증을 위한 JWT 값
 	 */
 	@Transactional
-	public RejectAdminResponse reject(Long adminId, @Valid RejectAdminRequest request, Long loginAdminId) {
-		Admin loginAdmin = findByIdOrThrow(loginAdminId);
-		checkSuperAdminAndActive(loginAdmin);
+	public RejectAdminResponse reject(Long adminId, RejectAdminRequest request, Long loginAdminId) {
+		checkStatusOrThrow(findByIdOrThrow(loginAdminId));
 		Admin admin = checkStatusPending(adminId);
 
 		admin.reject(request);
@@ -222,7 +213,7 @@ public class AdminService {
 	 * @param loginAdminId 검증을 위한 JWT 값
 	 */
 	@Transactional
-	public void updateMy(@Valid UpdateMyAdminRequest request, Long loginAdminId) {
+	public void updateMy(UpdateMyAdminRequest request, Long loginAdminId) {
 		Admin admin = findByIdOrThrow(loginAdminId);
 
 		admin.updateAdmin(request.getName(), request.getEmail(), request.getPhoneNumber());
@@ -234,7 +225,7 @@ public class AdminService {
 	 * @param loginAdminId 검증을 위한 JWT 값
 	 */
 	@Transactional
-	public void updateMyPassword(@Valid UpdateMyPasswordRequest request, Long loginAdminId) {
+	public void updateMyPassword(UpdateMyPasswordRequest request, Long loginAdminId) {
 		Admin admin = findByIdOrThrow(loginAdminId);
 
 		if (!passwordEncoder.matches(request.getPassword(), admin.getPassword())) {
@@ -265,18 +256,6 @@ public class AdminService {
 			case PENDING -> throw new AdminStatusException(HttpStatus.FORBIDDEN, "계정 승인대기중");
 			case REJECTED -> throw new AdminStatusException(HttpStatus.FORBIDDEN, "계정 신청 거부됨");
 		}
-	}
-
-	/**
-	 * 슈퍼어드민, 활성상태를 검증
-	 * @param admin 검증을 위한 값
-	 */
-	public void checkSuperAdminAndActive(Admin admin) {
-		if (!admin.getRole().equals(AdminRole.SUPER_ADMIN)) {
-			throw new AccessDeniedException("권한이 없습니다");
-		}
-
-		checkStatusOrThrow(admin);
 	}
 
 	/**
