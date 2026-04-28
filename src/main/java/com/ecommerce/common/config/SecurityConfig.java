@@ -60,16 +60,16 @@ public class SecurityConfig {
 				.requestMatchers("/admins/**").hasAnyRole("SUPER_ADMIN", "OPERATION_ADMIN", "CS_ADMIN")
 
 				// 상품 도메인 : 슈퍼관리자 및 운영관리자만
-				.requestMatchers("/products/**").hasAnyRole("SUPER_ADMIN","OPERATION_ADMIN")
+				.requestMatchers("/products/**").hasAnyRole("SUPER_ADMIN", "OPERATION_ADMIN")
 
 				// 주문 도메인 : 모든 관리자
 				.requestMatchers("/orders/**").hasAnyRole("SUPER_ADMIN", "OPERATION_ADMIN", "CS_ADMIN")
 
 				// 고객 삭제 : 슈퍼 관리자만
-				.requestMatchers(HttpMethod.DELETE,"/users/**").hasRole("SUPER_ADMIN")
+				.requestMatchers(HttpMethod.DELETE, "/users/**").hasRole("SUPER_ADMIN")
 
 				// 리뷰 삭제 : 슈퍼관리자 및 운영관리자만
-				.requestMatchers(HttpMethod.DELETE,"/reviews/**").hasAnyRole("SUPER_ADMIN","OPERATION_ADMIN")
+				.requestMatchers(HttpMethod.DELETE, "/reviews/**").hasAnyRole("SUPER_ADMIN", "OPERATION_ADMIN")
 
 				// 나머지 요청은 전부 인증 필요
 				.anyRequest().authenticated()

@@ -31,12 +31,9 @@ import com.ecommerce.admins.dto.UpdateMyAdminRequest;
 import com.ecommerce.admins.dto.UpdateMyPasswordRequest;
 import com.ecommerce.admins.dto.UpdateRoleAdminRequest;
 import com.ecommerce.admins.dto.UpdateStatusAdminRequest;
-import com.ecommerce.admins.entity.AdminConst;
-import com.ecommerce.admins.entity.AdminInfo;
 import com.ecommerce.admins.entity.AdminRole;
 import com.ecommerce.admins.service.AdminService;
 import com.ecommerce.common.enums.AdminStatus;
-import com.ecommerce.common.exception.AdminLoginStatusException;
 import com.ecommerce.common.response.ApiResponse;
 import com.ecommerce.common.security.auth.SecurityAdminInfo;
 
@@ -71,7 +68,7 @@ public class AdminController {
 	public ResponseEntity<ApiResponse<LoginAdminResponse>> loginAdmin(@RequestBody @Valid LoginAdminRequest request) {
 		LoginAdminResponse response = adminService.login(request);
 
-		return ResponseEntity.ok().body(ApiResponse.success("로그인 성공!",response));
+		return ResponseEntity.ok().body(ApiResponse.success("로그인 성공!", response));
 	}
 
 	/**
@@ -87,11 +84,12 @@ public class AdminController {
 	 */
 	@PreAuthorize("hasRole('SUPER_ADMIN')")
 	@GetMapping
-	public ResponseEntity<ApiResponse<Page<GetAdminResponse>>> getAdminList(@RequestParam(required = false) String keyword,
+	public ResponseEntity<ApiResponse<Page<GetAdminResponse>>> getAdminList(
+		@RequestParam(required = false) String keyword,
 		@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size,
 		@RequestParam(defaultValue = "createdAt") String sortBy, @RequestParam(defaultValue = "desc") String sortOrder,
 		@RequestParam(required = false) AdminRole role, @RequestParam(required = false) AdminStatus status,
-		@AuthenticationPrincipal SecurityAdminInfo loginAdmin ) // 수정: 세션 대신 JWT 인증 정보 사용
+		@AuthenticationPrincipal SecurityAdminInfo loginAdmin) // 수정: 세션 대신 JWT 인증 정보 사용
 	{
 		Pageable pageable = PageRequest.of(page - 1, size,
 			sortOrder.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending());
@@ -171,7 +169,8 @@ public class AdminController {
 	 */
 	@PreAuthorize("hasRole('SUPER_ADMIN')")
 	@DeleteMapping("/{adminId}")
-	public ResponseEntity<ApiResponse<Void>> deleteAdmin(@PathVariable Long adminId, @AuthenticationPrincipal SecurityAdminInfo loginAdmin) {
+	public ResponseEntity<ApiResponse<Void>> deleteAdmin(@PathVariable Long adminId,
+		@AuthenticationPrincipal SecurityAdminInfo loginAdmin) {
 		adminService.delete(adminId, loginAdmin.adminId());
 
 		return ResponseEntity.ok(ApiResponse.success("관리자 삭제 성공"));
@@ -185,7 +184,8 @@ public class AdminController {
 	 */
 	@PreAuthorize("hasRole('SUPER_ADMIN')")
 	@PatchMapping("/{adminId}/approve")
-	public ResponseEntity<ApiResponse<Void>> approveAdmin(@PathVariable Long adminId, @AuthenticationPrincipal SecurityAdminInfo loginAdmin) {
+	public ResponseEntity<ApiResponse<Void>> approveAdmin(@PathVariable Long adminId,
+		@AuthenticationPrincipal SecurityAdminInfo loginAdmin) {
 		adminService.approve(adminId, loginAdmin.adminId());
 
 		return ResponseEntity.ok(ApiResponse.success("관리자 승인 성공"));
@@ -213,7 +213,8 @@ public class AdminController {
 	 * @return 내 이름, 메일, 전화번호 반환
 	 */
 	@GetMapping("/my")
-	public ResponseEntity<ApiResponse<GetMyAdminResponse>> getMy(@AuthenticationPrincipal SecurityAdminInfo loginAdmin) {
+	public ResponseEntity<ApiResponse<GetMyAdminResponse>> getMy(
+		@AuthenticationPrincipal SecurityAdminInfo loginAdmin) {
 		return ResponseEntity.ok(ApiResponse.success("내 프로필 조회 성공", adminService.getMy(loginAdmin.adminId())));
 	}
 
