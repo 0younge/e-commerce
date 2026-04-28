@@ -30,4 +30,7 @@ public interface AdminRepository extends JpaRepository<Admin, Long> {
 		@Param("status") AdminStatus status,
 		Pageable pageable
 	);
+
+	@Query("SELECT COUNT(a) FROM Admin a WHERE a.status = :status")
+	long countByStatus(@Param("status") AdminStatus status);
 }

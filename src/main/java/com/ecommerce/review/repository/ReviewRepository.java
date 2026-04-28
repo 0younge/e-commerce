@@ -19,4 +19,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 		@Param("rating") Integer rating,
 		Pageable pageable
 	);
+
+	@Query("SELECT AVG(r.rating) FROM Review r")
+	Double findAverageRating();
+
 }

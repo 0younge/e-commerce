@@ -29,7 +29,7 @@ public class GetSummaryResponse {
 	private final Long totalReview;
 	private final double avgRating;
 
-	private GetSummaryResponse(Long totalAdmins, Long activeAdmins, Long totalUsers, Long activeUsers,
+	public GetSummaryResponse(Long totalAdmins, Long activeAdmins, Long totalUsers, Long activeUsers,
 		Long totalProducts, Long shortageProducts, Long totalOrders, Long todayOrders, Long totalReview,
 		double avgRating) {
 		this.totalAdmins = totalAdmins;
@@ -44,24 +44,4 @@ public class GetSummaryResponse {
 		this.avgRating = avgRating;
 	}
 
-	public static GetSummaryResponse from(List<Admin> allAdmins, List<User> allUsers, List<Product> allProducts,
-		List<Order> allOrders, List<Review> allReviews) {
-		LocalDate today = LocalDate.now();
-
-		return new GetSummaryResponse(
-			(long)allAdmins.size(),
-			allAdmins.stream().filter(a -> AdminStatus.ACTIVE.equals(a.getStatus())).count(),
-
-			(long)allUsers.size(),
-			allUsers.stream().filter(a -> UserStatus.ACTIVE.equals(a.getStatus())).count(),
-
-			(long)allProducts.size(),
-			allProducts.stream().filter(a -> a.getQuantity() <= 5).count(),
-
-			(long)allOrders.size(),
-			allOrders.stream().filter(a -> a.getCreatedAt().toLocalDate().equals(today)).count(),
-
-			(long)allReviews.size(),
-			allReviews.stream().mapToDouble(a -> (double)a.getRating()).average().orElse(0.0));
-	}
 }

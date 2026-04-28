@@ -1,5 +1,7 @@
 package com.ecommerce.orders.repository;
 
+import java.time.LocalDate;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -37,4 +39,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 		@Param("status") OrderStatus status,
 		Pageable pageable
 	);
+
+	@Query("SELECT COUNT(o) FROM Order o WHERE DATE(o.createdAt) = :date")
+	long countByDate(@Param("date") LocalDate date);
+
 }

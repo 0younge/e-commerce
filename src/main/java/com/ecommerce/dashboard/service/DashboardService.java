@@ -1,7 +1,9 @@
 package com.ecommerce.dashboard.service;
 
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,6 +12,7 @@ import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.admins.entity.AdminInfo;
 import com.ecommerce.admins.repository.AdminRepository;
 import com.ecommerce.common.enums.AdminStatus;
+import com.ecommerce.common.enums.UserStatus;
 import com.ecommerce.dashboard.dto.GetChartsResponse;
 import com.ecommerce.dashboard.dto.GetRecentOrderResponse;
 import com.ecommerce.dashboard.dto.GetSummaryResponse;
@@ -38,14 +41,24 @@ public class DashboardService {
 	@Transactional(readOnly = true)
 	public GetSummaryResponse getSummary(AdminInfo adminInfo) {
 		findByIdOrThrow(adminInfo);
+		LocalDate today = LocalDate.now();
 
-		List<Admin> allAdmins = adminRepository.findAll();
-		List<User> allUsers = userRepository.findAll();
-		List<Product> allProducts = productRepository.findAll();
-		List<Order> allOrders = orderRepository.findAll();
-		List<Review> allReviews = reviewRepository.findAll();
+		return new GetSummaryResponse(
+			adminRepository.count(),
+			adminRepository.countByStatus(AdminStatus.ACTIVE),
 
-		return GetSummaryResponse.from(allAdmins, allUsers, allProducts, allOrders, allReviews);
+			userRepository.count(),
+			userRepository.countByStatus(UserStatus.ACTIVE),
+
+			productRepository.count(),
+			productRepository.countLowStock(5),
+
+			orderRepository.count(),
+			orderRepository.countByDate(today),
+
+			reviewRepository.count(),
+			Optional.ofNullable(reviewRepository.findAverageRating()).orElse(0.0)
+		);
 	}
 
 	@Transactional(readOnly = true)
