@@ -81,7 +81,8 @@ public class UserController {
 	@PatchMapping("/{userId}")
 	public ResponseEntity<ApiResponse<PatchUserResponse>> patchUserDetails(@PathVariable Long userId,
 		@Valid @RequestBody PatchUserRequest patchUserRequest) {
-		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(userService.patchUserDetails(userId, patchUserRequest)));
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(ApiResponse.success(userService.patchUserDetails(userId, patchUserRequest)));
 	}
 
 	/**
@@ -93,7 +94,8 @@ public class UserController {
 	@PatchMapping("/{userId}/status")
 	public ResponseEntity<ApiResponse<PatchUserResponse>> patchUserStatus(@PathVariable Long userId,
 		@Valid @RequestBody PatchUserStatusRequest patchUserStatusRequest) {
-		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(userService.patchUserStatus(userId, patchUserStatusRequest)));
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(ApiResponse.success(userService.patchUserStatus(userId, patchUserStatusRequest)));
 	}
 
 	/**
