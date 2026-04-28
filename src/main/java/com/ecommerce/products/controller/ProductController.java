@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ecommerce.common.response.ApiResponse;
 import com.ecommerce.products.dto.request.CreateProductRequest;
-import com.ecommerce.products.dto.response.GetProductDetailResponse;
-import com.ecommerce.products.dto.response.GetProductResponse;
 import com.ecommerce.products.dto.request.UpdateProductRequest;
 import com.ecommerce.products.dto.request.UpdateQuantityRequest;
+import com.ecommerce.products.dto.response.GetProductDetailResponse;
+import com.ecommerce.products.dto.response.GetProductResponse;
 import com.ecommerce.products.service.ProductService;
 
 import jakarta.validation.Valid;
