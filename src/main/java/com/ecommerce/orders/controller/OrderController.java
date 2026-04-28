@@ -21,6 +21,7 @@ import com.ecommerce.admins.entity.AdminConst;
 import com.ecommerce.admins.entity.AdminInfo;
 import com.ecommerce.common.enums.OrderStatus;
 import com.ecommerce.common.exception.AdminLoginStatusException;
+import com.ecommerce.common.response.ApiResponse;
 import com.ecommerce.orders.dto.CancelOrderRequest;
 import com.ecommerce.orders.dto.CreateOrderRequest;
 import com.ecommerce.orders.dto.CreateOrderResponse;
@@ -42,23 +43,18 @@ public class OrderController {
 	private final OrderService orderService;
 
 	@PostMapping
-	public ResponseEntity<CreateOrderResponse> saveOrder(@Valid @RequestBody CreateOrderRequest request) {
-		return ResponseEntity.status(HttpStatus.CREATED).body(orderService.save(request, null));
-	}
-
-	@PostMapping("/admins")
-	public ResponseEntity<CreateOrderResponse> createAdminOrder(
+	public ResponseEntity<ApiResponse<CreateOrderResponse>> createAdminOrder(
 		@Valid @RequestBody CreateOrderRequest request,
 		@SessionAttribute(name = AdminConst.ADMIN_INFO, required = false) AdminInfo adminInfo
 	) {
-		if (adminInfo == null) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "관리자 로그인이 필요합니다.");
-		}
-		return ResponseEntity.status(HttpStatus.CREATED).body(orderService.save(request, adminInfo.getAdminId()));
+		Long adminId = (adminInfo != null) ? adminInfo.getAdminId() : null;
+
+		return ResponseEntity.status(HttpStatus.CREATED)
+				.body(ApiResponse.created("주문이 성공적으로 생성되었습니다.", orderService.save(request, adminId)));
 	}
 
 	@GetMapping
-	public ResponseEntity<Page<GetOrderAllResponse>> getOrders(
+	public ResponseEntity<ApiResponse<Page<GetOrderAllResponse>>> getOrders(
 		@SessionAttribute(name = AdminConst.ADMIN_INFO, required = false) AdminInfo adminInfo,
 		@RequestParam(defaultValue = "") String keyword,
 		@RequestParam(defaultValue = "1") int page,
@@ -70,32 +66,34 @@ public class OrderController {
 		if (adminInfo == null) {
 			throw new AdminLoginStatusException();
 		}
-		return ResponseEntity.ok(
-			orderService.getAll(
-				adminInfo.getAdminId(),
-				keyword,
-				page,
-				size,
-				sortBy,
-				sortOrder,
-				status
-			)
+		Page<GetOrderAllResponse> response = orderService.getAll(
+			adminInfo.getAdminId(),
+			keyword,
+			page,
+			size,
+			sortBy,
+			sortOrder,
+			status
 		);
+		return ResponseEntity.ok()
+			.body(ApiResponse.success("주문 리스트가 성공적으로 조회되었습니다.", response));
 	}
 
 	@GetMapping("/{orderId}")
-	public ResponseEntity<GetOrderOneResponse> getOrder(
+	public ResponseEntity<ApiResponse<GetOrderOneResponse>> getOrder(
 		@PathVariable Long orderId,
 		@SessionAttribute(name = AdminConst.ADMIN_INFO, required = false) AdminInfo adminInfo
 	) {
 		if (adminInfo == null) {
 			throw new AdminLoginStatusException();
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(orderService.getOne(orderId));
+		GetOrderOneResponse response = orderService.getOne(orderId);
+		return ResponseEntity.ok()
+			.body(ApiResponse.success("주문 상세 조회가 성공적으로 조회되었습니다.", response));
 	}
 
 	@PatchMapping("/{orderId}")
-	public ResponseEntity<Void> updateOrderStatus(
+	public ResponseEntity<ApiResponse<Void>> updateOrderStatus(
 		@PathVariable Long orderId,
 		@RequestBody UpdateOrderStatusRequest request,
 		@SessionAttribute(name = AdminConst.ADMIN_INFO, required = false) AdminInfo adminInfo
@@ -104,11 +102,11 @@ public class OrderController {
 			throw new AdminLoginStatusException();
 		}
 		orderService.updateStatus(orderId, request.getStatus());
-		return ResponseEntity.ok().build();
+		return ResponseEntity.ok(ApiResponse.success("주문 상태가 변경되었습니다."));
 	}
 
 	@PatchMapping("/{orderId}/cancel")
-	public ResponseEntity<Void> cancelOrder(
+	public ResponseEntity<ApiResponse<Void>> cancelOrder(
 		@Valid
 		@PathVariable Long orderId,
 		@RequestBody CancelOrderRequest request,
@@ -121,6 +119,6 @@ public class OrderController {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "취소 사유는 필수입니다.");
 		}
 		orderService.cancelOrder(orderId, request.getCancelReason());
-		return ResponseEntity.ok().build();
+		return ResponseEntity.ok(ApiResponse.success("주문이 취소되었습니다."));
 	}
 }
