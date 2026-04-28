@@ -35,7 +35,7 @@ public class ReviewService {
 	 * 특정 리뷰 조회
 	 * @param reviewId 조회할 리뷰 아이디
 	 * @return 특정 리뷰의 상세 정보
-	 * @throws IllegalStateException 리뷰가 존재하지 않을 경우
+	 * @throws ReviewNotFoundException 리뷰가 존재하지 않을 경우
 	 */
 	@Transactional(readOnly = true)
 	public GetOneReviewResponse findById(Long reviewId) {
@@ -47,7 +47,7 @@ public class ReviewService {
 	/**
 	 * 리뷰 삭제 (소프트 삭제)
 	 * @param reviewId 삭제할 리뷰 아이디
-	 * @throws IllegalStateException 리뷰가 존재하지 않을 경우
+	 * @throws ReviewNotFoundException 리뷰가 존재하지 않을 경우
 	 */
 	@Transactional
 	public void deleteById(Long reviewId) {
