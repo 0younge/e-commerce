@@ -12,6 +12,7 @@ import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.admins.entity.AdminInfo;
 import com.ecommerce.admins.repository.AdminRepository;
 import com.ecommerce.common.enums.AdminStatus;
+import com.ecommerce.common.enums.OrderStatus;
 import com.ecommerce.common.enums.UserStatus;
 import com.ecommerce.dashboard.dto.GetChartsResponse;
 import com.ecommerce.dashboard.dto.GetRecentOrderResponse;
@@ -64,11 +65,19 @@ public class DashboardService {
 	@Transactional(readOnly = true)
 	public GetWidgetsResponse getWidgets(AdminInfo adminInfo) {
 		findByIdOrThrow(adminInfo);
+		LocalDate today = LocalDate.now();
 
-		List<Order> allOrders = orderRepository.findAll();
-		List<Product> allProducts = productRepository.findAll();
+		return new GetWidgetsResponse(
+			orderRepository.sumTotalPrice(),
+			orderRepository.sumTotalPriceByDate(today),
 
-		return GetWidgetsResponse.from(allOrders, allProducts);
+			orderRepository.countByStatus(OrderStatus.READY),
+			orderRepository.countByStatus(OrderStatus.SHIPPING),
+			orderRepository.countByStatus(OrderStatus.DELIVERED),
+
+			productRepository.countLowStock(5),
+			productRepository.countOutOfStock()
+		);
 	}
 
 	@Transactional(readOnly = true)

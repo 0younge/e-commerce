@@ -43,4 +43,13 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 	@Query("SELECT COUNT(o) FROM Order o WHERE DATE(o.createdAt) = :date")
 	long countByDate(@Param("date") LocalDate date);
 
+	@Query("SELECT COALESCE(SUM(o.totalPrice), 0) FROM Order o")
+	long sumTotalPrice();
+
+	@Query("SELECT COALESCE(SUM(o.totalPrice), 0) FROM Order o WHERE DATE(o.createdAt) = :date")
+	long sumTotalPriceByDate(@Param("date") LocalDate date);
+
+	@Query("SELECT COUNT(o) FROM Order o WHERE o.status = :status")
+	long countByStatus(@Param("status") OrderStatus status);
+
 }
