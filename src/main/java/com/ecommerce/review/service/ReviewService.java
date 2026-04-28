@@ -28,7 +28,7 @@ public class ReviewService {
 	@Transactional(readOnly = true)
 	public Page<GetReviewListResponse> findByKeywordAndRating(String keyword, Integer rating, Pageable pageable) {
 		return reviewRepository.findByKeywordAndRating(keyword, rating, pageable)
-			.map(review -> GetReviewListResponse.from(review));
+			.map(GetReviewListResponse::from);
 	}
 
 	/**
@@ -40,7 +40,7 @@ public class ReviewService {
 	@Transactional(readOnly = true)
 	public GetOneReviewResponse findById(Long reviewId) {
 		Review review = reviewRepository.findById(reviewId)
-			.orElseThrow(() -> new ReviewNotFoundException());
+			.orElseThrow(ReviewNotFoundException::new);
 		return GetOneReviewResponse.from(review);
 	}
 
@@ -52,7 +52,7 @@ public class ReviewService {
 	@Transactional
 	public void deleteById(Long reviewId) {
 		Review review = reviewRepository.findById(reviewId)
-			.orElseThrow(() -> new ReviewNotFoundException());
+			.orElseThrow(ReviewNotFoundException::new);
 		review.softDelete();
 	}
 }
