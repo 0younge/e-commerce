@@ -41,7 +41,7 @@ public class Product extends BaseEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private ProductStatus status = ProductStatus.FOR_SALE;;
+	private ProductStatus status = ProductStatus.FOR_SALE;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "admin_id")
