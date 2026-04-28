@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -14,8 +15,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.SessionAttribute;
 
+import com.ecommerce.admins.entity.AdminConst;
+import com.ecommerce.admins.entity.AdminInfo;
 import com.ecommerce.common.response.ApiResponse;
+import com.ecommerce.common.security.auth.SecurityAdminInfo;
 import com.ecommerce.products.dto.CreateProductRequest;
 import com.ecommerce.products.dto.GetProductDetailResponse;
 import com.ecommerce.products.dto.GetProductResponse;
@@ -43,6 +48,7 @@ public class ProductController {
 	 */
 	@PostMapping
 	public ResponseEntity<ApiResponse<GetProductResponse>> createProduct(
+		@AuthenticationPrincipal Long adminId,
 		@Valid @RequestBody CreateProductRequest request) {
 
 		GetProductResponse response = productService.save(request);
@@ -91,6 +97,7 @@ public class ProductController {
 	 */
 	@PutMapping("/{id}")
 	public ResponseEntity<ApiResponse<GetProductResponse>> update(
+		@AuthenticationPrincipal SecurityAdminInfo loginAdmin,
 		@PathVariable Long id,
 		@Valid @RequestBody UpdateProductRequest request) {
 
@@ -105,6 +112,7 @@ public class ProductController {
 	 */
 	@PatchMapping("/{id}/quantity")
 	public ResponseEntity<ApiResponse<GetProductResponse>> updateQuantity(
+		@AuthenticationPrincipal SecurityAdminInfo loginAdmin,
 		@PathVariable Long id,
 		@Valid @RequestBody UpdateQuantityRequest request) {
 
@@ -119,10 +127,10 @@ public class ProductController {
 	 */
 	@DeleteMapping("/{productId}")
 	public ResponseEntity<ApiResponse<Void>> delete(
-		@PathVariable Long productId,
-		@RequestParam Long adminId) {
+		@AuthenticationPrincipal SecurityAdminInfo loginAdmin,
+		@PathVariable Long productId) {
 
-		productService.delete(productId, adminId);
+		productService.delete(productId, loginAdmin.adminId());
 
 		return ResponseEntity.ok(ApiResponse.success("상품이 삭제되었습니다."));
 	}

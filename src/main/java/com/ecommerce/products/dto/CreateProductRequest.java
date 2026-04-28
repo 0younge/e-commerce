@@ -23,8 +23,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CreateProductRequest  {
 
-	@NotNull(message = "관리자 ID는 필수입니다.")
-	private Long adminId;
 
 	@NotBlank(message = "상품명은 필수입니다.")
 	@Size(max = 100, message = "상품명은 100자 이하여야 합니다.")

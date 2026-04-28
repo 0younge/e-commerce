@@ -1,5 +1,7 @@
 package com.ecommerce.products.service;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,10 @@ import com.ecommerce.products.dto.UpdateProductRequest;
 import com.ecommerce.products.dto.UpdateQuantityRequest;
 import com.ecommerce.products.entity.Product;
 import com.ecommerce.products.repository.ProductRepository;
+import com.ecommerce.review.dto.GetOneReviewResponse;
+import com.ecommerce.review.dto.GetReviewListResponse;
+import com.ecommerce.review.entity.Review;
+import com.ecommerce.review.repository.ReviewRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,6 +31,7 @@ public class ProductService {
 
 	private final ProductRepository productRepository;
 	private final AdminRepository adminRepository;
+	private final ReviewRepository reviewRepository;
 
 	/**
 	 * 상품 등록
@@ -34,10 +41,9 @@ public class ProductService {
 	 * @throws InvalidRequestException 존재하지 않는 관리자ID
 	 */
 	@Transactional
-	public GetProductResponse save(CreateProductRequest request) {  // ✅ 변경
+	public GetProductResponse save(CreateProductRequest request) {
 
-		Admin admin = adminRepository.findById(request.getAdminId())
-			.orElseThrow(() -> new InvalidRequestException("존재하지 않는 관리자입니다."));
+
 
 		Product product = new Product(
 			request.getName(),
@@ -103,6 +109,7 @@ public class ProductService {
 		return GetProductDetailResponse.from(product, admin);
 	}
 
+
 	/**
 	 * 재고 변경 (관리자 전용)
 	 *
@@ -116,14 +123,12 @@ public class ProductService {
 		Product product = productRepository.findById(productId)
 			.orElseThrow(() -> new ProductNotFoundException());
 
-		if (!product.getAdmin().getAdminId().equals(request.getAdminId())) {
-			throw new InvalidRequestException("본인이 등록한 상품만 수정할 수 있습니다.");
-		}
 
 		product.updateQuantity(request.getQuantity());
 
 		return GetProductResponse.from(product);
 	}
+
 
 	/**
 	 * 상품 수정
@@ -137,8 +142,6 @@ public class ProductService {
 	@Transactional
 	public GetProductResponse update(Long id, UpdateProductRequest request) {
 
-		Admin admin = adminRepository.findById(request.getAdminId())
-			.orElseThrow(() -> new InvalidRequestException("존재하지 않는 관리자입니다."));
 
 		Product product = productRepository.findById(id)
 			.orElseThrow(() -> new ProductNotFoundException());
@@ -166,8 +169,6 @@ public class ProductService {
 	@Transactional
 	public void delete(Long productId, Long adminId) {
 
-		Admin admin = adminRepository.findById(adminId)
-			.orElseThrow(() -> new InvalidRequestException("존재하지 않는 관리자입니다."));
 
 		Product product = productRepository.findById(productId)
 			.orElseThrow(() -> new ProductNotFoundException());
