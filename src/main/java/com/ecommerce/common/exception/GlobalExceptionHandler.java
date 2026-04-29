@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
-	public ResponseEntity<ApiResponse<Void>> handleMethodArgumentNotValidException(
+	public ResponseEntity<ApiResponse<Void>>  handleMethodArgumentNotValidException(
 		MethodArgumentNotValidException ex) {
 
 		String errorMessage = ex.getBindingResult().getFieldErrors().stream()
@@ -34,5 +34,4 @@ public class GlobalExceptionHandler {
 			.status(HttpStatus.BAD_REQUEST)
 			.body(new ApiResponse<>(HttpStatus.BAD_REQUEST, errorMessage, null));
 	}
-
 }
