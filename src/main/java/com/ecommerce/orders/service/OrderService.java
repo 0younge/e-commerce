@@ -92,7 +92,6 @@ public class OrderService {
 
 	/**
 	 * 주문 리스트 조회 - 관리자 로그인시에만 접근 가능
-	 * @param adminId 관리자 id
 	 * @param keyword 검색할 키워드
 	 * @param page 페이지 번호
 	 * @param size 페이지당 개수
@@ -102,9 +101,7 @@ public class OrderService {
 	 * @return 페이지네이션을 마친 주문 리스트
 	 */
 	@Transactional(readOnly = true)
-	public Page<GetOrderAllResponse> getAll(
-		Long adminId,
-		String keyword, int page, int size, String sortBy, String sortOrder, OrderStatus status) {
+	public Page<GetOrderAllResponse> getAll(String keyword, int page, int size, String sortBy, String sortOrder, OrderStatus status) {
 
 		//1. 정렬 방향
 		Sort.Direction direction = sortOrder.equalsIgnoreCase("asc")
@@ -121,7 +118,6 @@ public class OrderService {
 
 		//4. 조회
 		Page<Order> orderPage = orderRepository.searchOrders(
-			adminId,
 			keyword,
 			status,
 			pageable

@@ -35,7 +35,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 		    )
 		""")
 	Page<Order> searchOrders(
-		@Param("adminId") Long adminId,
 		@Param("keyword") String keyword,
 		@Param("status") OrderStatus status,
 		Pageable pageable
