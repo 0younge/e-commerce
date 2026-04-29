@@ -47,10 +47,10 @@ public class ProductService {
 			.orElseThrow(() -> new InvalidRequestException("존재하지 않는 관리자입니다."));
 
 		Product product = new Product(
-			request.getName(),
-			request.getCategory(),
-			request.getPrice(),
-			request.getQuantity(),
+			request.name(),
+			request.category(),
+			request.price(),
+			request.quantity(),
 			admin
 		);
 
@@ -148,7 +148,7 @@ public class ProductService {
 			throw new InvalidRequestException("본인이 등록한 상품만 수정할 수 있습니다.");
 		}
 
-		product.updateQuantity(request.getQuantity());
+		product.updateQuantity(request.quantity());
 
 
 		return GetProductResponse.from(product);
@@ -173,9 +173,9 @@ public class ProductService {
 			.orElseThrow(ProductNotFoundException::new);
 
 		product.update(
-			request.getName(),
-			request.getCategory(),
-			request.getPrice(),
+			request.name(),
+			request.category(),
+			request.price(),
 			admin
 		);
 
