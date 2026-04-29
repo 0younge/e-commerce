@@ -2,8 +2,8 @@ package com.ecommerce.products.controller;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ecommerce.common.response.ApiResponse;
+import com.ecommerce.common.security.auth.SecurityAdminInfo;
 import com.ecommerce.products.dto.CreateProductRequest;
 import com.ecommerce.products.dto.GetProductDetailResponse;
 import com.ecommerce.products.dto.GetProductResponse;
@@ -43,12 +44,12 @@ public class ProductController {
 	 */
 	@PostMapping
 	public ResponseEntity<ApiResponse<GetProductResponse>> createProduct(
+		@AuthenticationPrincipal SecurityAdminInfo loginAdmin,
 		@Valid @RequestBody CreateProductRequest request) {
 
-		GetProductResponse response = productService.save(request);
+		GetProductResponse response = productService.save(request, loginAdmin.adminId());
 
 		return ResponseEntity.ok(ApiResponse.created("상품이 등록되었습니다.", response));
-
 	}
 
 	/**
@@ -87,15 +88,17 @@ public class ProductController {
 
 	/**
 	 * 상품 수정
-	 * PUT /products/{id}
+	 * PUT /products/{productId}
 	 */
-	@PutMapping("/{id}")
+	@PutMapping("/{productId}")
 	public ResponseEntity<ApiResponse<GetProductResponse>> update(
-		@PathVariable Long id,
+		@AuthenticationPrincipal SecurityAdminInfo loginAdmin,
+		@PathVariable Long productId,
 		@Valid @RequestBody UpdateProductRequest request) {
 
 		return ResponseEntity.ok(
-			ApiResponse.success("상품이 수정되었습니다.", productService.update(id, request))
+			ApiResponse.success("상품이 수정되었습니다.",
+				productService.update(productId, request, loginAdmin.adminId()))
 		);
 	}
 
@@ -103,13 +106,15 @@ public class ProductController {
 	 * 재고 변경
 	 * PATCH /products/{id}/quantity
 	 */
-	@PatchMapping("/{id}/quantity")
+	@PatchMapping("/{productId}/quantity")
 	public ResponseEntity<ApiResponse<GetProductResponse>> updateQuantity(
-		@PathVariable Long id,
+		@AuthenticationPrincipal SecurityAdminInfo loginAdmin,
+		@PathVariable Long productId,
 		@Valid @RequestBody UpdateQuantityRequest request) {
 
 		return ResponseEntity.ok(
-			ApiResponse.success("재고가 변경되었습니다.", productService.updateQuantity(id, request))
+			ApiResponse.success("재고가 변경되었습니다.",
+				productService.updateQuantity(productId, request, loginAdmin.adminId()))
 		);
 	}
 
@@ -119,10 +124,10 @@ public class ProductController {
 	 */
 	@DeleteMapping("/{productId}")
 	public ResponseEntity<ApiResponse<Void>> delete(
-		@PathVariable Long productId,
-		@RequestParam Long adminId) {
+		@AuthenticationPrincipal SecurityAdminInfo loginAdmin,
+		@PathVariable Long productId) {
 
-		productService.delete(productId, adminId);
+		productService.delete(productId, loginAdmin.adminId());
 
 		return ResponseEntity.ok(ApiResponse.success("상품이 삭제되었습니다."));
 	}
