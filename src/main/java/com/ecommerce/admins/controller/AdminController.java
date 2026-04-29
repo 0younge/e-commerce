@@ -35,6 +35,7 @@ import com.ecommerce.admins.dto.UpdateStatusAdminRequest;
 import com.ecommerce.admins.entity.AdminRole;
 import com.ecommerce.admins.service.AdminService;
 import com.ecommerce.common.enums.AdminStatus;
+import com.ecommerce.common.exception.AdminLoginStatusException;
 import com.ecommerce.common.response.ApiResponse;
 import com.ecommerce.common.security.auth.SecurityAdminInfo;
 import com.ecommerce.common.security.blacklist.TokenBlacklistService;
@@ -254,19 +255,15 @@ public class AdminController {
 
 	/**
 	 * 관리자 로그아웃
-	 * @param authorizationHeader
-	 * @return
+	 * @param authorizationHeader 검증을 위한 JWT Token
+	 * @return 상태코드, 안내문
 	 */
 	@PostMapping("/logout")
-	public ResponseEntity<ApiResponse<Void>> logout(
-		@RequestHeader("Authorization") String authorizationHeader
-	) {
+	public ResponseEntity<ApiResponse<Void>> logout(@RequestHeader("Authorization") String authorizationHeader) {
 		String token = jwtTokenProvider.resolveToken(authorizationHeader);
-
 		if (token == null) {
-			throw new IllegalArgumentException("유효하지 않은 Authorization 헤더입니다.");
+			throw new AdminLoginStatusException();
 		}
-
 		tokenBlacklistService.addToBlacklist(token);
 
 		return ResponseEntity.ok(ApiResponse.success("로그아웃되었습니다."));

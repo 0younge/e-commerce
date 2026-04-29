@@ -66,7 +66,7 @@ public class DashboardController {
 	 * @return 최근 10건의 주문 상세 조회
 	 */
 	@PreAuthorize("hasRole('SUPER_ADMIN')")
-	@GetMapping("/recentoders")
+	@GetMapping("/recentorders")
 	public ResponseEntity<ApiResponse<GetRecentOrderResponse>> getRecentOrders(
 		@AuthenticationPrincipal SecurityAdminInfo loginAdmin) {
 		return ResponseEntity.ok(ApiResponse.success("최근 주문 목록 조회 성공", dashboardService.getRecentOrders(loginAdmin)));
