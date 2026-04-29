@@ -82,12 +82,21 @@ public class JwtTokenProvider {
 			.getPayload();  // 반환
 	}
 
-	/*만료시간 추출 메서드(블랙리스트 로그아웃 구현)*/
+	/* 만료시간 추출 메서드(블랙리스트 로그아웃 구현) */
 	public LocalDateTime getExpiration(String token) {
 		Date expiration = getClaims(token).getExpiration();
 
 		return expiration.toInstant()
 			.atZone(ZoneId.systemDefault())
 			.toLocalDateTime();
+	}
+
+	/* Authorization 헤더에서 Bearer 토큰 추출 */
+	public String resolveToken(String authorizationHeader) {
+		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+			return null;
+		}
+
+		return authorizationHeader.substring(7);
 	}
 }
