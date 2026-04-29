@@ -36,6 +36,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		String token = resolveToken(request);
 
 		if (token != null && jwtTokenProvider.validateToken(token)) {
+
+			// 토큰이 블랙리스트에 존재하는지 검증
+			if (tokenBlacklistService.isBlacklisted(token)) {
+				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+				return;
+			}
+
 			Long adminId = jwtTokenProvider.getAdminId(token);
 			String email = jwtTokenProvider.getEmail(token);
 			String role = jwtTokenProvider.getRole(token);
