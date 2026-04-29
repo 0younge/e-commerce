@@ -83,7 +83,7 @@ public class Order extends BaseEntity {
 		}
 
 		switch (this.status) {
-			case READY ->  {
+			case READY -> {
 				if (nextStatus != OrderStatus.SHIPPING && nextStatus != OrderStatus.CANCELED) {
 					throw new InvalidRequestException("준비중 -> 배송중 or 취소만 가능");
 				}
@@ -100,7 +100,7 @@ public class Order extends BaseEntity {
 				throw new InvalidRequestException("잘못된 상태입니다.");
 			}
 		}
-		this.status=nextStatus;
+		this.status = nextStatus;
 	}
 
 	public void cancel(String reason) {
