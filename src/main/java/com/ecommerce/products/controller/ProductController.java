@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ecommerce.common.enums.ProductStatus;
 import com.ecommerce.common.response.ApiResponse;
 import com.ecommerce.common.security.auth.SecurityAdminInfo;
 import com.ecommerce.products.dto.CreateProductRequest;
@@ -61,7 +62,7 @@ public class ProductController {
 		Pageable pageable,
 		@RequestParam(required = false) String name,
 		@RequestParam(required = false) String category,
-		@RequestParam(required = false) String status) {
+		@RequestParam(required = false) ProductStatus status) {
 
 		Page<GetProductResponse> response = productService.findAllPaged(
 			pageable,
