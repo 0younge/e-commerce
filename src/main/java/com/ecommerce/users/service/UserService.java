@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ecommerce.common.enums.UserStatus;
+import com.ecommerce.common.exception.DuplicateResourceException;
 import com.ecommerce.common.exception.UserNotFoundException;
 import com.ecommerce.users.dto.GetOneUserResponse;
 import com.ecommerce.users.dto.GetUserResponse;
@@ -58,6 +59,11 @@ public class UserService {
 	@Transactional
 	public PatchUserResponse patchUserDetails(Long userId, PatchUserRequest patchUserRequest) {
 		User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+
+		if (!user.getEmail().equals(patchUserRequest.getEmail()) &&
+			userRepository.existsByEmail(patchUserRequest.getEmail())) {
+			throw new DuplicateResourceException("이미 사용중인 메일입니다.");
+		}
 
 		user.updateDetails(patchUserRequest.getName(), patchUserRequest.getEmail(), patchUserRequest.getPhoneNumber());
 		return PatchUserResponse.from(user);
