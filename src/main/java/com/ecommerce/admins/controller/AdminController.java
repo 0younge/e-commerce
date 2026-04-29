@@ -216,7 +216,6 @@ public class AdminController {
 	 * @param loginAdmin 검증을 위한 JWT 값
 	 * @return 내 이름, 메일, 전화번호 반환
 	 */
-	@PreAuthorize("hasRole('SUPER_ADMIN')")
 	@GetMapping("/my")
 	public ResponseEntity<ApiResponse<GetMyAdminResponse>> getMy(
 		@AuthenticationPrincipal SecurityAdminInfo loginAdmin) {
@@ -229,7 +228,6 @@ public class AdminController {
 	 * @param loginAdmin 검증을 위한 JWT 값
 	 * @return 상태코드
 	 */
-	@PreAuthorize("hasRole('SUPER_ADMIN')")
 	@PatchMapping("/my")
 	public ResponseEntity<ApiResponse<Void>> updateMy(@RequestBody @Valid UpdateMyAdminRequest request,
 		@AuthenticationPrincipal SecurityAdminInfo loginAdmin) {
@@ -244,7 +242,6 @@ public class AdminController {
 	 * @param loginAdmin 검증을 위한 JWT 값
 	 * @return 상태코드
 	 */
-	@PreAuthorize("hasRole('SUPER_ADMIN')")
 	@PatchMapping("/my/password")
 	public ResponseEntity<ApiResponse<Void>> updateMyPassword(@RequestBody @Valid UpdateMyPasswordRequest request,
 		@AuthenticationPrincipal SecurityAdminInfo loginAdmin) {
