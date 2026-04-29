@@ -73,17 +73,7 @@ public class OrderService {
 
 		Order savedOrder = orderRepository.save(order);
 
-		return new CreateOrderResponse(
-			savedOrder.getOrderId(),
-			savedOrder.getNumber(),
-			savedOrder.getUser().getUserId(),
-			savedOrder.getProduct().getProductId(),
-			adminId,
-			savedOrder.getQuantity(),
-			savedOrder.getTotalPrice(),
-			savedOrder.getStatus(),
-			savedOrder.getCreatedAt()
-		);
+		return CreateOrderResponse.from(savedOrder, adminId);
 	}
 
 	/**
@@ -137,16 +127,7 @@ public class OrderService {
 			pageable
 		);
 
-		return orderPage.map(order -> new GetOrderAllResponse(
-			order.getOrderId(),
-			order.getNumber(),
-			order.getUser().getName(),
-			order.getProduct().getName(),
-			order.getQuantity(),
-			order.getTotalPrice(),
-			order.getStatus(),
-			order.getAdmin() != null ? order.getAdmin().getName() : null
-		));
+		return orderPage.map(GetOrderAllResponse::from);
 	}
 
 	/**
@@ -160,19 +141,7 @@ public class OrderService {
 		Order order = orderRepository.findById(orderId).orElseThrow(
 			OrderNotFoundException::new
 		);
-		return new GetOrderOneResponse(
-			order.getNumber(),
-			order.getUser().getName(),
-			order.getUser().getEmail(),
-			order.getProduct().getName(),
-			order.getQuantity(),
-			order.getTotalPrice(),
-			order.getCreatedAt(),
-			order.getStatus(),
-			order.getAdmin() != null ? order.getAdmin().getName() : null,
-			order.getAdmin() != null ? order.getAdmin().getEmail() : null,
-			order.getAdmin() != null ? order.getAdmin().getRole() : null
-		);
+		return GetOrderOneResponse.from(order);
 	}
 
 	/**
