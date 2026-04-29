@@ -18,25 +18,24 @@ import lombok.NoArgsConstructor;
  * - status는 자동으로 FOR_SALE 설정됨
  * - adminId로 등록자 지정
  */
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-public class CreateProductRequest  {
 
+public record CreateProductRequest(
 
 	@NotBlank(message = "상품명은 필수입니다.")
 	@Size(max = 100, message = "상품명은 100자 이하여야 합니다.")
-	private String name;
+	String name,
 
 	@NotBlank(message = "카테고리는 필수입니다.")
 	@Size(max = 50, message = "카테고리는 50자 이하여야 합니다.")
-	private String category;
+	String category,
 
 	@NotNull(message = "가격은 필수입니다.")
 	@Min(value = 0, message = "가격은 0 이상이어야 합니다.")
-	private Long price;  //
+	Long price,
 
 	@NotNull(message = "수량은 필수입니다.")
 	@Min(value = 0, message = "수량은 0 이상이어야 합니다.")
-	private Long quantity;
+	Long quantity
+) {
+
 }
