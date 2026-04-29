@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.ecommerce.common.enums.ProductStatus;
 import com.ecommerce.dashboard.dto.CategoryCountDto;
 import com.ecommerce.products.entity.Product;
 
@@ -23,7 +24,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 	Page<Product> searchProducts(
 		@Param("name") String name,
 		@Param("category") String category,
-		@Param("status") String status,  // ← ProductStatus → String
+		@Param("status") ProductStatus status,  // ← ProductStatus → String
 		Pageable pageable
 	);
 

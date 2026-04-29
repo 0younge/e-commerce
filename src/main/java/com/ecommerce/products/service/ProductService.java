@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.admins.repository.AdminRepository;
+import com.ecommerce.common.enums.ProductStatus;
 import com.ecommerce.common.exception.AdminNotFoundException;
 import com.ecommerce.common.exception.ProductNotFoundException;
 import com.ecommerce.products.dto.CreateProductRequest;
@@ -81,7 +82,7 @@ public class ProductService {
 		Pageable pageable,
 		String name,
 		String category,
-		String status) {
+		ProductStatus status) {
 
 		Page<Product> productPage = productRepository.searchProducts(
 			name,
