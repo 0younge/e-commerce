@@ -59,7 +59,7 @@ public class UserController {
 		if (page < 1) {
 			throw new InvalidRequestException("페이지는 1 이상이어야 합니다.");
 		}
-		Pageable pageable = PageRequest.of(page - 1, size, Sort.Direction.valueOf(sortOrder), sortBy);
+		Pageable pageable = PageRequest.of(page - 1, size, Sort.Direction.valueOf(sortOrder.toUpperCase()), sortBy);
 		Page<GetUserResponse> result = userService.findByKeywordAndStatus(keyword, status, pageable);
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(GetPageResponse.of(result)));
 	}
