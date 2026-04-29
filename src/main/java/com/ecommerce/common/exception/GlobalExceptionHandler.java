@@ -7,6 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.ecommerce.common.response.ApiResponse;
 import com.ecommerce.common.response.ErrorResponse;
 
 @RestControllerAdvice
@@ -21,12 +22,17 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
-	public ResponseEntity<String> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+	public ResponseEntity<ApiResponse<Void>> handleMethodArgumentNotValidException(
+		MethodArgumentNotValidException ex) {
+
 		String errorMessage = ex.getBindingResult().getFieldErrors().stream()
 			.findFirst()
 			.map(DefaultMessageSourceResolvable::getDefaultMessage)
 			.orElse("입력 값이 올바르지 않습니다.");
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+
+		return ResponseEntity
+			.status(HttpStatus.BAD_REQUEST)
+			.body(new ApiResponse<>(HttpStatus.BAD_REQUEST, errorMessage, null));
 	}
 
 }
