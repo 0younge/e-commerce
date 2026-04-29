@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,6 +37,8 @@ import com.ecommerce.admins.service.AdminService;
 import com.ecommerce.common.enums.AdminStatus;
 import com.ecommerce.common.response.ApiResponse;
 import com.ecommerce.common.security.auth.SecurityAdminInfo;
+import com.ecommerce.common.security.blacklist.TokenBlacklistService;
+import com.ecommerce.common.security.jwt.JwtTokenProvider;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +49,8 @@ import lombok.RequiredArgsConstructor;
 public class AdminController {
 
 	private final AdminService adminService;
+	private final JwtTokenProvider jwtTokenProvider;
+	private final TokenBlacklistService tokenBlacklistService;
 
 	/**
 	 * 회원가입
@@ -247,4 +252,23 @@ public class AdminController {
 		return ResponseEntity.ok(ApiResponse.success("내 비밀번호 수정 성공"));
 	}
 
+	/**
+	 * 관리자 로그아웃
+	 * @param authorizationHeader
+	 * @return
+	 */
+	@PostMapping("/logout")
+	public ResponseEntity<ApiResponse<Void>> logout(
+		@RequestHeader("Authorization") String authorizationHeader
+	) {
+		String token = jwtTokenProvider.resolveToken(authorizationHeader);
+
+		if (token == null) {
+			throw new IllegalArgumentException("유효하지 않은 Authorization 헤더입니다.");
+		}
+
+		tokenBlacklistService.addToBlacklist(token);
+
+		return ResponseEntity.ok(ApiResponse.success("로그아웃되었습니다."));
+	}
 }

@@ -3,6 +3,7 @@ package com.ecommerce.common.security.jwt;
 import java.io.IOException;
 import java.util.List;
 
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -11,6 +12,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.ecommerce.admins.entity.AdminRole;
 import com.ecommerce.common.security.auth.SecurityAdminInfo;
+import com.ecommerce.common.security.blacklist.TokenBlacklistService;
+import com.ecommerce.common.security.handler.CustomAuthenticationEntryPoint;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -23,6 +26,8 @@ import lombok.RequiredArgsConstructor;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	private final JwtTokenProvider jwtTokenProvider;
+	private final TokenBlacklistService tokenBlacklistService;
+	private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
 	@Override
 	protected void doFilterInternal(
@@ -34,6 +39,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		String token = resolveToken(request);
 
 		if (token != null && jwtTokenProvider.validateToken(token)) {
+
+			// 토큰이 블랙리스트에 존재하는지 검증
+			if (tokenBlacklistService.isBlacklisted(token)) {
+				customAuthenticationEntryPoint.commence(
+					request,
+					response,
+					new BadCredentialsException("로그아웃된 토큰입니다.")
+				);
+				return;
+			}
+
 			Long adminId = jwtTokenProvider.getAdminId(token);
 			String email = jwtTokenProvider.getEmail(token);
 			String role = jwtTokenProvider.getRole(token);
