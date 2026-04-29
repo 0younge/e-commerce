@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.admins.repository.AdminRepository;
+import com.ecommerce.common.exception.AdminNotFoundException;
 import com.ecommerce.common.exception.InvalidRequestException;
 import com.ecommerce.common.exception.ProductNotFoundException;
 import com.ecommerce.products.dto.CreateProductRequest;
@@ -44,7 +45,7 @@ public class ProductService {
 	public GetProductResponse save(CreateProductRequest request, Long adminId) {
 
 		Admin admin = adminRepository.findById(adminId)
-			.orElseThrow(() -> new InvalidRequestException("존재하지 않는 관리자입니다."));
+			.orElseThrow(() -> new AdminNotFoundException("관리자 권한이 없습니다."));
 
 		Product product = new Product(
 			request.name(),
@@ -145,7 +146,7 @@ public class ProductService {
 			.orElseThrow(ProductNotFoundException::new);
 
 		if (!product.getAdmin().getAdminId().equals(adminId)) {
-			throw new InvalidRequestException("본인이 등록한 상품만 수정할 수 있습니다.");
+			throw new AdminNotFoundException("관리자 권한이 없습니다..");
 		}
 
 		product.updateQuantity(request.quantity());
@@ -167,7 +168,7 @@ public class ProductService {
 	public GetProductResponse update(Long id, UpdateProductRequest request, Long adminId) {
 
 		Admin admin = adminRepository.findById(adminId)
-			.orElseThrow(() -> new InvalidRequestException("존재하지 않는 관리자입니다."));
+			.orElseThrow(() -> new AdminNotFoundException("관리자 권한이 없습니다."));
 
 		Product product = productRepository.findById(id)
 			.orElseThrow(ProductNotFoundException::new);
@@ -196,16 +197,16 @@ public class ProductService {
 	public void delete(Long productId, Long adminId) {
 
 		Admin admin = adminRepository.findById(adminId)
-			.orElseThrow(() -> new InvalidRequestException("존재하지 않는 관리자입니다."));
+			.orElseThrow(() -> new AdminNotFoundException("관리자 권한이 없습니다."));
 
 		Product product = productRepository.findById(productId)
 			.orElseThrow(ProductNotFoundException::new);
 
 		if (!product.getAdmin().getAdminId().equals(adminId)) {
-			throw new InvalidRequestException("본인이 등록한 상품만 삭제할 수 있습니다.");
+			throw new AdminNotFoundException("관리자 권한이 없습니다.");
 		}
 
-		productRepository.delete(product);
+		product.softDelete();
 
 	}
 }
