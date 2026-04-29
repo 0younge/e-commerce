@@ -54,7 +54,6 @@ public class OrderController {
 
 	@GetMapping
 	public ResponseEntity<ApiResponse<Page<GetOrderAllResponse>>> getOrders(
-		@AuthenticationPrincipal SecurityAdminInfo loginAdmin,
 		@RequestParam(defaultValue = "") String keyword,
 		@RequestParam(defaultValue = "1") int page,
 		@RequestParam(defaultValue = "10") int size,
@@ -63,7 +62,6 @@ public class OrderController {
 		@RequestParam(required = false) OrderStatus status
 	) {
 		Page<GetOrderAllResponse> response = orderService.getAll(
-			loginAdmin.adminId(),
 			keyword,
 			page,
 			size,
@@ -77,8 +75,7 @@ public class OrderController {
 
 	@GetMapping("/{orderId}")
 	public ResponseEntity<ApiResponse<GetOrderOneResponse>> getOrder(
-		@PathVariable Long orderId,
-		@AuthenticationPrincipal SecurityAdminInfo loginAdmin
+		@PathVariable Long orderId
 	) {
 		GetOrderOneResponse response = orderService.getOne(orderId);
 		return ResponseEntity.ok()
@@ -88,8 +85,7 @@ public class OrderController {
 	@PatchMapping("/{orderId}")
 	public ResponseEntity<ApiResponse<Void>> updateOrderStatus(
 		@PathVariable Long orderId,
-		@RequestBody UpdateOrderStatusRequest request,
-		@AuthenticationPrincipal SecurityAdminInfo loginAdmin
+		@RequestBody UpdateOrderStatusRequest request
 	) {
 		orderService.updateStatus(orderId, request.getStatus());
 		return ResponseEntity.ok(ApiResponse.success("주문 상태가 변경되었습니다."));
@@ -97,14 +93,9 @@ public class OrderController {
 
 	@PatchMapping("/{orderId}/cancel")
 	public ResponseEntity<ApiResponse<Void>> cancelOrder(
-		@Valid
 		@PathVariable Long orderId,
-		@RequestBody CancelOrderRequest request,
-		@AuthenticationPrincipal SecurityAdminInfo loginAdmin
+		@Valid @RequestBody CancelOrderRequest request
 	) {
-		if (request.getCancelReason() == null || request.getCancelReason().isBlank()){
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "취소 사유는 필수입니다.");
-		}
 		orderService.cancelOrder(orderId, request.getCancelReason());
 		return ResponseEntity.ok(ApiResponse.success("주문이 취소되었습니다."));
 	}
