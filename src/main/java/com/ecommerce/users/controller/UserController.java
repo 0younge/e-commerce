@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -45,6 +46,7 @@ public class UserController {
 	 * @param status 검색할 상태
 	 * @return 페이지네이션을 마친 사용자 리스트
 	 */
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'OPERATION_ADMIN', 'CS_ADMIN')")
 	@GetMapping()
 	public ResponseEntity<ApiResponse<GetPageResponse<GetUserResponse>>> getUserList(
 		@RequestParam(required = false) String keyword,
@@ -67,6 +69,7 @@ public class UserController {
 	 * @param userId 조회할 사용자 아이디
 	 * @return 특정 사용자의 상세 정보
 	 */
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'OPERATION_ADMIN', 'CS_ADMIN')")
 	@GetMapping("/{userId}")
 	public ResponseEntity<ApiResponse<GetOneUserResponse>> getUserDetails(@PathVariable Long userId) {
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(userService.findUserDetails(userId)));
@@ -78,6 +81,7 @@ public class UserController {
 	 * @param patchUserRequest 수정할 값
 	 * @return 수정된 사용자 정보
 	 */
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'OPERATION_ADMIN', 'CS_ADMIN')")
 	@PatchMapping("/{userId}")
 	public ResponseEntity<ApiResponse<PatchUserResponse>> patchUserDetails(@PathVariable Long userId,
 		@Valid @RequestBody PatchUserRequest patchUserRequest) {
@@ -91,6 +95,7 @@ public class UserController {
 	 * @param patchUserStatusRequest 변경할 상태
 	 * @return 상태가 변경된 사용자 정보
 	 */
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'OPERATION_ADMIN', 'CS_ADMIN')")
 	@PatchMapping("/{userId}/status")
 	public ResponseEntity<ApiResponse<PatchUserResponse>> patchUserStatus(@PathVariable Long userId,
 		@Valid @RequestBody PatchUserStatusRequest patchUserStatusRequest) {
@@ -103,6 +108,7 @@ public class UserController {
 	 * @param userId 삭제할 사용자 아이디
 	 * @return 상태코드
 	 */
+	@PreAuthorize("hasRole('SUPER_ADMIN')")
 	@DeleteMapping("/{userId}")
 	public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Long userId) {
 		userService.deleteById(userId);
