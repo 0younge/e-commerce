@@ -1,6 +1,8 @@
 package com.ecommerce.common.security.jwt;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 
 import javax.crypto.SecretKey;
@@ -78,5 +80,14 @@ public class JwtTokenProvider {
 			.build()  //파서 객체 생성
 			.parseSignedClaims(token) // 실제 검증 + 파싱 수행
 			.getPayload();  // 반환
+	}
+
+	/*만료시간 추출 메서드(블랙리스트 로그아웃 구현)*/
+	public LocalDateTime getExpiration(String token) {
+		Date expiration = getClaims(token).getExpiration();
+
+		return expiration.toInstant()
+			.atZone(ZoneId.systemDefault())
+			.toLocalDateTime();
 	}
 }
