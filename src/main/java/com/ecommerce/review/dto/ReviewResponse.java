@@ -13,7 +13,7 @@ public class ReviewResponse {
 	private final String content;
 	private final LocalDateTime createdAt;
 
-	public ReviewResponse(String userName, int rating, String content, LocalDateTime createdAt) {
+	private ReviewResponse(String userName, int rating, String content, LocalDateTime createdAt) {
 		this.userName = userName;
 		this.rating = rating;
 		this.content = content;
