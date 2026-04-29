@@ -83,10 +83,10 @@ public class AdminController {
 	@PreAuthorize("hasRole('SUPER_ADMIN')")
 	@GetMapping
 	public ResponseEntity<ApiResponse<Page<GetAdminResponse>>> getAdminList(
-		@RequestParam(required = false) String keyword,
-		@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size,
-		@RequestParam(defaultValue = "createdAt") String sortBy, @RequestParam(defaultValue = "desc") String sortOrder,
-		@RequestParam(required = false) AdminRole role, @RequestParam(required = false) AdminStatus status,
+		@RequestParam(required = false) String keyword, @RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "createdAt") String sortBy,
+		@RequestParam(defaultValue = "desc") String sortOrder, @RequestParam(required = false) AdminRole role,
+		@RequestParam(required = false) AdminStatus status,
 		@AuthenticationPrincipal SecurityAdminInfo loginAdmin) // 수정: 세션 대신 JWT 인증 정보 사용
 	{
 		Pageable pageable = PageRequest.of(page - 1, size,

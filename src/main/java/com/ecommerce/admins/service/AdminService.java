@@ -48,9 +48,7 @@ public class AdminService {
 	 */
 	@Transactional
 	public void save(CreateAdminRequest request) {
-		if (adminRepository.existsByEmail(request.getEmail())) {
-			throw new DuplicateResourceException("이미 사용중인 메일입니다.");
-		}
+		checkExistEmail(request.getEmail());
 		String encodedPassword = passwordEncoder.encode(request.getPassword());
 		AdminRole requestRole = AdminRole.valueOf(request.getRole());
 		adminRepository.save(
@@ -118,7 +116,7 @@ public class AdminService {
 	@Transactional
 	public void update(Long adminId, UpdateAdminRequest request, Long loginAdminId) {
 		checkStatusOrThrow(findByIdOrThrow(loginAdminId));
-
+		checkExistEmail(request.getEmail());
 		Admin admin = findByIdOrThrow(adminId);
 
 		admin.updateAdmin(request.getName(), request.getEmail(), request.getPhoneNumber());
@@ -272,6 +270,16 @@ public class AdminService {
 			case REJECTED -> throw new AdminStatusException(HttpStatus.FORBIDDEN, "계정 신청 거부됨");
 		}
 		return admin;
+	}
+
+	/**
+	 * 메일 중복 여부 확인 메서드
+	 * @param email 확인할 메일
+	 */
+	public void checkExistEmail(String email) {
+		if (adminRepository.existsByEmail(email)) {
+			throw new DuplicateResourceException("이미 사용중인 메일입니다.");
+		}
 	}
 
 }
