@@ -73,6 +73,11 @@ public class Order extends BaseEntity {
 	}
 
 	public void changeStatus(OrderStatus nextStatus) {
+
+		if (nextStatus == null) {
+			throw new InvalidRequestException("변경할 상태값을 입력해 주세요.");
+		}
+
 		if (this.status == OrderStatus.CANCELED) {
 			throw new InvalidRequestException("취소된 주문은 변경 불가");
 		}
@@ -90,6 +95,9 @@ public class Order extends BaseEntity {
 			}
 			case DELIVERED -> {
 				throw new InvalidRequestException("이미 배송 완료");
+			}
+			default -> {
+				throw new InvalidRequestException("잘못된 상태입니다.");
 			}
 		}
 		this.status=nextStatus;
