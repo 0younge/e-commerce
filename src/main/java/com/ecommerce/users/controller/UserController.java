@@ -20,7 +20,7 @@ import com.ecommerce.common.enums.UserStatus;
 import com.ecommerce.common.exception.InvalidRequestException;
 import com.ecommerce.common.response.ApiResponse;
 import com.ecommerce.users.dto.GetOneUserResponse;
-import com.ecommerce.users.dto.GetPageResponse;
+import com.ecommerce.common.response.GetPageResponse;
 import com.ecommerce.users.dto.GetUserResponse;
 import com.ecommerce.users.dto.PatchUserRequest;
 import com.ecommerce.users.dto.PatchUserResponse;

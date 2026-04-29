@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ecommerce.common.exception.InvalidRequestException;
 import com.ecommerce.common.response.ApiResponse;
+import com.ecommerce.common.response.GetPageResponse;
 import com.ecommerce.review.dto.GetOneReviewResponse;
-import com.ecommerce.review.dto.GetPageResponse;
 import com.ecommerce.review.dto.GetReviewListResponse;
 import com.ecommerce.review.service.ReviewService;
 
