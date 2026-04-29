@@ -53,6 +53,7 @@ public class SecurityConfig {
 				.requestMatchers(
 					"/admins/signup",
 					"/admins/login",
+					"/admins/logout",
 					"/health"
 				).permitAll()
 
