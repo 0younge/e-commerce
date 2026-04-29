@@ -63,6 +63,9 @@ public class SecurityConfig {
 				// 상품 도메인 : 슈퍼관리자 및 운영관리자만
 				.requestMatchers("/products/**").hasAnyRole("SUPER_ADMIN", "OPERATION_ADMIN")
 
+				// 주문 생성 : 모두 허용
+				.requestMatchers(HttpMethod.POST, "/orders").permitAll()
+
 				// 주문 도메인 : 모든 관리자
 				.requestMatchers("/orders/**").hasAnyRole("SUPER_ADMIN", "OPERATION_ADMIN", "CS_ADMIN")
 

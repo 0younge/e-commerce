@@ -6,6 +6,7 @@ import org.hibernate.annotations.SQLRestriction;
 import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.common.BaseEntity;
 import com.ecommerce.common.enums.OrderStatus;
+import com.ecommerce.common.exception.InvalidRequestException;
 import com.ecommerce.products.entity.Product;
 import com.ecommerce.users.entity.User;
 
@@ -72,23 +73,31 @@ public class Order extends BaseEntity {
 	}
 
 	public void changeStatus(OrderStatus nextStatus) {
+
+		if (nextStatus == null) {
+			throw new InvalidRequestException("변경할 상태값을 입력해 주세요.");
+		}
+
 		if (this.status == OrderStatus.CANCELED) {
-			throw new IllegalStateException("취소된 주문은 변경 불가");
+			throw new InvalidRequestException("취소된 주문은 변경 불가");
 		}
 
 		switch (this.status) {
 			case READY ->  {
 				if (nextStatus != OrderStatus.SHIPPING && nextStatus != OrderStatus.CANCELED) {
-					throw new IllegalStateException("준비중 -> 배송중 or 취소만 가능");
+					throw new InvalidRequestException("준비중 -> 배송중 or 취소만 가능");
 				}
 			}
 			case SHIPPING -> {
 				if (nextStatus != OrderStatus.DELIVERED) {
-					throw new IllegalStateException("배송중 -> 배송완료만 가능;");
+					throw new InvalidRequestException("배송중 -> 배송완료만 가능;");
 				}
 			}
 			case DELIVERED -> {
-				throw new IllegalStateException("이미 배송 완료");
+				throw new InvalidRequestException("이미 배송 완료");
+			}
+			default -> {
+				throw new InvalidRequestException("잘못된 상태입니다.");
 			}
 		}
 		this.status=nextStatus;
@@ -96,7 +105,7 @@ public class Order extends BaseEntity {
 
 	public void cancel(String reason) {
 		if (this.status != OrderStatus.READY) {
-			throw new IllegalStateException("준비중 상태에서만 주문 취소가 가능합니다.");
+			throw new InvalidRequestException("준비중 상태에서만 주문 취소가 가능합니다.");
 		}
 		this.status = OrderStatus.CANCELED;
 		this.cancelReason = reason;
@@ -104,7 +113,7 @@ public class Order extends BaseEntity {
 
 	public void assignAdmin(Admin admin) {
 		if (this.admin != null) {
-			throw new IllegalStateException("이미 관리자 배정됨");
+			throw new InvalidRequestException("이미 관리자 배정됨");
 		}
 		this.admin = admin;
 	}
