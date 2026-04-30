@@ -51,6 +51,7 @@ public class JwtTokenProvider {
 	 * @param token
 	 * @return
 	 */
+	// TODO: catch문을 상세히 여러개 추가하여 각각 처리 (예외는 상속구조를 가지고있다)
 	public boolean validateToken(String token) {
 		try {
 			/* 서명 검증, 만료체크, 토큰 형식 체크*/
