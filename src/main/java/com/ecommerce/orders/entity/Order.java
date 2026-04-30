@@ -1,12 +1,19 @@
 package com.ecommerce.orders.entity;
 
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+
 import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.common.BaseEntity;
+import com.ecommerce.common.enums.OrderStatus;
+import com.ecommerce.common.exception.InvalidRequestException;
 import com.ecommerce.products.entity.Product;
 import com.ecommerce.users.entity.User;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -22,6 +29,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "orders")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLDelete(sql = "UPDATE orders SET deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE order_id = ?")
+@SQLRestriction("deleted = false")
 public class Order extends BaseEntity {
 
 	@Id
@@ -30,35 +39,82 @@ public class Order extends BaseEntity {
 
 	@Column(nullable = false)
 	private String number;
+
+	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private String status;
+	private OrderStatus status = OrderStatus.READY;
+
 	@Column(nullable = false)
 	private Long quantity;
+
 	@Column(nullable = false)
 	private Long totalPrice;
 
 	private String cancelReason;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "userId", nullable = false)
+	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "productId", nullable = false)
+	@JoinColumn(name = "product_Id", nullable = false)
 	private Product product;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "adminId", nullable = false)
+	@JoinColumn(name = "admin_Id", nullable = true)
 	private Admin admin;
 
-	public Order(String number, String status, Long quantity, Long totalPrice, User user, Product product,
-		Admin admin) {
+	public Order(String number, Long quantity, Long totalPrice, User user, Product product) {
 		this.number = number;
-		this.status = status;
 		this.quantity = quantity;
 		this.totalPrice = totalPrice;
 		this.user = user;
 		this.product = product;
+	}
+
+	public void changeStatus(OrderStatus nextStatus) {
+
+		if (nextStatus == null) {
+			throw new InvalidRequestException("변경할 상태값을 입력해 주세요.");
+		}
+
+		if (this.status == OrderStatus.CANCELED) {
+			throw new InvalidRequestException("취소된 주문은 변경 불가");
+		}
+
+		switch (this.status) {
+			case READY -> {
+				if (nextStatus != OrderStatus.SHIPPING && nextStatus != OrderStatus.CANCELED) {
+					throw new InvalidRequestException("준비중 -> 배송중 or 취소만 가능");
+				}
+			}
+			case SHIPPING -> {
+				if (nextStatus != OrderStatus.DELIVERED) {
+					throw new InvalidRequestException("배송중 -> 배송완료만 가능;");
+				}
+			}
+			case DELIVERED -> {
+				throw new InvalidRequestException("이미 배송 완료");
+			}
+			default -> {
+				throw new InvalidRequestException("잘못된 상태입니다.");
+			}
+		}
+		this.status = nextStatus;
+	}
+
+	public void cancel(String reason) {
+		if (this.status != OrderStatus.READY) {
+			throw new InvalidRequestException("준비중 상태에서만 주문 취소가 가능합니다.");
+		}
+		this.status = OrderStatus.CANCELED;
+		this.cancelReason = reason;
+	}
+
+	public void assignAdmin(Admin admin) {
+		if (this.admin != null) {
+			throw new InvalidRequestException("이미 관리자 배정됨");
+		}
 		this.admin = admin;
 	}
 

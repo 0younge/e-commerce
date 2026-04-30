@@ -1,0 +1,35 @@
+package com.ecommerce.review.repository;
+
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import com.ecommerce.review.entity.Review;
+
+@Repository
+public interface ReviewRepository extends JpaRepository<Review, Long> {
+	@Query("SELECT r FROM Review r JOIN  r.user u JOIN r.product p " +
+		"WHERE (:keyword IS NULL OR u.name LIKE %:keyword% OR p.name LIKE %:keyword%) " +
+		"AND (:rating IS NULL OR r.rating = :rating)")
+	Page<Review> findByKeywordAndRating(
+		@Param("keyword") String keyword,
+		@Param("rating") Integer rating,
+		Pageable pageable
+	);
+
+	@Query("SELECT AVG(r.rating) FROM Review r")
+	Double findAverageRating();
+
+	@Query("SELECT COUNT(r) FROM Review r WHERE r.rating = :rating")
+	long countByRating(@Param("rating") int rating);
+
+	List<Review> findByProductProductId(Long productId);
+
+	List<Review> findTop3ByProductProductIdOrderByCreatedAtDesc(Long productId);
+
+}

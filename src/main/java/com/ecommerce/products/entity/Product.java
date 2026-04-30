@@ -1,24 +1,40 @@
 package com.ecommerce.products.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+
 import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.common.BaseEntity;
+import com.ecommerce.common.enums.ProductStatus;
+import com.ecommerce.common.exception.InvalidRequestException;
+import com.ecommerce.review.entity.Review;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
 @Table(name = "products")
+@SQLDelete(sql = "UPDATE products SET deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE product_id = ?")
+@SQLRestriction("deleted = false")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product extends BaseEntity {
 
@@ -34,20 +50,109 @@ public class Product extends BaseEntity {
 	private Long price;
 	@Column(nullable = false)
 	private Long quantity;
+
+	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private String status;
+	private ProductStatus status;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "admin_id")
 	private Admin admin;
 
-	public Product(String name, String category, Long price, Long quantity, String status, Admin admin) {
+	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+	private List<Review> reviews = new ArrayList<>();
+
+	@Builder
+	public Product(String name, String category, Long price, Long quantity, Admin admin) {
 		this.name = name;
 		this.category = category;
 		this.price = price;
 		this.quantity = quantity;
-		this.status = status;
 		this.admin = admin;
+		this.status = (quantity == 0) ? ProductStatus.SOLD_OUT : ProductStatus.FOR_SALE;
 	}
 
+	/**
+	 * 상품 정보 수정 (ProductService에서 사용)
+	 * Admin 포함 수정
+	 */
+	public void update(String name, String category, Long price) {
+		this.name = name;
+		this.category = category;
+		this.price = price;
+	}
+
+	/**
+	 * 재고 정보 수정 (ProductService에서 사용)
+	 * Request 객체로 전체 업데이트 + 상태 자동 변경
+	 */
+	/**
+	 * 재고만 변경 + 상태 자동 갱신
+	 *
+	 * @param quantity 변경할 재고 수량
+	 */
+	public void updateQuantity(Long quantity) {
+
+		if (quantity < 0) {
+			throw new InvalidRequestException("재고는 0 이상이어야 합니다.");
+		}
+		this.quantity = quantity;
+
+		// DISCONTINUED 상태가 아닐 때만 자동 변경
+		if (this.status != ProductStatus.DISCONTINUED) {
+			if (this.quantity == 0) {
+				this.status = ProductStatus.SOLD_OUT;
+			} else if (this.quantity > 0) {
+				this.status = ProductStatus.FOR_SALE;
+			}
+		}
+	}
+
+	/**
+	 * 재고 감소 (주문 시)
+	 */
+	public void decreaseQuantity(Long quantity) {
+		if (this.quantity < quantity) {
+			throw new InvalidRequestException("재고가 부족합니다. 현재 재고: " + this.quantity);
+		}
+		this.quantity -= quantity;
+
+		// 재고 0이면 상태 변경
+		if (this.quantity == 0) {
+			this.status = ProductStatus.SOLD_OUT;
+		}
+	}
+
+	/**
+	 * 재고 증가 (주문 취소 시)
+	 */
+	public void increaseQuantity(Long quantity) {
+		this.quantity += quantity;
+
+		// 재고 생기면 판매중으로 변경
+		if (this.status == ProductStatus.SOLD_OUT) {
+			this.status = ProductStatus.FOR_SALE;
+		}
+	}
+
+	/**
+	 * 판매 가능 여부
+	 */
+	public boolean isAvailable() {
+		return this.status == ProductStatus.FOR_SALE && this.quantity > 0;
+	}
+
+	/**
+	 * 재고 확인
+	 */
+	public boolean hasStock(Long quantity) {
+		return this.quantity >= quantity;
+	}
+
+	/**
+	 * 상태 변경
+	 */
+	public void changeStatus(ProductStatus status) {
+		this.status = status;
+	}
 }
