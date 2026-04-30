@@ -57,11 +57,11 @@ VALUES
     ('노트1','문구',3000,100,'FOR_SALE',false,1,NOW(),NOW()),
     ('노트2','문구',3500,90,'FOR_SALE',false,1,NOW(),NOW()),
     ('노트3','문구',4000,80,'FOR_SALE',false,2,NOW(),NOW()),
-    ('펜1','문구',1000,200,'FOR_SALE',false,2,NOW(),NOW()),
-    ('펜2','문구',1500,180,'FOR_SALE',false,3,NOW(),NOW()),
+    ('펜1','문구',1000,0,'FOR_SALE',false,2,NOW(),NOW()),
+    ('펜2','문구',1500,180,'DISCONTINUED',false,3,NOW(),NOW()),
     ('펜3','문구',1200,0,'SOLD_OUT',false,3,NOW(),NOW()),
     ('텀블러1','생활용품',20000,40,'FOR_SALE',false,1,NOW(),NOW()),
-    ('텀블러2','생활용품',25000,35,'FOR_SALE',false,2,NOW(),NOW()),
+    ('텀블러2','생활용품',25000,35,'DISCONTINUED',false,2,NOW(),NOW()),
     ('텀블러3','생활용품',22000,0,'SOLD_OUT',false,3,NOW(),NOW());
 
 /* =========================
@@ -97,4 +97,5 @@ VALUES
     (9,9,9,5,'좋음',false,NOW(),NOW()),
     (11,11,11,5,'굿',false,NOW(),NOW()),
     (12,12,12,4,'만족',false,NOW(),NOW()),
+    (13,13,13,5,'추천',false,NOW(),NOW()),
     (15,15,15,4,'좋아요',false,NOW(),NOW());
