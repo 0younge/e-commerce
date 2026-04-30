@@ -54,6 +54,8 @@ public class OrderService {
 			ProductNotFoundException::new
 		);
 
+		product.validateOrderable();
+
 		//주문 수량만큼 상품 재고 검증 및 차감 처리 & 상품 상태 변경
 		product.decreaseQuantity(request.getQuantity());
 
