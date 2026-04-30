@@ -109,6 +109,17 @@ public class Product extends BaseEntity {
 	}
 
 	/**
+	 *  판매 중단 상품
+	 */
+	public void validateOrderable() {
+		if (this.status == ProductStatus.DISCONTINUED) {
+			throw new InvalidRequestException("주문 불가능한 상품입니다.");
+		}
+	}
+
+
+
+	/**
 	 * 재고 감소 (주문 시)
 	 */
 	public void decreaseQuantity(Long quantity) {
