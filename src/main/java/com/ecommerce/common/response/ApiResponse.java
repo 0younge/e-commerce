@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 import lombok.Getter;
 
 @Getter
-
+// TODO: 모든 컨트롤러에 ResponseBodyAdvice 적용
 public class ApiResponse<T> {
 	private final int status;
 	private final String message;

@@ -6,21 +6,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.SessionAttribute;
-import org.springframework.web.server.ResponseStatusException;
 
-import com.ecommerce.admins.entity.AdminConst;
-import com.ecommerce.admins.entity.AdminInfo;
 import com.ecommerce.common.exception.InvalidRequestException;
 import com.ecommerce.common.response.ApiResponse;
+import com.ecommerce.common.response.GetPageResponse;
 import com.ecommerce.review.dto.GetOneReviewResponse;
-import com.ecommerce.review.dto.GetPageResponse;
 import com.ecommerce.review.dto.GetReviewListResponse;
 import com.ecommerce.review.service.ReviewService;
 
@@ -42,6 +39,7 @@ public class ReviewController {
 	 * @param rating 검색할 평점
 	 * @return 페이지네이션을 마친 리뷰 리스트
 	 */
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'OPERATION_ADMIN', 'CS_ADMIN')")
 	@GetMapping()
 	public ResponseEntity<ApiResponse<GetPageResponse<GetReviewListResponse>>> getReviewList(
 		@RequestParam(required = false) String keyword,
@@ -65,6 +63,7 @@ public class ReviewController {
 	 * @param reviewId 조회할 리뷰 아이디
 	 * @return 특정 리뷰의 상세 정보
 	 */
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'OPERATION_ADMIN', 'CS_ADMIN')")
 	@GetMapping("/{reviewId}")
 	public ResponseEntity<ApiResponse<GetOneReviewResponse>> getOneReview(@PathVariable Long reviewId) {
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(reviewService.findById(reviewId)));
@@ -73,16 +72,12 @@ public class ReviewController {
 	/**
 	 * 리뷰 삭제
 	 * @param reviewId 삭제할 리뷰 아이디
-	 * @param adminInfo 세션에 저장된 관리자 정보
 	 * @return 삭제 결과 메시지
 	 */
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'OPERATION_ADMIN')")
 	@DeleteMapping("/{reviewId}")
-	public ResponseEntity<ApiResponse<Void>> deleteReview(@PathVariable Long reviewId,
-		@SessionAttribute(name = AdminConst.ADMIN_INFO, required = false) AdminInfo adminInfo) {
+	public ResponseEntity<ApiResponse<Void>> deleteReview(@PathVariable Long reviewId) {
 
-		if (adminInfo == null) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "관리자 로그인이 필요합니다.");
-		}
 		reviewService.deleteById(reviewId);
 		return ResponseEntity.ok(ApiResponse.success("리뷰가 삭제되었습니다."));
 	}

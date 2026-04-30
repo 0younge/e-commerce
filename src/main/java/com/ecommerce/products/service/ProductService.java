@@ -1,5 +1,7 @@
 package com.ecommerce.products.service;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -7,7 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.admins.repository.AdminRepository;
-import com.ecommerce.common.exception.InvalidRequestException;
+import com.ecommerce.common.enums.ProductStatus;
+import com.ecommerce.common.exception.AdminNotFoundException;
 import com.ecommerce.common.exception.ProductNotFoundException;
 import com.ecommerce.products.dto.CreateProductRequest;
 import com.ecommerce.products.dto.GetProductDetailResponse;
@@ -16,6 +19,10 @@ import com.ecommerce.products.dto.UpdateProductRequest;
 import com.ecommerce.products.dto.UpdateQuantityRequest;
 import com.ecommerce.products.entity.Product;
 import com.ecommerce.products.repository.ProductRepository;
+import com.ecommerce.review.dto.ReviewResponse;
+import com.ecommerce.review.dto.ReviewStats;
+import com.ecommerce.review.entity.Review;
+import com.ecommerce.review.repository.ReviewRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,29 +32,32 @@ public class ProductService {
 
 	private final ProductRepository productRepository;
 	private final AdminRepository adminRepository;
+	private final ReviewRepository reviewRepository;
 
 	/**
 	 * 상품 등록
 	 *
 	 * @param request 상품 등록 요청 (이름, 카테고리, 가격, 재고, 상태, 관리자ID)
 	 * @return 등록된 상품 정보
-	 * @throws InvalidRequestException 존재하지 않는 관리자ID
+	 * @throws AdminNotFoundException 관리자 권한이 없습니다.
 	 */
 	@Transactional
-	public GetProductResponse save(CreateProductRequest request) {  // ✅ 변경
+	public GetProductResponse save(CreateProductRequest request, Long adminId) {
 
-		Admin admin = adminRepository.findById(request.getAdminId())
-			.orElseThrow(() -> new InvalidRequestException("존재하지 않는 관리자입니다."));
+		Admin admin = adminRepository.findById(adminId)
+			.orElseThrow(() -> new AdminNotFoundException("관리자 권한이 없습니다."));
 
 		Product product = new Product(
-			request.getName(),
-			request.getCategory(),
-			request.getPrice(),
-			request.getQuantity(),
+			request.name(),
+			request.category(),
+			request.price(),
+			request.quantity(),
 			admin
 		);
 
-		return GetProductResponse.from(productRepository.save(product));
+		Product savedProduct = productRepository.save(product);
+
+		return GetProductResponse.from(savedProduct);
 	}
 
 	/**
@@ -72,7 +82,7 @@ public class ProductService {
 		Pageable pageable,
 		String name,
 		String category,
-		String status) {
+		ProductStatus status) {
 
 		Page<Product> productPage = productRepository.searchProducts(
 			name,
@@ -84,7 +94,6 @@ public class ProductService {
 		return productPage.map(GetProductResponse::from);
 	}
 
-
 	/**
 	 * 상품 상세 조회
 	 *
@@ -94,13 +103,32 @@ public class ProductService {
 	 */
 	@Transactional(readOnly = true)
 	public GetProductDetailResponse getProductDetail(Long productId) {
-
 		Product product = productRepository.findById(productId)
 			.orElseThrow(ProductNotFoundException::new);
 
 		Admin admin = product.getAdmin();
 
-		return GetProductDetailResponse.from(product, admin);
+		List<Review> reviews = reviewRepository.findByProductProductId(productId);
+
+		double avg = reviews.stream().mapToDouble(Review::getRating).average().orElse(0.0);
+
+		ReviewStats reviewStats = new ReviewStats(
+			Math.round(avg * 10) / 10.0,
+			reviews.size(),
+			(int)reviews.stream().filter(r -> r.getRating() == 1).count(),
+			(int)reviews.stream().filter(r -> r.getRating() == 2).count(),
+			(int)reviews.stream().filter(r -> r.getRating() == 3).count(),
+			(int)reviews.stream().filter(r -> r.getRating() == 4).count(),
+			(int)reviews.stream().filter(r -> r.getRating() == 5).count()
+		);
+
+		List<ReviewResponse> reviewResponses = reviewRepository
+			.findTop3ByProductProductIdOrderByCreatedAtDesc(productId)
+			.stream()
+			.map(ReviewResponse::from)
+			.toList();
+
+		return GetProductDetailResponse.from(product, admin, reviewStats, reviewResponses);
 	}
 
 	/**
@@ -108,19 +136,20 @@ public class ProductService {
 	 *
 	 * @param productId 상품 ID
 	 * @param request 변경할 재고 정보
+	 *
 	 * @return 변경된 상품 정보
 	 */
 	@Transactional
-	public GetProductResponse updateQuantity(Long productId, UpdateQuantityRequest request) {
+	public GetProductResponse updateQuantity(Long productId, UpdateQuantityRequest request, Long adminId) {
 
 		Product product = productRepository.findById(productId)
-			.orElseThrow(() -> new ProductNotFoundException());
+			.orElseThrow(ProductNotFoundException::new);
 
-		if (!product.getAdmin().getAdminId().equals(request.getAdminId())) {
-			throw new InvalidRequestException("본인이 등록한 상품만 수정할 수 있습니다.");
+		if (!product.getAdmin().getAdminId().equals(adminId)) {
+			throw new AdminNotFoundException("관리자 권한이 없습니다..");
 		}
 
-		product.updateQuantity(request.getQuantity());
+		product.updateQuantity(request.quantity());
 
 		return GetProductResponse.from(product);
 	}
@@ -135,24 +164,22 @@ public class ProductService {
 	 * @throws ProductNotFoundException 존재하지 않는 상품
 	 */
 	@Transactional
-	public GetProductResponse update(Long id, UpdateProductRequest request) {
+	public GetProductResponse update(Long id, UpdateProductRequest request, Long adminId) {
 
-		Admin admin = adminRepository.findById(request.getAdminId())
-			.orElseThrow(() -> new InvalidRequestException("존재하지 않는 관리자입니다."));
+		Admin admin = adminRepository.findById(adminId)
+			.orElseThrow(() -> new AdminNotFoundException("관리자 권한이 없습니다."));
 
 		Product product = productRepository.findById(id)
-			.orElseThrow(() -> new ProductNotFoundException());
+			.orElseThrow(ProductNotFoundException::new);
 
 		product.update(
-			request.getName(),
-			request.getCategory(),
-			request.getPrice(),
-			admin
+			request.name(),
+			request.category(),
+			request.price()
 		);
 
 		return GetProductResponse.from(product);
 	}
-
 
 	/**
 	 * 상품 삭제
@@ -160,24 +187,24 @@ public class ProductService {
 	 *
 	 * @param productId 삭제할 상품 ID
 	 * @param adminId 요청한 관리자 ID (권한 확인용)
-	 * @throws InvalidRequestException 존재하지 않는 관리자 또는 권한 없음
+	 * @throws AdminNotFoundException 권한 없음
 	 * @throws ProductNotFoundException 존재하지 않는 상품
 	 */
 	@Transactional
 	public void delete(Long productId, Long adminId) {
 
 		Admin admin = adminRepository.findById(adminId)
-			.orElseThrow(() -> new InvalidRequestException("존재하지 않는 관리자입니다."));
+			.orElseThrow(() -> new AdminNotFoundException("관리자 권한이 없습니다."));
 
 		Product product = productRepository.findById(productId)
-			.orElseThrow(() -> new ProductNotFoundException());
+			.orElseThrow(ProductNotFoundException::new);
 
 		if (!product.getAdmin().getAdminId().equals(adminId)) {
-
-			throw new InvalidRequestException("본인이 등록한 상품만 삭제할 수 있습니다.");
+			throw new AdminNotFoundException("관리자 권한이 없습니다.");
 		}
 
-		productRepository.delete(product);
-	}
+		product.softDelete();
 
+	}
 }
+

@@ -58,6 +58,7 @@ public class OrderService {
 		product.decreaseQuantity(request.getQuantity());
 
 		//주문 번호 생성 및 총 가격 계산
+		// TODO: 동시성 문제 수정
 		String orderNumber = generateOrderNumber(user);
 		Long totalPrice = product.getPrice() * request.getQuantity();
 
@@ -73,17 +74,7 @@ public class OrderService {
 
 		Order savedOrder = orderRepository.save(order);
 
-		return new CreateOrderResponse(
-			savedOrder.getOrderId(),
-			savedOrder.getNumber(),
-			savedOrder.getUser().getUserId(),
-			savedOrder.getProduct().getProductId(),
-			adminId,
-			savedOrder.getQuantity(),
-			savedOrder.getTotalPrice(),
-			savedOrder.getStatus(),
-			savedOrder.getCreatedAt()
-		);
+		return CreateOrderResponse.from(savedOrder, adminId);
 	}
 
 	/**
@@ -102,7 +93,6 @@ public class OrderService {
 
 	/**
 	 * 주문 리스트 조회 - 관리자 로그인시에만 접근 가능
-	 * @param adminId 관리자 id
 	 * @param keyword 검색할 키워드
 	 * @param page 페이지 번호
 	 * @param size 페이지당 개수
@@ -112,9 +102,7 @@ public class OrderService {
 	 * @return 페이지네이션을 마친 주문 리스트
 	 */
 	@Transactional(readOnly = true)
-	public Page<GetOrderAllResponse> getAll(
-		Long adminId,
-		String keyword, int page, int size, String sortBy, String sortOrder, OrderStatus status) {
+	public Page<GetOrderAllResponse> getAll(String keyword, int page, int size, String sortBy, String sortOrder, OrderStatus status) {
 
 		//1. 정렬 방향
 		Sort.Direction direction = sortOrder.equalsIgnoreCase("asc")
@@ -131,22 +119,12 @@ public class OrderService {
 
 		//4. 조회
 		Page<Order> orderPage = orderRepository.searchOrders(
-			adminId,
 			keyword,
 			status,
 			pageable
 		);
 
-		return orderPage.map(order -> new GetOrderAllResponse(
-			order.getOrderId(),
-			order.getNumber(),
-			order.getUser().getName(),
-			order.getProduct().getName(),
-			order.getQuantity(),
-			order.getTotalPrice(),
-			order.getStatus(),
-			order.getAdmin() != null ? order.getAdmin().getName() : null
-		));
+		return orderPage.map(GetOrderAllResponse::from);
 	}
 
 	/**
@@ -160,19 +138,7 @@ public class OrderService {
 		Order order = orderRepository.findById(orderId).orElseThrow(
 			OrderNotFoundException::new
 		);
-		return new GetOrderOneResponse(
-			order.getNumber(),
-			order.getUser().getName(),
-			order.getUser().getEmail(),
-			order.getProduct().getName(),
-			order.getQuantity(),
-			order.getTotalPrice(),
-			order.getCreatedAt(),
-			order.getStatus(),
-			order.getAdmin() != null ? order.getAdmin().getName() : null,
-			order.getAdmin() != null ? order.getAdmin().getEmail() : null,
-			order.getAdmin() != null ? order.getAdmin().getRole() : null
-		);
+		return GetOrderOneResponse.from(order);
 	}
 
 	/**

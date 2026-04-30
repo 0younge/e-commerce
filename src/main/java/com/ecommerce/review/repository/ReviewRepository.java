@@ -1,5 +1,7 @@
 package com.ecommerce.review.repository;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,5 +27,9 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
 	@Query("SELECT COUNT(r) FROM Review r WHERE r.rating = :rating")
 	long countByRating(@Param("rating") int rating);
+
+	List<Review> findByProductProductId(Long productId);
+
+	List<Review> findTop3ByProductProductIdOrderByCreatedAtDesc(Long productId);
 
 }

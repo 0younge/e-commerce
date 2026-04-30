@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,8 +35,11 @@ import com.ecommerce.admins.dto.UpdateStatusAdminRequest;
 import com.ecommerce.admins.entity.AdminRole;
 import com.ecommerce.admins.service.AdminService;
 import com.ecommerce.common.enums.AdminStatus;
+import com.ecommerce.common.exception.AdminLoginStatusException;
 import com.ecommerce.common.response.ApiResponse;
 import com.ecommerce.common.security.auth.SecurityAdminInfo;
+import com.ecommerce.common.security.blacklist.TokenBlacklistService;
+import com.ecommerce.common.security.jwt.JwtTokenProvider;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +50,8 @@ import lombok.RequiredArgsConstructor;
 public class AdminController {
 
 	private final AdminService adminService;
+	private final JwtTokenProvider jwtTokenProvider;
+	private final TokenBlacklistService tokenBlacklistService;
 
 	/**
 	 * 회원가입
@@ -60,15 +66,13 @@ public class AdminController {
 	}
 
 	/**
-	 *
-	 * @param request
+	 * 로그인 기능
+	 * @param request 메일과 비밀번호
 	 * @return 서비스 로직에서 생성된 JWT 반환
 	 */
 	@PostMapping("/login")
 	public ResponseEntity<ApiResponse<LoginAdminResponse>> loginAdmin(@RequestBody @Valid LoginAdminRequest request) {
-		LoginAdminResponse response = adminService.login(request);
-
-		return ResponseEntity.ok().body(ApiResponse.success("로그인 성공!", response));
+		return ResponseEntity.ok().body(ApiResponse.success("로그인 성공!", adminService.login(request)));
 	}
 
 	/**
@@ -85,10 +89,10 @@ public class AdminController {
 	@PreAuthorize("hasRole('SUPER_ADMIN')")
 	@GetMapping
 	public ResponseEntity<ApiResponse<Page<GetAdminResponse>>> getAdminList(
-		@RequestParam(required = false) String keyword,
-		@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size,
-		@RequestParam(defaultValue = "createdAt") String sortBy, @RequestParam(defaultValue = "desc") String sortOrder,
-		@RequestParam(required = false) AdminRole role, @RequestParam(required = false) AdminStatus status,
+		@RequestParam(required = false) String keyword, @RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "createdAt") String sortBy,
+		@RequestParam(defaultValue = "desc") String sortOrder, @RequestParam(required = false) AdminRole role,
+		@RequestParam(required = false) AdminStatus status,
 		@AuthenticationPrincipal SecurityAdminInfo loginAdmin) // 수정: 세션 대신 JWT 인증 정보 사용
 	{
 		Pageable pageable = PageRequest.of(page - 1, size,
@@ -102,7 +106,7 @@ public class AdminController {
 	/**
 	 * 특정 관리자 조회
 	 * @param adminId 조회할 관리자 아이디
-	 * @param loginAdmin 검증을 위한 세션
+	 * @param loginAdmin 검증을 위한 JWT 값
 	 * @return 특정 관리자의 이름, 메일, 전화번호, 역할, 상태, 생성일, 수락일 반환
 	 */
 	@PreAuthorize("hasRole('SUPER_ADMIN')")
@@ -110,14 +114,14 @@ public class AdminController {
 	public ResponseEntity<ApiResponse<GetOneAdminResponse>> getOneAdmin(@PathVariable Long adminId,
 		@AuthenticationPrincipal SecurityAdminInfo loginAdmin) {
 		return ResponseEntity.ok(
-			ApiResponse.created("관리자 상세 조회 성공", adminService.getOne(adminId, loginAdmin.adminId())));
+			ApiResponse.success("관리자 상세 조회 성공", adminService.getOne(adminId, loginAdmin.adminId())));
 	}
 
 	/**
 	 * 관리자 정보 수정
 	 * @param request 수정할 값
 	 * @param adminId 수정할 관리자 아이디
-	 * @param loginAdmin 검증을 위한 세션
+	 * @param loginAdmin 검증을 위한 JWT 값
 	 * @return 상태코드
 	 */
 	@PreAuthorize("hasRole('SUPER_ADMIN')")
@@ -133,7 +137,7 @@ public class AdminController {
 	 * 관리자 역할 변경
 	 * @param request 변경할 역할
 	 * @param adminId 변경할 관리자 아이디
-	 * @param loginAdmin 검증을 위한 세션 값
+	 * @param loginAdmin 검증을 위한 JWT 값
 	 * @return 상태코드
 	 */
 	@PreAuthorize("hasRole('SUPER_ADMIN')")
@@ -149,7 +153,7 @@ public class AdminController {
 	 * 관리자 상태 변경
 	 * @param request 변경할 상태
 	 * @param adminId 변경할 관리자 아이디
-	 * @param loginAdmin 검증을 위한 세션 값
+	 * @param loginAdmin 검증을 위한 JWT 값
 	 * @return 상태코드
 	 */
 	@PreAuthorize("hasRole('SUPER_ADMIN')")
@@ -164,7 +168,7 @@ public class AdminController {
 	/**
 	 * 관리자 삭제
 	 * @param adminId 삭제할 관리자 아이디
-	 * @param loginAdmin 검증을 위한 세션 값
+	 * @param loginAdmin 검증을 위한 JWT 값
 	 * @return 상태코드
 	 */
 	@PreAuthorize("hasRole('SUPER_ADMIN')")
@@ -179,7 +183,7 @@ public class AdminController {
 	/**
 	 * 관리자 승인
 	 * @param adminId 승인할 관리자 아이디
-	 * @param loginAdmin 검증을 위한 세션 값
+	 * @param loginAdmin 검증을 위한 JWT 값
 	 * @return 상태코드
 	 */
 	@PreAuthorize("hasRole('SUPER_ADMIN')")
@@ -195,7 +199,7 @@ public class AdminController {
 	 * 관리자 거부
 	 * @param adminId 거부할 관리자 아이디
 	 * @param request 거부사유
-	 * @param loginAdmin 검증을 위한 세션 값
+	 * @param loginAdmin 검증을 위한 JWT 값
 	 * @return 상태코드
 	 */
 	@PreAuthorize("hasRole('SUPER_ADMIN')")
@@ -209,7 +213,7 @@ public class AdminController {
 
 	/**
 	 * 내 프로필 조회
-	 * @param loginAdmin 검증을 위한 세션 값
+	 * @param loginAdmin 검증을 위한 JWT 값
 	 * @return 내 이름, 메일, 전화번호 반환
 	 */
 	@GetMapping("/my")
@@ -221,7 +225,7 @@ public class AdminController {
 	/**
 	 * 내 프로필 수정
 	 * @param request 수정할 이름, 메일, 전화번호
-	 * @param loginAdmin 검증을 위한 세션 값
+	 * @param loginAdmin 검증을 위한 JWT 값
 	 * @return 상태코드
 	 */
 	@PatchMapping("/my")
@@ -235,7 +239,7 @@ public class AdminController {
 	/**
 	 * 내 비밀번호 수정
 	 * @param request 변경할 비밀번호
-	 * @param loginAdmin 검증을 위한 세션
+	 * @param loginAdmin 검증을 위한 JWT 값
 	 * @return 상태코드
 	 */
 	@PatchMapping("/my/password")
@@ -246,4 +250,19 @@ public class AdminController {
 		return ResponseEntity.ok(ApiResponse.success("내 비밀번호 수정 성공"));
 	}
 
+	/**
+	 * 관리자 로그아웃
+	 * @param authorizationHeader 검증을 위한 JWT Token
+	 * @return 상태코드, 안내문
+	 */
+	@PostMapping("/logout")
+	public ResponseEntity<ApiResponse<Void>> logout(@RequestHeader("Authorization") String authorizationHeader) {
+		String token = jwtTokenProvider.resolveToken(authorizationHeader);
+		if (token == null) {
+			throw new AdminLoginStatusException();
+		}
+		tokenBlacklistService.addToBlacklist(token);
+
+		return ResponseEntity.ok(ApiResponse.success("로그아웃되었습니다."));
+	}
 }

@@ -3,6 +3,7 @@ package com.ecommerce.orders.controller;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +20,7 @@ import com.ecommerce.admins.entity.AdminInfo;
 import com.ecommerce.common.enums.OrderStatus;
 import com.ecommerce.common.exception.AdminLoginStatusException;
 import com.ecommerce.common.response.ApiResponse;
+import com.ecommerce.common.security.auth.SecurityAdminInfo;
 import com.ecommerce.orders.dto.CancelOrderRequest;
 import com.ecommerce.orders.dto.CreateOrderRequest;
 import com.ecommerce.orders.dto.CreateOrderResponse;
@@ -42,9 +44,9 @@ public class OrderController {
 	@PostMapping
 	public ResponseEntity<ApiResponse<CreateOrderResponse>> createAdminOrder(
 		@Valid @RequestBody CreateOrderRequest request,
-		@SessionAttribute(name = AdminConst.ADMIN_INFO, required = false) AdminInfo adminInfo
+		@AuthenticationPrincipal SecurityAdminInfo loginAdmin
 	) {
-		Long adminId = (adminInfo != null) ? adminInfo.getAdminId() : null;
+		Long adminId = (loginAdmin != null) ? loginAdmin.adminId() : null;
 
 		return ResponseEntity.status(HttpStatus.CREATED)
 				.body(ApiResponse.created("주문이 성공적으로 생성되었습니다.", orderService.save(request, adminId)));
@@ -52,7 +54,6 @@ public class OrderController {
 
 	@GetMapping
 	public ResponseEntity<ApiResponse<Page<GetOrderAllResponse>>> getOrders(
-		@SessionAttribute(name = AdminConst.ADMIN_INFO, required = false) AdminInfo adminInfo,
 		@RequestParam(defaultValue = "") String keyword,
 		@RequestParam(defaultValue = "1") int page,
 		@RequestParam(defaultValue = "10") int size,
@@ -60,11 +61,7 @@ public class OrderController {
 		@RequestParam(defaultValue = "desc") String sortOrder,
 		@RequestParam(required = false) OrderStatus status
 	) {
-		if (adminInfo == null) {
-			throw new AdminLoginStatusException();
-		}
 		Page<GetOrderAllResponse> response = orderService.getAll(
-			adminInfo.getAdminId(),
 			keyword,
 			page,
 			size,
@@ -78,12 +75,8 @@ public class OrderController {
 
 	@GetMapping("/{orderId}")
 	public ResponseEntity<ApiResponse<GetOrderOneResponse>> getOrder(
-		@PathVariable Long orderId,
-		@SessionAttribute(name = AdminConst.ADMIN_INFO, required = false) AdminInfo adminInfo
+		@PathVariable Long orderId
 	) {
-		if (adminInfo == null) {
-			throw new AdminLoginStatusException();
-		}
 		GetOrderOneResponse response = orderService.getOne(orderId);
 		return ResponseEntity.ok()
 			.body(ApiResponse.success("주문 상세 조회가 성공적으로 조회되었습니다.", response));
@@ -92,29 +85,17 @@ public class OrderController {
 	@PatchMapping("/{orderId}")
 	public ResponseEntity<ApiResponse<Void>> updateOrderStatus(
 		@PathVariable Long orderId,
-		@RequestBody UpdateOrderStatusRequest request,
-		@SessionAttribute(name = AdminConst.ADMIN_INFO, required = false) AdminInfo adminInfo
+		@RequestBody UpdateOrderStatusRequest request
 	) {
-		if (adminInfo == null) {
-			throw new AdminLoginStatusException();
-		}
 		orderService.updateStatus(orderId, request.getStatus());
 		return ResponseEntity.ok(ApiResponse.success("주문 상태가 변경되었습니다."));
 	}
 
 	@PatchMapping("/{orderId}/cancel")
 	public ResponseEntity<ApiResponse<Void>> cancelOrder(
-		@Valid
 		@PathVariable Long orderId,
-		@RequestBody CancelOrderRequest request,
-		@SessionAttribute(name = AdminConst.ADMIN_INFO, required = false) AdminInfo adminInfo
+		@Valid @RequestBody CancelOrderRequest request
 	) {
-		if (adminInfo == null) {
-			throw new AdminLoginStatusException();
-		}
-		if (request.getCancelReason() == null || request.getCancelReason().isBlank()){
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "취소 사유는 필수입니다.");
-		}
 		orderService.cancelOrder(orderId, request.getCancelReason());
 		return ResponseEntity.ok(ApiResponse.success("주문이 취소되었습니다."));
 	}

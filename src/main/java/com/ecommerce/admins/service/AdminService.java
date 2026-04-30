@@ -32,7 +32,6 @@ import com.ecommerce.common.exception.AdminNotFoundException;
 import com.ecommerce.common.exception.AdminStatusException;
 import com.ecommerce.common.exception.DuplicateResourceException;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -48,16 +47,12 @@ public class AdminService {
 	 * @param request 이름, 메일, 비번, 전화번호, 역할
 	 */
 	@Transactional
-	public void save(@Valid CreateAdminRequest request) {
-		if (adminRepository.existsByEmail(request.getEmail())) {
-			throw new DuplicateResourceException("이미 사용중인 메일입니다.");
-		}
-		// TODO: request.getPassword를 encodedPassword로 바꾸기
+	public void save(CreateAdminRequest request) {
+		checkExistEmail(request.getEmail());
 		String encodedPassword = passwordEncoder.encode(request.getPassword());
 		AdminRole requestRole = AdminRole.valueOf(request.getRole());
 		adminRepository.save(
-			new Admin(request.getName(), request.getEmail(), request.getPassword(), request.getPhoneNumber(),
-				requestRole));
+			new Admin(request.getName(), request.getEmail(), encodedPassword, request.getPhoneNumber(), requestRole));
 	}
 
 	/**
@@ -66,27 +61,18 @@ public class AdminService {
 	 * @return 토큰 객체 생성 및 로그인응답 반환
 	 */
 	@Transactional(readOnly = true)
-	public LoginAdminResponse login(@Valid LoginAdminRequest request) {
+	public LoginAdminResponse login(LoginAdminRequest request) {
 		Admin admin = adminRepository.findByEmail(request.getEmail())
-			.orElseThrow(() -> new IllegalArgumentException("존재하는 이메일을 찾을 수 없습니다."));
+			.orElseThrow(() -> new AdminNotFoundException("존재하지 않는 이메일입니다."));
 
 		if (!passwordEncoder.matches(request.getPassword(), admin.getPassword())) {
-			throw new IllegalArgumentException("메일과 비밀번호가 일치하지 않습니다.");
+			throw new AdminStatusException(HttpStatus.BAD_REQUEST, "메일과 비밀번호가 일치하지 않습니다.");
 		}
 		checkStatusOrThrow(admin);
 
-		String accessToken = jwtTokenProvider.createToken(
-			admin.getAdminId(),
-			admin.getEmail(),
-			admin.getRole()
-		);
+		String accessToken = jwtTokenProvider.createToken(admin.getAdminId(), admin.getEmail(), admin.getRole());
 
-		return new LoginAdminResponse(
-			admin.getAdminId(),
-			admin.getEmail(),
-			admin.getRole().name(),
-			accessToken
-		);
+		return LoginAdminResponse.from(admin, accessToken);
 	}
 
 	/**
@@ -95,14 +81,13 @@ public class AdminService {
 	 * @param role 검색할 역할
 	 * @param status 검색할 상태
 	 * @param pageable 페이지네이션 조건
-	 * @param loginAdminId 검증을 위한 세션값
+	 * @param loginAdminId 검증을 위한 JWT 값
 	 * @return 전체 관리자 반환
 	 */
 	@Transactional(readOnly = true)
 	public Page<GetAdminResponse> getAdminList(String keyword, AdminRole role, AdminStatus status, Pageable pageable,
 		Long loginAdminId) {
-		Admin loginAdmin = findByIdOrThrow(loginAdminId);
-		checkSuperAdminAndActive(loginAdmin);
+		checkStatusOrThrow(findByIdOrThrow(loginAdminId));
 
 		return adminRepository.findAllByCondition(keyword, role, status, pageable).map(GetAdminResponse::from);
 	}
@@ -110,13 +95,12 @@ public class AdminService {
 	/**
 	 * 특정 관리자 조회
 	 * @param adminId 특정 관리자 아이디
-	 * @param loginAdminId 검증을 위한 세션값
+	 * @param loginAdminId 검증을 위한 JWT 값
 	 * @return 검증 이후 특정 관리자의 이름, 메일, 전화번호, 역할, 상태, 생성일, 수락일 반환
 	 */
 	@Transactional(readOnly = true)
 	public GetOneAdminResponse getOne(Long adminId, Long loginAdminId) {
-		Admin loginAdmin = findByIdOrThrow(loginAdminId);
-		checkSuperAdminAndActive(loginAdmin);
+		checkStatusOrThrow(findByIdOrThrow(loginAdminId));
 
 		Admin admin = findByIdOrThrow(adminId);
 
@@ -127,13 +111,12 @@ public class AdminService {
 	 * 관리자 정보 수정
 	 * @param adminId 수정할 관리자 아이디
 	 * @param request 수정할 정보
-	 * @param loginAdminId 검증을 위한 세션 값
+	 * @param loginAdminId 검증을 위한 JWT 값
 	 */
 	@Transactional
 	public void update(Long adminId, UpdateAdminRequest request, Long loginAdminId) {
-		Admin loginAdmin = findByIdOrThrow(loginAdminId);
-		checkSuperAdminAndActive(loginAdmin);
-
+		checkStatusOrThrow(findByIdOrThrow(loginAdminId));
+		checkExistEmail(request.getEmail());
 		Admin admin = findByIdOrThrow(adminId);
 
 		admin.updateAdmin(request.getName(), request.getEmail(), request.getPhoneNumber());
@@ -143,12 +126,11 @@ public class AdminService {
 	 * 관리자 역할 변경
 	 * @param adminId 변경할 관리자 아이디
 	 * @param request 변경할 역할
-	 * @param loginAdminId 검증을 위한 세션 값
+	 * @param loginAdminId 검증을 위한 JWT 값
 	 */
 	@Transactional
-	public void updateRole(Long adminId, @Valid UpdateRoleAdminRequest request, Long loginAdminId) {
-		Admin loginAdmin = findByIdOrThrow(loginAdminId);
-		checkSuperAdminAndActive(loginAdmin);
+	public void updateRole(Long adminId, UpdateRoleAdminRequest request, Long loginAdminId) {
+		checkStatusOrThrow(findByIdOrThrow(loginAdminId));
 		Admin admin = findByIdOrThrow(adminId);
 		AdminRole requestRole = AdminRole.valueOf(request.getRole());
 
@@ -159,12 +141,11 @@ public class AdminService {
 	 * 관리자 상태 변경
 	 * @param adminId 변경할 관리자 아이디
 	 * @param request 변경할 상태
-	 * @param loginAdminId 검증을 위한 세션 값
+	 * @param loginAdminId 검증을 위한 JWT 값
 	 */
 	@Transactional
-	public void updateStatus(Long adminId, @Valid UpdateStatusAdminRequest request, Long loginAdminId) {
-		Admin loginAdmin = findByIdOrThrow(loginAdminId);
-		checkSuperAdminAndActive(loginAdmin);
+	public void updateStatus(Long adminId, UpdateStatusAdminRequest request, Long loginAdminId) {
+		checkStatusOrThrow(findByIdOrThrow(loginAdminId));
 		Admin admin = findByIdOrThrow(adminId);
 		AdminStatus requestStatus = AdminStatus.valueOf(request.getStatus());
 
@@ -174,12 +155,11 @@ public class AdminService {
 	/**
 	 * 관리자 삭제
 	 * @param adminId 삭제할 관리자 아이디
-	 * @param loginAdminId 검증을 위한 세션 값
+	 * @param loginAdminId 검증을 위한 JWT 값
 	 */
 	@Transactional
 	public void delete(Long adminId, Long loginAdminId) {
-		Admin loginAdmin = findByIdOrThrow(loginAdminId);
-		checkSuperAdminAndActive(loginAdmin);
+		checkStatusOrThrow(findByIdOrThrow(loginAdminId));
 		Admin admin = findByIdOrThrow(adminId);
 
 		admin.softDelete();
@@ -188,12 +168,11 @@ public class AdminService {
 	/**
 	 * 관리자 승인
 	 * @param adminId 승인할 관리자 아이디
-	 * @param loginAdminId 검증을 위한 세션 값
+	 * @param loginAdminId 검증을 위한 JWT 값
 	 */
 	@Transactional
 	public void approve(Long adminId, Long loginAdminId) {
-		Admin loginAdmin = findByIdOrThrow(loginAdminId);
-		checkSuperAdminAndActive(loginAdmin);
+		checkStatusOrThrow(findByIdOrThrow(loginAdminId));
 		Admin admin = checkStatusPending(adminId);
 
 		admin.approve();
@@ -203,12 +182,11 @@ public class AdminService {
 	 * 관리자 거부
 	 * @param adminId 거부할 관리자 아이디
 	 * @param request 거부사유
-	 * @param loginAdminId 검증을 위한 세션 값
+	 * @param loginAdminId 검증을 위한 JWT 값
 	 */
 	@Transactional
-	public RejectAdminResponse reject(Long adminId, @Valid RejectAdminRequest request, Long loginAdminId) {
-		Admin loginAdmin = findByIdOrThrow(loginAdminId);
-		checkSuperAdminAndActive(loginAdmin);
+	public RejectAdminResponse reject(Long adminId, RejectAdminRequest request, Long loginAdminId) {
+		checkStatusOrThrow(findByIdOrThrow(loginAdminId));
 		Admin admin = checkStatusPending(adminId);
 
 		admin.reject(request);
@@ -217,7 +195,7 @@ public class AdminService {
 
 	/**
 	 * 내 프로필 조회
-	 * @param loginAdminId 검증을 위한 세션 값
+	 * @param loginAdminId 검증을 위한 JWT 값
 	 * @return 로그인한 본인 슈퍼관리자 이름, 메일, 전화번호 반환
 	 */
 	@Transactional(readOnly = true)
@@ -230,10 +208,10 @@ public class AdminService {
 	/**
 	 * 내 프로필 수정
 	 * @param request 수정할 이름, 이메일, 전화번호
-	 * @param loginAdminId 검증을 위한 세션 값
+	 * @param loginAdminId 검증을 위한 JWT 값
 	 */
 	@Transactional
-	public void updateMy(@Valid UpdateMyAdminRequest request, Long loginAdminId) {
+	public void updateMy(UpdateMyAdminRequest request, Long loginAdminId) {
 		Admin admin = findByIdOrThrow(loginAdminId);
 
 		admin.updateAdmin(request.getName(), request.getEmail(), request.getPhoneNumber());
@@ -242,10 +220,10 @@ public class AdminService {
 	/**
 	 * 내 비밀번호 수정
 	 * @param request 변경할 비밀번호
-	 * @param loginAdminId 검증을 위한 세션 값
+	 * @param loginAdminId 검증을 위한 JWT 값
 	 */
 	@Transactional
-	public void updateMyPassword(@Valid UpdateMyPasswordRequest request, Long loginAdminId) {
+	public void updateMyPassword(UpdateMyPasswordRequest request, Long loginAdminId) {
 		Admin admin = findByIdOrThrow(loginAdminId);
 
 		if (!passwordEncoder.matches(request.getPassword(), admin.getPassword())) {
@@ -279,18 +257,6 @@ public class AdminService {
 	}
 
 	/**
-	 * 슈퍼어드민, 활성상태를 검증
-	 * @param admin 검증을 위한 세션값
-	 */
-	public void checkSuperAdminAndActive(Admin admin) {
-		if (!admin.getRole().equals(AdminRole.SUPER_ADMIN)) {
-			throw new AccessDeniedException("권한이 없습니다");
-		}
-		Admin requester = findByIdOrThrow(admin.getAdminId());
-		checkStatusOrThrow(requester);
-	}
-
-	/**
 	 * 승인대기외 상태를 검증
 	 * @param adminId 검증할 아이디
 	 * @return 검증을 마친 어드민 값
@@ -304,6 +270,16 @@ public class AdminService {
 			case REJECTED -> throw new AdminStatusException(HttpStatus.FORBIDDEN, "계정 신청 거부됨");
 		}
 		return admin;
+	}
+
+	/**
+	 * 메일 중복 여부 확인 메서드
+	 * @param email 확인할 메일
+	 */
+	public void checkExistEmail(String email) {
+		if (adminRepository.existsByEmail(email)) {
+			throw new DuplicateResourceException("이미 사용중인 메일입니다.");
+		}
 	}
 
 }

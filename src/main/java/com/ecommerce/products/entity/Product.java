@@ -1,10 +1,18 @@
 package com.ecommerce.products.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+
 import com.ecommerce.admins.entity.Admin;
 import com.ecommerce.common.BaseEntity;
 import com.ecommerce.common.enums.ProductStatus;
 import com.ecommerce.common.exception.InvalidRequestException;
+import com.ecommerce.review.entity.Review;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -15,14 +23,18 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
 @Table(name = "products")
+@SQLDelete(sql = "UPDATE products SET deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE product_id = ?")
+@SQLRestriction("deleted = false")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product extends BaseEntity {
 
@@ -41,29 +53,33 @@ public class Product extends BaseEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private ProductStatus status = ProductStatus.FOR_SALE;;
+	private ProductStatus status;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "admin_id")
 	private Admin admin;
 
+	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+	private List<Review> reviews = new ArrayList<>();
+
+	@Builder
 	public Product(String name, String category, Long price, Long quantity, Admin admin) {
 		this.name = name;
 		this.category = category;
 		this.price = price;
 		this.quantity = quantity;
 		this.admin = admin;
+		this.status = (quantity == 0) ? ProductStatus.SOLD_OUT : ProductStatus.FOR_SALE;
 	}
 
 	/**
 	 * 상품 정보 수정 (ProductService에서 사용)
 	 * Admin 포함 수정
 	 */
-	public void update(String name, String category, Long price, Admin admin) {
+	public void update(String name, String category, Long price) {
 		this.name = name;
 		this.category = category;
 		this.price = price;
-		this.admin = admin;
 	}
 
 	/**

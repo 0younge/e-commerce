@@ -1,8 +1,7 @@
 package com.ecommerce.orders.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
 
 @Getter
@@ -11,7 +10,7 @@ public class CreateOrderRequest {
 	private Long userId;
 	@NotNull
 	private Long productId;
-	@NotNull
-	@PositiveOrZero
+	@NotNull(message = "수량은 필수입니다.")
+	@Min(value = 1, message = "최소 주문 수량은 1개 이상입니다.")
 	private Long quantity;
 }

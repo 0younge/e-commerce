@@ -3,6 +3,7 @@ package com.ecommerce.common.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -15,10 +16,12 @@ import com.ecommerce.common.security.handler.CustomAccessDeniedHandler;
 import com.ecommerce.common.security.handler.CustomAuthenticationEntryPoint;
 import com.ecommerce.common.security.jwt.JwtAuthenticationFilter;
 
+import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 
 public class SecurityConfig {
@@ -48,8 +51,12 @@ public class SecurityConfig {
 			// 4. httpBasic 비활성화
 			.httpBasic(basic -> basic.disable())
 
+
 			// 5. API별 접근 정책
 			.authorizeHttpRequests(auth -> auth
+
+				.dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
+
 				.requestMatchers(
 					"/admins/signup",
 					"/admins/login",
@@ -59,8 +66,14 @@ public class SecurityConfig {
 				// 관리자 도메인: 모든 관리자
 				.requestMatchers("/admins/**").hasAnyRole("SUPER_ADMIN", "OPERATION_ADMIN", "CS_ADMIN")
 
+				// 상품 조회는 모두 허용
+				.requestMatchers(HttpMethod.GET,"/products/**").permitAll()
+
 				// 상품 도메인 : 슈퍼관리자 및 운영관리자만
 				.requestMatchers("/products/**").hasAnyRole("SUPER_ADMIN", "OPERATION_ADMIN")
+
+				// 주문 생성 : 모두 허용
+				.requestMatchers(HttpMethod.POST, "/orders").permitAll()
 
 				// 주문 도메인 : 모든 관리자
 				.requestMatchers("/orders/**").hasAnyRole("SUPER_ADMIN", "OPERATION_ADMIN", "CS_ADMIN")
