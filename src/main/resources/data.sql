@@ -58,7 +58,7 @@ VALUES
     ('노트2','문구',3500,90,'FOR_SALE',false,1,NOW(),NOW()),
     ('노트3','문구',4000,80,'FOR_SALE',false,1,NOW(),NOW()),
     ('펜1','문구',1000,200,'FOR_SALE',false,1,NOW(),NOW()),
-    ('펜2','문구',1500,180,'FOR_SALE',false,1,NOW(),NOW()),
+    ('펜2','문구',1500,180,'DISCONTINUED',false,1,NOW(),NOW()),
     ('펜3','문구',1200,0,'FOR_SALE',false,1,NOW(),NOW()),
     ('텀블러1','생활용품',20000,40,'FOR_SALE',false,1,NOW(),NOW()),
     ('텀블러2','생활용품',25000,35,'FOR_SALE',false,1,NOW(),NOW()),
