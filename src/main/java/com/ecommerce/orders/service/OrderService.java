@@ -58,6 +58,7 @@ public class OrderService {
 		product.decreaseQuantity(request.getQuantity());
 
 		//주문 번호 생성 및 총 가격 계산
+		// TODO: 동시성 문제 수정
 		String orderNumber = generateOrderNumber(user);
 		Long totalPrice = product.getPrice() * request.getQuantity();
 

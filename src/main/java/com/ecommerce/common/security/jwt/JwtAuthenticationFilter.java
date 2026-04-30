@@ -38,6 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		String token = resolveToken(request);
 
+		// TODO: 조건마다 예외처리 추가
 		if (token != null && jwtTokenProvider.validateToken(token)) {
 
 			// 토큰이 블랙리스트에 존재하는지 검증
@@ -73,7 +74,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 			SecurityContextHolder.getContext().setAuthentication(authentication);
 		}
-
 		filterChain.doFilter(request, response);
 	}
 
